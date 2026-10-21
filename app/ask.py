@@ -14,6 +14,7 @@ import argparse
 
 from google import genai
 from google.genai import errors
+from google.genai.types import GenerateContentResponse
 
 from app.config import MODEL, api_error_message, get_api_key
 
@@ -21,14 +22,9 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
+def ask(question: str) -> GenerateContentResponse:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
-
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
-    return response.text
+    return client.models.generate_content(model=MODEL, contents=question)
 
 
 def main() -> None:
@@ -39,7 +35,14 @@ def main() -> None:
     print(f"[model] {MODEL}")
     print(f"[質問] {args.question}\n")
     try:
-        print(ask(args.question))
+        response = ask(args.question)
+        print(response.text)
+
+        usage = response.usage_metadata
+        input_tokens = usage.prompt_token_count if usage else None
+        output_tokens = usage.candidates_token_count if usage else None
+        print(f"\n[入力トークン数] {input_tokens if input_tokens is not None else '不明'}")
+        print(f"[出力トークン数] {output_tokens if output_tokens is not None else '不明'}")
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
