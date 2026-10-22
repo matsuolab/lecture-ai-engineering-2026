@@ -11,6 +11,7 @@
 """
 
 import argparse
+import time
 
 from google import genai
 from google.genai import errors
@@ -23,7 +24,11 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
+
+    started = time.perf_counter()
     response = client.models.generate_content(model=MODEL, contents=question)
+    elapsed = time.perf_counter() - started
+    print(f"[応答時間] {elapsed:.3f}秒")
 
     usage = response.usage_metadata
     input_tokens = usage.prompt_token_count if usage else None
