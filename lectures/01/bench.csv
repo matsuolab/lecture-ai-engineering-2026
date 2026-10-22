@@ -1,0 +1,13 @@
+model,question,run,seconds,input_tokens,output_tokens,status
+gemini-3.5-flash-lite,LoRAとは何ですか？,1,12.089421148000156,7,599,ok
+gemini-3.5-flash-lite,LoRAとは何ですか？,2,13.93446446300004,7,578,ok
+gemini-3.5-flash-lite,LoRAとは何ですか？,3,15.194641778000005,7,555,ok
+gemini-3.5-flash-lite,生成AIを初めて学ぶ人に向けて、仕組み、活用例、注意点を含めて詳しく説明してください。,1,12.7529308390001,22,913,ok
+gemini-3.5-flash-lite,生成AIを初めて学ぶ人に向けて、仕組み、活用例、注意点を含めて詳しく説明してください。,2,13.855225100000098,22,1053,ok
+gemini-3.5-flash-lite,生成AIを初めて学ぶ人に向けて、仕組み、活用例、注意点を含めて詳しく説明してください。,3,15.15980652799999,22,976,ok
+gemini-3.5-flash-lite,AIE2026の講座の宿題にある「3レベル」とは何ですか？,1,10.72364665799978,21,421,ok
+gemini-3.5-flash-lite,AIE2026の講座の宿題にある「3レベル」とは何ですか？,2,14.061005830999875,21,546,ok
+gemini-3.5-flash-lite,AIE2026の講座の宿題にある「3レベル」とは何ですか？,3,11.573564887999964,21,677,ok
+gemini-3.8-flash,LoRAとは何ですか？,1,1.7610062969999944,,,error: ServerError
+gemini-3.8-flash,生成AIを初めて学ぶ人に向けて、仕組み、活用例、注意点を含めて詳しく説明してください。,1,1.4557437909998043,,,error: ServerError
+gemini-3.8-flash,AIE2026の講座の宿題にある「3レベル」とは何ですか？,1,8.171566521000159,,,error: ServerError
