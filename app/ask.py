@@ -33,7 +33,10 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 def ask(question: str, chat: Chat) -> str:
     """同じ chat を使い、過去の質問と回答も含めて送信する。"""
     start = perf_counter()
-    response = chat.send_message(question)
+    response = chat.send_message(
+        question,
+        # 温度関数を指定してランダム性を設定できる
+        config={"temperature": 0.0})
     elapsed = perf_counter() - start
     print(f"[応答時間] {elapsed:.2f} 秒")
 
