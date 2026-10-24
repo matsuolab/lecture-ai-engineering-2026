@@ -39,10 +39,10 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
-def test_default_question_of_lecture1_is_answerable_from_glossary():
-    """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
-    from app.ask import DEFAULT_QUESTION
+def test_example_question_of_lecture1_is_answerable_from_glossary():
+    """第1回の質問例（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
+    from app.ask import EXAMPLE_QUESTION
 
-    assert "3レベル" in DEFAULT_QUESTION
+    assert "3レベル" in EXAMPLE_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"

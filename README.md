@@ -27,9 +27,10 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 
 ```bash
 uv run pytest -q
-uv run python -m app.ask "LoRAとは何ですか？"
+uv run python -m app.ask
 ```
 
+起動したら、表示されるプロンプトに質問を入力します。空入力で終了します。
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
@@ -84,7 +85,7 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 既定モデルは `gemini-3.5-flash-lite` です。環境変数 `AIE_MODEL` で切り替えられます。
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.5-flash uv run python -m app.ask
 ```
 
 無料枠には1分あたり・1日あたりのリクエスト上限があります。上限は [Gemini API のレート制限のページ](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。
