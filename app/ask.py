@@ -17,6 +17,7 @@ from google.genai import errors
 
 from app.config import MODEL, api_error_message, get_api_key
 
+
 # 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
@@ -24,9 +25,15 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(model=MODEL, contents=question)
-
     # TODO(第1回 演習): response.usage_metadata から
     #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    if response.usage_metadata:
+        input_tokens = response.usage_metadata.prompt_token_count
+        output_tokens = response.usage_metadata.candidates_token_count
+
+        print(f"入力トークン数: {input_tokens}")
+        print(f"出力トークン数: {output_tokens}")
+   
 
     return response.text
 
