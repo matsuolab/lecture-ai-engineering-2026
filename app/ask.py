@@ -3,6 +3,8 @@
 使い方:
     uv run python -m app.ask "LoRAとは何ですか？"
     uv run python -m app.ask            # 質問を省略すると、講座に固有の質問をする
+    uv run python -m app.ask --interactive
+    uv run python -m app.ask --interactive "LoRAとは何ですか？"
 
 ツールも会話履歴も持たない「素の」呼び出し。
 講座に固有のことを聞くと、「分からない」と答えるか、一般論でもっともらしく答える
@@ -25,21 +27,58 @@ def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
+    _print_usage(response)
     return response.text
+
+
+def _print_usage(response) -> None:
+    usage = response.usage_metadata
+    input_tokens = usage.prompt_token_count if usage else None
+    output_tokens = usage.candidates_token_count if usage else None
+    print(f"[トークン数] 入力: {input_tokens if input_tokens is not None else '不明'}, "
+          f"出力: {output_tokens if output_tokens is not None else '不明'}")
+
+
+def interactive_chat(initial_question: str | None = None) -> None:
+    client = genai.Client(api_key=get_api_key())
+    chat = client.chats.create(model=MODEL)
+    print("会話を開始しました。終了するには /exit を入力してください。")
+
+    question = initial_question
+    while True:
+        if question is None:
+            try:
+                question = input("質問> ").strip()
+            except EOFError:
+                print()
+                break
+        if question == "/exit":
+            break
+        if question:
+            print(f"[質問] {question}\n")
+            response = chat.send_message(question)
+            print(response.text)
+            _print_usage(response)
+            print()
+        question = None
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
-    parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser.add_argument("question", nargs="?")
+    parser.add_argument(
+        "--interactive", action="store_true", help="会話履歴を保って続けて質問する"
+    )
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
     try:
-        print(ask(args.question))
+        if args.interactive:
+            interactive_chat(args.question)
+        else:
+            question = args.question or DEFAULT_QUESTION
+            print(f"[質問] {question}\n")
+            print(ask(question))
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
