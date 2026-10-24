@@ -14,18 +14,23 @@ import argparse
 import time
 
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 
 from app.config import MODEL, api_error_message, get_api_key
 
 # 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
+TEMPERATURE = 2.0
 
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
     started_at = time.perf_counter()
-    response = client.models.generate_content(model=MODEL, contents=question)
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=question,
+        config=types.GenerateContentConfig(temperature=TEMPERATURE),
+    )
     elapsed = time.perf_counter() - started_at
 
     print(f"[応答時間] {elapsed:.2f}秒")
@@ -42,6 +47,7 @@ def main() -> None:
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
+    print(f"[temperature] {TEMPERATURE}")
     print(f"[質問] {args.question}\n")
     try:
         print(ask(args.question))
