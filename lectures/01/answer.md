@@ -13,9 +13,9 @@
 
 - Level attempted: Advanced ,Basic, Implementation, 
 - What you did:
-  - Basic: ran "What is LoRA?" 3 times on each of gemini-3.5-flash-lite and gemini-3.8-flash (`python -m app.ask basic`).
-  - Implementation: added a chat mode to `app/ask.py` using `client.chats.create`, which keeps the history for follow-up questions (`python -m app.ask implementation`).
-  - Advanced: timed each call and printed token counts for 2 questions on 2 models. Saved in `results.csv` (`python -m app.ask advanced`).
+  - Basic: ran "What is LoRA?" 3 times on each of gemini-3.5-flash-lite and gemini-3.8-flash (`uv run python -m app.ask basic`).
+  - Implementation: added a chat mode to `app/ask.py` using `client.chats.create`, which keeps the history for follow-up questions (`uv run python -m app.ask implementation`).
+  - Advanced: timed each call and printed token counts for 2 questions on 2 models. Saved in `results.csv` (`uv run python -m app.ask advanced`).
 - Results:
 
 ### Basic
@@ -40,9 +40,10 @@ Chat mode with history worked. I asked 3 questions in one session:
 | gemini-3.8-flash | What is LoRA? | 49.03 | 6 | 834 | 1718 |
 | gemini-3.8-flash | Explain overfitting in two sentences. | 17.68 | 7 | 47 | 407 |
 
-- Observations and questions:
+- Observations:
   - gemini-3.8-flash took 18-49 s per call; gemini-3.5-flash-lite took 1-3 s.
   - Output length was similar on both models, so the time difference is not from output length.
   - The short "two sentences" question used far fewer output tokens than the LoRA question on both models.
-  - 3.8-flash total tokens (1718, 407) are much higher than input + output (840, 54).
+  - gemini-3.8-flash total tokens (1718, 407) are much higher than input + output (840, 54).
+  - gemini-3.8-flash used about 2x to 7x more tokens than flash-lite (1718 vs 754, 407 vs 61), so it would hit free-tier token limits much sooner.
  
