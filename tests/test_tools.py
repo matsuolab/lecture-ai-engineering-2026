@@ -3,7 +3,7 @@
 import json
 
 from app import tools
-
+from app.ask import DEFAULT_QUESTION
 
 def test_glossary_ids_are_unique_and_related_links_exist():
     terms = tools.load_glossary()
