@@ -33,4 +33,9 @@ def get_api_key() -> str:
             "2. Codespaces を起動したあとに登録した場合は、Codespaces を再起動してください。\n"
             "   （左下の「Codespaces」→「Stop Current Codespace」→ 再度開く）"
         )
+    if not key.isascii():
+        raise SystemExit(
+            "環境変数 GEMINI_API_KEY に ASCII 以外の文字が含まれています。\n"
+            "Google AI Studio で発行した API キーをコピーし直し、Codespaces secret を更新してください。"
+        )
     return key

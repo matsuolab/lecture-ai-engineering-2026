@@ -32,6 +32,7 @@ GitHub の **Settings → Codespaces → Secrets → New secret** で次のよ�
 - Repository access: **自分の fork** を選ぶ
 
 > Codespaces を起動する前に登録してください。起動後に登録した場合は、Codespaces の再起動が必要です。
+> API 呼び出し時に `ASCII 以外の文字` というエラーが出た場合は、secret に API キー以外の文字が混ざっていないか確認し、Google AI Studio からキーをコピーし直してください。
 
 ### 4. Codespaces を起動する
 

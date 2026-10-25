@@ -11,7 +11,7 @@
 """
 
 import argparse
-
+from google.genai import types
 from google import genai
 from google.genai import errors
 
@@ -21,29 +21,46 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
+def ask(question: str, history: list, temperature: float = 1.0) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    user_msg = types.Content(role="user", parts=[types.Part(text=question)])
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=history + [user_msg],
+        config=types.GenerateContentConfig(temperature=temperature),
+    )
+    answer = response.text
 
-    return response.text
+    # Only save the turn once the call has succeeded
+    history.append(user_msg)
+    history.append(types.Content(role="model", parts=[types.Part(text=answer)]))
+
+    usage = response.usage_metadata
+    print(f"[tokens] entrée : {usage.prompt_token_count}")
+    print(f"[tokens] sortie : {usage.candidates_token_count}\n")
+
+    return answer
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser.add_argument("--temperature", type=float, default=1.0)
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
+    print(f"[temperature] {args.temperature}")
+
+    history: list = []
+    question = args.question
     try:
-        print(ask(args.question))
+        while question:
+            print(f"[質問] {question}\n")
+            print(ask(question, history, args.temperature))
+            question = input("\nQuestion suivante (vide pour quitter) : ").strip()
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
-
-
 if __name__ == "__main__":
     main()
