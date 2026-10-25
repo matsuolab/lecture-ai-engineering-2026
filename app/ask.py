@@ -11,6 +11,7 @@
 """
 
 import argparse
+import time
 
 from google import genai
 from google.genai import errors
@@ -45,7 +46,10 @@ def main() -> None:
                 question = None
                 continue
 
+            start_time = time.perf_counter()
             response = chat.send_message(question)
+            elapsed_time = time.perf_counter() - start_time
+            print(f"応答時間: {elapsed_time:.2f} 秒")
             usage = response.usage_metadata
             if usage is not None:
                 print(
