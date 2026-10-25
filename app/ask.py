@@ -11,6 +11,7 @@
 """
 
 import argparse
+import readline
 
 from google import genai
 from google.genai import errors
@@ -33,6 +34,40 @@ def ask(question: str) -> str:
         print(f"[出力トークン数] {usage.candidates_token_count}")
     return response.text
 
+def chat_loop(first_question: str) -> None:
+    client = genai.Client(api_key=get_api_key())
+    chat = client.chats.create(model=MODEL)
+    question = first_question
+    turn = 1
+
+    try:
+        while True:
+            if question:
+                print(f"\n── 質問{turn} ──")
+                print(question)
+
+                response = chat.send_message(question)
+
+                print(f"\n── 質問{turn}への回答 ──")
+                print(response.text)
+
+                usage = response.usage_metadata
+                if usage is not None:
+                    print(f"\n[入力トークン数] {usage.prompt_token_count}")
+                    print(f"[出力トークン数] {usage.candidates_token_count}")
+
+                turn += 1
+
+            question = input(
+                f"\n【質問{turn}を入力してください／終了: exit】\n> "
+            ).strip()
+
+            if question.lower() in {"exit", "quit"}:
+                break
+
+    except (EOFError, KeyboardInterrupt):
+        print("\n終了します。")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
@@ -40,9 +75,8 @@ def main() -> None:
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
     try:
-        print(ask(args.question))
+        chat_loop(args.question)
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
