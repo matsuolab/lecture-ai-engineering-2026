@@ -29,9 +29,11 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 uv run python -m app.ask --chat
+uv run python -m app.ask --benchmark --models gemini-3.5-flash-lite gemini-3.5-flash
 ```
 
 `--chat` を付けると、同じ会話履歴を使って続けて質問できます。`exit` または `終了` で終了します。
+`--benchmark` はモデルと質問の組み合わせごとに応答時間・入出力トークン数を表示します。質問を変える場合は `--benchmark-questions "質問1" "質問2"` を指定します。APIを複数回呼び出すため、無料枠のレート制限に注意してください。
 
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
