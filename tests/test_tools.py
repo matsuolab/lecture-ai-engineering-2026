@@ -46,3 +46,78 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_ask_prints_input_and_output_token_counts(monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    from app.ask import MODEL, ask
+
+    class FakeModels:
+        def generate_content(self, model, contents):
+            assert model == MODEL
+            assert contents == "AIE2026とは何ですか?"
+            return SimpleNamespace(
+                text="AIE2026は講座名です。",
+                usage_metadata=SimpleNamespace(
+                    prompt_token_count=123,
+                    candidates_token_count=45,
+                ),
+            )
+
+    class FakeClient:
+        def __init__(self, api_key):
+            self.api_key = api_key
+            self.models = FakeModels()
+
+    monkeypatch.setattr("app.ask.get_api_key", lambda: "fake-api-key")
+    monkeypatch.setattr("app.ask.genai.Client", FakeClient)
+
+    result = ask("AIE2026とは何ですか?")
+
+    assert result == "AIE2026は講座名です。"
+    captured = capsys.readouterr()
+    assert "入力トークン" in captured.out
+    assert "123" in captured.out
+    assert "出力トークン" in captured.out
+    assert "45" in captured.out
+
+
+def test_ask_keeps_history_for_follow_up_questions(monkeypatch):
+    from types import SimpleNamespace
+
+    from app.ask import ask
+
+    seen = []
+
+    class FakeModels:
+        def generate_content(self, model, contents):
+            seen.append(contents)
+            return SimpleNamespace(
+                text=f"回答: {contents[-1]['parts'][0]['text']}",
+                usage_metadata=SimpleNamespace(
+                    prompt_token_count=10,
+                    candidates_token_count=2,
+                ),
+            )
+
+    class FakeClient:
+        def __init__(self, api_key):
+            self.api_key = api_key
+            self.models = FakeModels()
+
+    monkeypatch.setattr("app.ask.get_api_key", lambda: "fake-api-key")
+    monkeypatch.setattr("app.ask.genai.Client", FakeClient)
+
+    history = [
+        {"role": "user", "parts": [{"text": "前の質問"}]},
+        {"role": "model", "parts": [{"text": "前の回答"}]},
+    ]
+
+    result = ask("次の質問", history=history)
+
+    assert result == "回答: 次の質問"
+    assert seen[0][0] == history[0]
+    assert seen[0][1] == history[1]
+    assert seen[0][-1]["role"] == "user"
+    assert seen[0][-1]["parts"][0]["text"] == "次の質問"
