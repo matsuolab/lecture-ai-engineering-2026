@@ -12,6 +12,9 @@
 
 import argparse
 
+from datetime import datetime
+from pathlib import Path
+
 from google import genai
 from google.genai import errors
 
@@ -23,12 +26,44 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    temperature = 1.5
 
-    return response.text
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=question,
+        config={"temperature": temperature},
+    )
+
+    answer = response.text or ""
+
+    # 入力・出力トークン数を取得
+    usage = response.usage_metadata
+    input_tokens = usage.prompt_token_count if usage else None
+    output_tokens = usage.candidates_token_count if usage else None
+
+    print(f"\n[入力トークン数] {input_tokens}")
+    print(f"[出力トークン数] {output_tokens}")
+
+    # 結果をテキストファイルに保存
+    results_dir = Path("results")
+    results_dir.mkdir(exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = results_dir / f"{timestamp}.txt"
+
+    log_file.write_text(
+        f"Model: {MODEL}\n"
+        f"Temperature: {temperature}\n"
+        f"Question: {question}\n\n"
+        f"Answer:\n{answer}\n",
+        encoding="utf-8",
+    )
+
+    print(f"\n[ログ保存先] {log_file}")
+
+    return answer
+
 
 
 def main() -> None:
