@@ -85,10 +85,11 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 | 実装 | `app/ask.py` を改修し、会話履歴を保ったまま続けて質問できるようにする |
 | 発展 | 応答時間とトークン数を計測し、複数のモデルや質問で比較する。無料枠のレート制限との関係も考察する |
 
-モデルの切り替え例：
-
+temperature を変えて比較する例：
+AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "AIE2026 の講座の宿題にある「3レベル」とは何ですか？"
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+uv run python -m app.ask --temperature 0.2 "LoRAとは何ですか？"
+uv run python -m app.ask --temperature 1.0 "LoRAとは何ですか？"
 ```
 
-temperature を変えるには、`generate_content` の `config` 引数を調べてみましょう。
+`--temperature` を省略すると、モデルの既定値が使われます。
