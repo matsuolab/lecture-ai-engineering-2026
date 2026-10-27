@@ -92,3 +92,14 @@ AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
 temperature を変えるには、`generate_content` の `config` 引数を調べてみましょう。
+
+発展課題では、複数のモデル・質問の比較を次のコマンドで実行できます。
+
+```bash
+uv run python -m app.compare \
+  --models gemini-3.5-flash-lite gemini-3.5-flash \
+  --questions "LoRAとは何ですか？" "RAGとは何ですか？" \
+  --repeats 3
+```
+
+各試行は会話履歴なしで実行し、応答時間・入出力トークン数・回答を表示します。試行は順番に行い、既定でAPIリクエスト間に1秒待ちます。指定した組み合わせの数だけAPIを呼ぶため、無料枠に注意してください。429（レート制限）が返った場合は残りの試行を中止し、時間をおいて再実行してください。結果からモデルごとの速度やトークン数、回答の違いを記録し、レート制限の有無と実行条件も考察しましょう。
