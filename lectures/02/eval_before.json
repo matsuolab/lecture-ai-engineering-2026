@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.9523809523809523,
+    "content_rate": 0.38095238095238093,
+    "both_rate": 0.38095238095238093,
+    "seconds": 29.2
+  },
+  "rows": [
+    {
+      "question": "What is the submission deadline?",
+      "raw": "{\"answer\": \"September 30 at 23:59 (Japan time)\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Tell me the submission deadline date and time",
+      "raw": "{\"answer\": \"September 30 at 23:59 (Japan time)\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "On what date and at what time is the assignment due?",
+      "raw": "{\"answer\": \"September 30 at 23:59 (Japan time)\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Where should I submit my work?",
+      "raw": "{\"answer\": \"The assignment deadline is September 30 at 23:59 (Japan time). Submit through the 'Assignments' section of the learning portal. Submit one PDF file named student_id_assignment_number.pdf. Questions are welcome during office hours every Tuesday from 17:00 to 18:00. Late submissions are accepted within 48 hours of the deadline, with a grade penalty.\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Where do I hand in the assignment?",
+      "raw": "{\"answer\": \"Submit through the 'Assignments' section of the learning portal.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Tell me where to send my submission",
+      "raw": "{\"answer\": \"Submit through the 'Assignments' section of the learning portal.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Can I submit a format other than PDF?",
+      "raw": "{\"answer\": \"No, you cannot submit a format other than PDF. The FAQ explicitly states that the assignment must be submitted as one PDF file named student_id_assignment_number.pdf.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "What format should the submitted file use?",
+      "raw": "{\"answer\": \"PDF\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "What file format and how many files should I submit?",
+      "raw": "{\"answer\": \"PDF\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "What times are available for consultation?",
+      "raw": "{\"answer\": \"Tuesday from 17:00 to 18:00\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Tell me the day and time of office hours",
+      "raw": "{\"answer\": \"Tuesday from 17:00 to 18:00\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "On which day and from what time can I ask questions?",
+      "raw": "{\"answer\": \"Tuesday from 17:00 to 18:00\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Tell me how submissions after the deadline are handled",
+      "raw": "{\"answer\": \"Late submissions are accepted within 48 hours of the deadline, with a grade penalty.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "What happens if I miss the submission deadline?",
+      "raw": "{\"answer\": \"Late submissions are accepted within 48 hours of the deadline, with a grade penalty.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Will an assignment submitted after the deadline be accepted?",
+      "raw": "{\"answer\": \"No\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "When will grades be released?",
+      "raw": "{\"answer\": \"Confirmation is needed\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Will lecture recordings be made available?",
+      "raw": "{\"answer\": \"No\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Is there a character count limit for assignments?",
+      "raw": "{\"answer\": \"No character count limit for assignments is mentioned in the FAQ.\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Will I receive feedback on my submitted assignment?",
+      "raw": "{\"answer\": \"Yes, questions are welcome during office hours every Tuesday from 17:00 to 18:00.\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Is a particular citation style required?",
+      "raw": "{\"answer\": \"No\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Do office hours require an appointment?",
+      "raw": "{\"answer\": \"No\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    }
+  ]
+}
