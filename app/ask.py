@@ -1,12 +1,11 @@
-"""第1回: 素のLLMに1回だけ質問するスクリプト。
+"""第1回: 会話履歴を保ちながらLLMに質問するスクリプト。
 
 使い方:
     uv run python -m app.ask "LoRAとは何ですか？"
-    uv run python -m app.ask            # 質問を省略すると、講座に固有の質問をする
+    uv run python -m app.ask            # 既定の質問から会話を始める
+    # 続けて質問し、/exit で終了
 
-ツールも会話履歴も持たない「素の」呼び出し。
-講座に固有のことを聞くと、「分からない」と答えるか、一般論でもっともらしく答える
-（講座の実際とは違う）ことを確かめよう。
+ツールを持たない「素の」チャット。会話履歴はチャットセッション中保持される。
 （第3回で、用語集を検索できるエージェントにして改善する）
 """
 
@@ -21,25 +20,53 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
+def print_response(response: genai.types.GenerateContentResponse) -> None:
+    print(response.text)
+    usage = response.usage_metadata
+    if usage is None:
+        print("[トークン数] 使用量情報を取得できませんでした")
+    else:
+        print(
+            f"[トークン数] 入力: {usage.prompt_token_count}, "
+            f"出力: {usage.candidates_token_count}"
+        )
+
+
+def run_conversation(first_question: str) -> None:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
+    chat = client.chats.create(model=MODEL)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    question = first_question
+    while True:
+        print(f"[質問] {question}")
+        print_response(chat.send_message(question))
 
-    return response.text
+        try:
+            question = input("\n質問を入力してください（/exit で終了）: ")
+        except EOFError:
+            print()
+            break
+        if question.strip().lower() in {"/exit", "/quit"}:
+            break
+        if not question.strip():
+            continue
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="素のLLMに質問する")
-    parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser = argparse.ArgumentParser(
+        description="会話履歴を保ちながら素のLLMに質問する"
+    )
+    parser.add_argument(
+        "question",
+        nargs="?",
+        default=DEFAULT_QUESTION,
+        help="会話の最初の質問（省略時は講座に固有の既定の質問）",
+    )
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
     try:
-        print(ask(args.question))
+        run_conversation(args.question)
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
