@@ -11,6 +11,7 @@
 """
 
 import argparse
+import time
 
 from google import genai
 from google.genai import errors
@@ -21,28 +22,46 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
+def ask(question: str, model: str = MODEL) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
+    start = time.perf_counter()
+    try:
+        response = client.models.generate_content(model=model, contents=question)
+    finally:
+        print(f"[elapsed] {time.perf_counter() - start:.2f}s")
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    usage = response.usage_metadata
+    if usage is not None:
+        print(
+            f"[tokens] input={usage.prompt_token_count} "
+            f"output={usage.candidates_token_count}"
+        )
 
     return response.text
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
-    parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser.add_argument("questions", nargs="*", help="質問（複数指定すると順番に比較）")
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="models",
+        help="使うモデル（複数回指定すると比較。省略時は AIE_MODEL の設定を使用）",
+    )
     args = parser.parse_args()
 
-    print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
-    try:
-        print(ask(args.question))
-    except errors.APIError as e:
-        print(api_error_message(e.code, e.message))
-        raise SystemExit(1)
+    questions = args.questions or [DEFAULT_QUESTION]
+    models = args.models or [MODEL]
+    for model in models:
+        for question in questions:
+            print(f"\n[model] {model}")
+            print(f"[質問] {question}\n")
+            try:
+                print(ask(question, model=model))
+            except errors.APIError as e:
+                print(api_error_message(e.code, e.message))
+                raise SystemExit(1) from e
 
 
 if __name__ == "__main__":
