@@ -10,6 +10,17 @@ import os
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
 MODEL = os.getenv("AIE_MODEL", DEFAULT_MODEL)
 
+# ask.pyでメインモデルが失敗したときに試す候補。
+#   例: export AIE_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.1-flash-lite
+DEFAULT_FALLBACK_MODELS = ("gemini-3.5-flash",)
+FALLBACK_MODELS = tuple(
+    model.strip()
+    for model in os.getenv(
+        "AIE_FALLBACK_MODELS", ",".join(DEFAULT_FALLBACK_MODELS)
+    ).split(",")
+    if model.strip()
+)
+
 
 def api_error_message(status: int, detail: str = "") -> str:
     """HTTPステータスコードを、受講生向けの日本語の説明にする（ask.py と agent.py で共用）。"""
