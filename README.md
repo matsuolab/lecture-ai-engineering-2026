@@ -30,6 +30,12 @@ uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
+会話履歴を保って続けて質問するには、次のように実行します。初回の質問は省略でき、空行で終了します。
+
+```bash
+uv run python -m app.ask --interactive "LoRAとは何ですか？"
+```
+
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
