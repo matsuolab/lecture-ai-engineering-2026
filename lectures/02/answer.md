@@ -1,5 +1,3 @@
-<img width="4032" height="673" alt="image" src="https://github.com/user-attachments/assets/7df49127-0201-4578-b36d-db37d78632ff" /># 第2回 解答
-
 ## 演習
 
 - 使ったモデル・設定（`result.json` の `config` から）：
