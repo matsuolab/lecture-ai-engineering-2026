@@ -1,4 +1,4 @@
-# 第2回 解答
+<img width="4032" height="673" alt="image" src="https://github.com/user-attachments/assets/7df49127-0201-4578-b36d-db37d78632ff" /># 第2回 解答
 
 ## 演習
 
@@ -18,9 +18,10 @@
 - 変えた設定やデータ：
   num_train_epochs を 20 から 10 に変更した。
 - 結果（比較表や数字）：
-設定	format_rate	content_rate	最終Loss	学習時間
-num_train_epochs=20	1.000	0.952	0.013855	236秒
-num_train_epochs=10	1.000	0.857	0.100675	125秒
+  |       設定          | format_rate | content_rate | 最終Loss | 学習時間 |
+  |---------------------|------------:|-------------:|---------:|--------:|
+  | num_train_epochs=20 |       1.000 |        0.952 | 0.013855 |   236秒 |
+  | num_train_epochs=10 |       1.000 |        0.857 | 0.100675 |   125秒 |
 
 - 残った失敗の説明
 
