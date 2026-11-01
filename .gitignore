@@ -12,3 +12,12 @@ learning_log/
 
 # macOS
 .DS_Store
+
+# Результаты локального запуска LoRA (сохраняем только result.json)
+lectures/02/glossary_sft*.jsonl
+lectures/02/notebooks/results/**/adapter/
+lectures/02/notebooks/results/**/ckpt/
+lectures/02/notebooks/results/**/eval_*.json
+lectures/02/notebooks/results/**/gold.json
+lectures/02/notebooks/results/**/train.jsonl
+lectures/02/notebooks/results/**/test.jsonl

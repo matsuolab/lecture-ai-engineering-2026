@@ -1,0 +1,20 @@
+{
+  "base":{
+    "known":0.0,
+    "paraphrase":0.5,
+    "unknown":0.0,
+    "all":0.1666666667
+  },
+  "lora":{
+    "known":1.0,
+    "paraphrase":0.5,
+    "unknown":0.0,
+    "all":0.5
+  },
+  "retrieval":{
+    "known":0.75,
+    "paraphrase":0.25,
+    "unknown":0.75,
+    "all":0.5833333333
+  }
+}

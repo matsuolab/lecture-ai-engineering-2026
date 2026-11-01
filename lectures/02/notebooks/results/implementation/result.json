@@ -1,0 +1,86 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 20,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 96,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.14.1"
+  },
+  "method": "LoRA（量子化なし）",
+  "before": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.19047619047619047,
+    "content_rate": 0.0,
+    "both_rate": 0.0,
+    "seconds": 18.1
+  },
+  "after": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.8095238095238095,
+    "both_rate": 0.8095238095238095,
+    "seconds": 24.1
+  },
+  "regressed": [],
+  "knowledge": [
+    {
+      "質問": "この研究で最も精度が高かったトークナイザーは何ですか",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"トークン化の実験では、複数のトークナイザーについて、医療用語のトークン数を比較します。\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"このFAQには記載がありません。確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "ハイブリッド検索のRecall@5はいくつですか",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"ハイブリッド検索の Recall@5 は 100% です\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"このFAQには記載がありません。確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "実験で使用したEmbeddingモデルは何ですか",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"トークン化の実験では、複数のトークナイザーについて、医療用語のトークン数を比較します。\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"このFAQには記載がありません。確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "医療用語のデータセットは何件ありますか",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"確認が必要\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"このFAQには記載がありません。確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "テキストの正規化には何を使用しますか",
+      "FAQ にある": true,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"Unicode NFKC 正規化\"}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"テキストの前処理では、Unicode NFKC正規化を使用します。\", \"needs_review\": false}"
+    }
+  ],
+  "executed_training_myself": true,
+  "training_seconds": 364,
+  "final_logged_loss": 0.014994
+}
