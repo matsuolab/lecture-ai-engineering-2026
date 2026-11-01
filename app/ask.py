@@ -22,6 +22,7 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 
 def ask(chat, question: str) -> tuple[str, int, int]:
+    """同じChatに質問を送り、Chatが管理する会話履歴を使う。"""
     response = chat.send_message(question)
 
     return (
@@ -54,8 +55,6 @@ def main() -> None:
             raise SystemExit(1)
 
         print(answer)
-        # TODO(第1回 演習): response.usage_metadata から
-        #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
         print(f"[入力トークン数] {input_tokens}")
         print(f"[出力トークン数] {output_tokens}")
 
