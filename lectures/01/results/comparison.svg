@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="388" viewBox="0 0 1050 388">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="28" y="35" font-family="sans-serif" font-size="18" font-weight="bold">AIE2026 Lecture 1 - Measured means (successful calls only)</text>
+<text x="445" y="64" font-family="sans-serif" font-size="14">Latency (s)</text>
+<rect x="445" y="84" width="97.7" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="100" font-family="sans-serif" font-size="12">2.68</text>
+<rect x="445" y="132" width="116.1" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="148" font-family="sans-serif" font-size="12">3.18</text>
+<rect x="445" y="180" width="99.2" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="196" font-family="sans-serif" font-size="12">2.72</text>
+<rect x="445" y="228" width="175.0" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="244" font-family="sans-serif" font-size="12">4.79</text>
+<rect x="445" y="276" width="167.1" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="292" font-family="sans-serif" font-size="12">4.58</text>
+<rect x="445" y="324" width="133.8" height="21" rx="3" fill="#2454a6"/>
+<text x="625" y="340" font-family="sans-serif" font-size="12">3.67</text>
+<text x="740" y="64" font-family="sans-serif" font-size="14">Total tokens</text>
+<rect x="740" y="84" width="19.1" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="100" font-family="sans-serif" font-size="12">85.67</text>
+<rect x="740" y="132" width="43.4" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="148" font-family="sans-serif" font-size="12">195.22</text>
+<rect x="740" y="180" width="40.8" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="196" font-family="sans-serif" font-size="12">183.56</text>
+<rect x="740" y="228" width="172.1" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="244" font-family="sans-serif" font-size="12">773.40</text>
+<rect x="740" y="276" width="175.0" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="292" font-family="sans-serif" font-size="12">786.50</text>
+<rect x="740" y="324" width="146.8" height="21" rx="3" fill="#0f766e"/>
+<text x="920" y="340" font-family="sans-serif" font-size="12">659.83</text>
+<text x="28" y="99" font-family="sans-serif" font-size="12">gemini-3.5-flash-lite / baseline</text>
+<text x="28" y="147" font-family="sans-serif" font-size="12">gemini-3.5-flash-lite / grounded</text>
+<text x="28" y="195" font-family="sans-serif" font-size="12">gemini-3.5-flash-lite / irrelevant</text>
+<text x="28" y="243" font-family="sans-serif" font-size="12">gemini-3.6-flash / baseline</text>
+<text x="28" y="291" font-family="sans-serif" font-size="12">gemini-3.6-flash / grounded</text>
+<text x="28" y="339" font-family="sans-serif" font-size="12">gemini-3.6-flash / irrelevant</text>
+<text x="28" y="368" font-family="sans-serif" font-size="11">NA/missing values are excluded. This chart alone does not establish statistical significance.</text>
+</svg>
