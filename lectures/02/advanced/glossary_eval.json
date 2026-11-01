@@ -1,0 +1,37 @@
+{
+  "refusal_markers": ["記載がありません", "記載がない", "載っていません", "分かりません", "わかりません", "知りません", "確認が必要", "該当なし"],
+  "questions": [
+    {"type": "known", "term": "LoRA", "question": "LoRAって何？", "must_include": ["低ランク"]},
+    {"type": "known", "term": "QLoRA", "question": "QLoRAはどんな手法ですか？", "must_include": ["量子化"]},
+    {"type": "known", "term": "量子化", "question": "量子化の意味を教えてください。", "must_include": ["ビット"]},
+    {"type": "known", "term": "過学習", "question": "過学習とはどのような状態ですか？", "must_include": ["学習データ", "未知"]},
+    {"type": "known", "term": "エポック", "question": "エポックって何を数える単位ですか？", "must_include": ["学習データ"]},
+    {"type": "known", "term": "事前学習", "question": "事前学習ではモデルに何を予測させますか？", "must_include": ["次のトークン"]},
+    {"type": "known", "term": "トークン", "question": "トークンの意味を教えてください。", "must_include": ["単位"]},
+    {"type": "known", "term": "ハーネス", "question": "ハーネスって何のことですか？", "must_include": ["ループ", "ツール"]},
+    {"type": "known", "term": "answer.md", "question": "answer.mdには何を書きますか？", "must_include": ["演習", "宿題"]},
+    {"type": "known", "term": "既定モデル", "question": "既定モデルの名前を教えてください。", "must_include": ["gemini-3.5-flash-lite"]},
+
+    {"type": "paraphrase", "term": "ファインチューニング", "question": "fine-tuningではモデルに何をしますか？", "must_include": ["追加学習"]},
+    {"type": "paraphrase", "term": "教師ありファインチューニング（SFT）", "question": "指示チューニングにはどんなデータを使いますか？", "must_include": ["入力", "出力"]},
+    {"type": "paraphrase", "term": "PEFT", "question": "Parameter-Efficient Fine-Tuningの代表的な手法は何ですか？", "must_include": ["LoRA"]},
+    {"type": "paraphrase", "term": "学習率", "question": "learning rateを大きくしすぎるとどうなりますか？", "must_include": ["不安定"]},
+    {"type": "paraphrase", "term": "コンテキストウィンドウ", "question": "コンテキスト長は何を表す値ですか？", "must_include": ["トークン", "上限"]},
+    {"type": "paraphrase", "term": "ハルシネーション", "question": "LLMがもっともらしい嘘をつく現象は、どんなときに起きやすいですか？", "must_include": ["知らない"]},
+    {"type": "paraphrase", "term": "構造化出力", "question": "モデルの回答をJSONスキーマに沿って受け取ると何がうれしいですか？", "must_include": ["後処理"]},
+    {"type": "paraphrase", "term": "AIエージェント", "question": "AIのagentはどんな構造で動きますか？", "must_include": ["ループ", "ツール"]},
+    {"type": "paraphrase", "term": "Human-in-the-loop", "question": "HITLとはどのような仕組みですか？", "must_include": ["承認"]},
+    {"type": "paraphrase", "term": "宿題の3レベル", "question": "この講座の宿題にはどんな段階がありますか？", "must_include": ["基礎", "実装", "発展"]},
+
+    {"type": "unknown", "term": "RAG", "question": "RAGとは何ですか？", "must_include": []},
+    {"type": "unknown", "term": "RLHF", "question": "RLHFについて教えてください。", "must_include": []},
+    {"type": "unknown", "term": "RLVR", "question": "RLVRって何？", "must_include": []},
+    {"type": "unknown", "term": "CoT", "question": "CoTはどんな手法ですか？", "must_include": []},
+    {"type": "unknown", "term": "蒸留", "question": "LLMの蒸留とは何ですか？", "must_include": []},
+    {"type": "unknown", "term": "ナレッジカットオフ", "question": "ナレッジカットオフの意味を教えてください。", "must_include": []},
+    {"type": "unknown", "term": "プロンプトインジェクション", "question": "プロンプトインジェクションとはどんな攻撃ですか？", "must_include": []},
+    {"type": "unknown", "term": "迎合", "question": "LLMの迎合とはどんな性質ですか？", "must_include": []},
+    {"type": "unknown", "term": "継続事前学習", "question": "継続事前学習とは何ですか？", "must_include": []},
+    {"type": "unknown", "term": "Lost in the Middle", "question": "Lost in the Middleって何のことですか？", "must_include": []}
+  ]
+}

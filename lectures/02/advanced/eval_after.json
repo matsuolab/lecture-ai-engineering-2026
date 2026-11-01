@@ -1,0 +1,317 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 30,
+    "all_rate": 0.4,
+    "known_rate": 0.9,
+    "paraphrase_rate": 0.3,
+    "unknown_rate": 0.0,
+    "refused_on_answerable": 0.0,
+    "mean_similarity": 0.623,
+    "truncated": 0,
+    "seconds": 101.9,
+    "seconds_per_question": 3.4
+  },
+  "rows": [
+    {
+      "type": "known",
+      "term": "LoRA",
+      "question": "LoRAって何？",
+      "raw": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "QLoRA",
+      "question": "QLoRAはどんな手法ですか？",
+      "raw": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "量子化",
+      "question": "量子化の意味を教えてください。",
+      "raw": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "過学習",
+      "question": "過学習とはどのような状態ですか？",
+      "raw": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "エポック",
+      "question": "エポックって何を数える単位ですか？",
+      "raw": "学習データ全体を1エポックとして数えること。学習速度はデータ数×エポック/時間。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 0.494
+    },
+    {
+      "type": "known",
+      "term": "事前学習",
+      "question": "事前学習ではモデルに何を予測させますか？",
+      "raw": "大量の汎用テキストから、次のトークンを選べるLLMを学習させる最初の段階。言語の知識や一般的な常識の多くはここで身につく。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 0.864
+    },
+    {
+      "type": "known",
+      "term": "トークン",
+      "question": "トークンの意味を教えてください。",
+      "raw": "LLMがテキストを扱う最小単位。単語や文字の断片に分割される。APIの料金、レート制限、コンテキストウィンドウの大きさは、多くの場合トークン数で数える。日本語は英語より1文字あたりのトークン数が多くなりやすい。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "ハーネス",
+      "question": "ハーネスって何のことですか？",
+      "raw": "LLMの周りを、ループ・ツール・画面（UI）などで包み、実際に作業できるようにするプログラム。Claude CodeやPiはハーネスの例。Piは組み込みツールをread・write・edit・bashの4つに絞った薄いハーネスとして知られる。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "answer.md",
+      "question": "answer.mdには何を書きますか？",
+      "raw": "AIE2026で各回の演習・宿題の結果を書くファイル。lectures/NN/answer.md にあり、取り組んだレベル・やったこと・結果・気づきを記入して、作業ブランチから自分のforkの main へPRを出して提出する。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "known",
+      "term": "既定モデル",
+      "question": "既定モデルの名前を教えてください。",
+      "raw": "Hugging Faceのオープンソースモデルセット。公開の範囲とライセンスを誰にも知らずに使える。2.0で1.x系から破壊的変更が入っている。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.124
+    },
+    {
+      "type": "paraphrase",
+      "term": "ファインチューニング",
+      "question": "fine-tuningではモデルに何をしますか？",
+      "raw": "入力と出力の型やツールの引数に合ったデータで、次のトークンを選ぶ振る舞いを学習させる。出力が確率的なLLMでは、ランダムに選ぶが、入力・出力の型やツールを知らせて、モデルが予測する引数で呼び出すループを学習させるPrestoモデルに使う。学習結果をファイルで保存して、同じ入力で同じ出力を期待する。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.241
+    },
+    {
+      "type": "paraphrase",
+      "term": "教師ありファインチューニング（SFT）",
+      "question": "指示チューニングにはどんなデータを使いますか？",
+      "raw": "学習済みのモデルを、指示されたタスクでより良いモデルになる入力データ。例：質問応答のタスクでは、モデルが答えられるように用意したQとA。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.15
+    },
+    {
+      "type": "paraphrase",
+      "term": "PEFT",
+      "question": "Parameter-Efficient Fine-Tuningの代表的な手法は何ですか？",
+      "raw": "モデルのパラメータを少なくして学習する手法。同じタスクでも10億パラメータのモデルから3百万のモデルで学習でき、学習するデータやツールも減らせる。Pydantic AIでは llm.ParameterEfficientFT。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.307
+    },
+    {
+      "type": "paraphrase",
+      "term": "学習率",
+      "question": "learning rateを大きくしすぎるとどうなりますか？",
+      "raw": "学習データ全体を1周学習させる速度を減らせる。少しデータを足すだけで周を回すことができる。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.224
+    },
+    {
+      "type": "paraphrase",
+      "term": "コンテキストウィンドウ",
+      "question": "コンテキスト長は何を表す値ですか？",
+      "raw": "LLMが1回の呼び出しで扱える入力と出力の合計トークン数の上限。会話履歴やツールの結果もこの中に収める必要があるため、何をモデルに渡すかの設計が重要になる。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 1.0
+    },
+    {
+      "type": "paraphrase",
+      "term": "ハルシネーション",
+      "question": "LLMがもっともらしい嘘をつく現象は、どんなときに起きやすいですか？",
+      "raw": "質問者が想定している事実と異なること、または自分の知識に固有の事実。モデルが知らないこと（最新情報、組織や講座に固有の情報など）を聞いたときに起きやすい。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 0.535
+    },
+    {
+      "type": "paraphrase",
+      "term": "構造化出力",
+      "question": "モデルの回答をJSONスキーマに沿って受け取ると何がうれしいですか？",
+      "raw": "出力の長さや形式を決めるために使う。Claude DesktopやCursorではモデルが書き出し方の選択をさせる、Pydantic AIでは response の構造を指定する。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.314
+    },
+    {
+      "type": "paraphrase",
+      "term": "AIエージェント",
+      "question": "AIのagentはどんな構造で動きますか？",
+      "raw": "LLMが自分で判断してツールを呼び出し、その結果を見てさらに次の行動を決める、というループで目的を達成するシステム。1つのエージェントは複数のツールを呼び出し、結果を評価して次の行動を決める。",
+      "truncated": false,
+      "ok": true,
+      "refused": false,
+      "similarity": 0.728
+    },
+    {
+      "type": "paraphrase",
+      "term": "Human-in-the-loop",
+      "question": "HITLとはどのような仕組みですか？",
+      "raw": "LLMがツールを呼び出すためのプログラム。Pydantic AIでは tool_name にツールの名前を書ient。呼び分けの精度と料金に左右される。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.292
+    },
+    {
+      "type": "paraphrase",
+      "term": "宿題の3レベル",
+      "question": "この講座の宿題にはどんな段階がありますか？",
+      "raw": "講義内容の復習と確認、演習の開始と進め、結果の提出と評価。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": 0.179
+    },
+    {
+      "type": "unknown",
+      "term": "RAG",
+      "question": "RAGとは何ですか？",
+      "raw": "LLMを固定したモデルで、質問に続くようにツール呼び出しを繰り返す、というループで事実を確認・統合した結果を返す、という流れをプログラムで制御したシステム。外部のデータソースを呼び出してリアルタイムで更新できる。本講座の第3回演習では、BaseModelをPythonで定義し、質問に続くようにツールを呼ぶことでRAGを体験する。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "RLHF",
+      "question": "RLHFについて教えてください。",
+      "raw": "学習済みの基盤モデル（例えばLoRA-RLHFのa）をヘルスメントでツールや画面に付ける手法。モデルをより有用な方向へ方向づけ、評価する。本講座の第2回演習では、モデルをツールとして使う。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "RLVR",
+      "question": "RLVRって何？",
+      "raw": "ベースモデルの評価をデータで補完し、次のトークンを決めるためのツールをRLM（言語モデル）に渡す手法の総称。Pydantic AIでは requires_grad=False でモデルを渡す。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "CoT",
+      "question": "CoTはどんな手法ですか？",
+      "raw": "モデルが出力する最終回答を、質問者から見て前の処理や結論の付け合わせをモデルに渡す手法。回答の書き方や結論の順序をモデルが決定し、その後でユーザーに伝える。Pydantic AIでは CoT を指定した質問には「モデルの説明文」 as CoT を受け取る。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "蒸留",
+      "question": "LLMの蒸留とは何ですか？",
+      "raw": "入力と出力を交換するプロセス。モデルに入力を渡す→モデルがツール呼び出しを返す→プログラムで結果を返す。結果が正しいとは限らない（ツールが存在するか、呼び出しの書き方、環境変数などによって変わる）。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "ナレッジカットオフ",
+      "question": "ナレッジカットオフの意味を教えてください。",
+      "raw": "LLMが文章を2つに分けるための上限。前半はモデルが扱う事実，後半はモデルが造る内容。利用者が気にしない範囲をモデルに渡すことで出力を品質で判断する。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "プロンプトインジェクション",
+      "question": "プロンプトインジェクションとはどんな攻撃ですか？",
+      "raw": "LLMに渡す入力文を、エージェントのプログラムやツールを渡す入力文にすること。ツールを呼び出す前に使うため、モデルに渡す質問ではなく、指示の先線となる。モデルが読まないので、コードの書き方やツール名の付け方、呼び出しの仕方次第で攻撃の成功率が大きく変わる。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "迎合",
+      "question": "LLMの迎合とはどんな性質ですか？",
+      "raw": "質問の意図や制約を、特定の出力形式や言語に合わせる、という方向の学習。正しい回答を多く見せるが、探索の方向を偏る可能性がある。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "継続事前学習",
+      "question": "継続事前学習とは何ですか？",
+      "raw": "学習データ全体を1回の呼び出しで扱えるように設定したモデル。回数を増やし続けるが、評価と調整の頻度は少ない。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    },
+    {
+      "type": "unknown",
+      "term": "Lost in the Middle",
+      "question": "Lost in the Middleって何のことですか？",
+      "raw": "LLMの学習支援データ。学習済みのモデルを、事故の前後の2つの文章をまたいで、どちらの書き方にも応答するツール。事故の前後の2つを同じ「質問-回答」のサイクルに収めることで、モデルがどちらの書き方にも柔軟に調整できる。2つの文章をまたいでもよい（例：Q&A、TVシナリオの2つをまたいで、レポートの2つをまたいで）。",
+      "truncated": false,
+      "ok": false,
+      "refused": false,
+      "similarity": null
+    }
+  ]
+}
