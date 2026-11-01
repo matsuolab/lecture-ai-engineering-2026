@@ -4,7 +4,6 @@
     uv run python -m app.ask "LoRAとは何ですか？"
     uv run python -m app.ask            # 質問を省略すると、講座に固有の質問をする
 
-ツールも会話履歴も持たない「素の」呼び出し。
 講座に固有のことを聞くと、「分からない」と答えるか、一般論でもっともらしく答える
 （講座の実際とは違う）ことを確かめよう。
 （第3回で、用語集を検索できるエージェントにして改善する）
@@ -37,7 +36,9 @@ def ask(question: str,temperature: float | None = None) -> str:
         print(f"[出力トークン数] {usage.candidates_token_count}")
 
     return response.text
-def chat_loop():
+
+
+def chat_loop()->None:
     history=[]
     
     client = genai.Client(api_key=get_api_key())
@@ -48,15 +49,18 @@ def chat_loop():
         user_message=[types.Content(role="user",parts=[types.Part(text=text)])]
     
         messages=history+user_message
-        response = client.models.generate_content(
-                model=MODEL, 
-                contents=messages,
-            )
-        print(response.text)
-        model_message=[types.Content(role="model",parts=[types.Part(text=response.text)])]
-        history+=user_message
-        history+=model_message   
-        print(history) 
+        try:
+            response = client.models.generate_content(
+                    model=MODEL, 
+                    contents=messages,
+                )
+            print(response.text)
+            model_message=[types.Content(role="model",parts=[types.Part(text=response.text)])]
+            history+=user_message
+            history+=model_message    
+        except errors.APIError as e:
+            print(api_error_message(e.code, e.message))
+        
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
