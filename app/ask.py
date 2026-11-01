@@ -38,6 +38,16 @@ def ask(question: str) -> str:
 
     return response.text
 
+def chat(first_question: str) -> None:
+    client = genai.Client(api_key=get_api_key())
+    session = client.chats.create(model=MODEL)
+    question = first_question
+    while question:
+        response = session.send_message(message=question)
+        print(response.text)
+        usage = response.usage_metadata
+        print(f"[tokens] 入力 {usage.prompt_token_count}/ 出力 {usage.candidates_token_count}")
+        question = input("\n[続けて質問（空行で終了）] ").strip()
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
