@@ -1,5 +1,5 @@
-# 第2回 解答　発展編
-2026・10・31
+# 第2回 解答　実装編
+2026・10・31　https://colab.research.google.com/drive/1YMLbEH_RWGOAIBnfwhJPKsLqba1GTa9q?usp=sharing
 ## 宿題（実装レベル）
 
 ### 取り組んだレベル
