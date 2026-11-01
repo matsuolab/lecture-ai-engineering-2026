@@ -88,3 +88,11 @@ AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
 無料枠には1分あたり・1日あたりのリクエスト上限があります。上限は [Gemini API のレート制限のページ](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。
+
+同じ質問を3つのモデルに送り、応答時間・入力/出力トークン数・回答を比較できます。
+既定では `AIE_MODEL`（未設定なら `gemini-3.5-flash-lite`）、`gemini-3.5-flash`、`gemini-3.1-flash-lite` を使います。
+
+```bash
+uv run python -m app.ask "LoRAとは何ですか？"
+uv run python -m app.ask --models gemini-3.5-flash-lite gemini-3.5-flash gemini-3.1-flash-lite "LoRAとは何ですか？"
+```
