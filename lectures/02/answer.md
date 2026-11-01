@@ -30,10 +30,16 @@
 ## 宿題
 
 ### 取り組んだレベル：基礎 / 実装 / 発展
-* ？？？
+* 基礎
 
 ### 変えた設定やデータ：
-* ？？？
+* 課題は、CONFIG の lora_r、lr、num_train_epochs のどれか 1 つを変えて再学習し、format_rate、content_rate、最終 loss、学習時間を元の設定と並べて記録する。変えたら ランタイム → セッションを再起動 して上から実行する（学習後のモデルが残っているため）。result.json を 2 つ比べる
+* 下表の「00」…提供されたプログラムを起動し、内容を理解。
+* 「01」「02」「03」…lora_r、lr、num_train_epochs を各々変更。lora_r、num_train_epochsは結果に差異がなく、lr は学習時間も短く、評価指標が大きく低下した。
+* 「04」「05」…lr を逆方向に振り最適値を「3.00E-4」とした。
+* 「06」「07」…lr を固定し、num_train_epochs の最適値を探す。
+* 「08」…lr、num_train_epochs lr を固定し、num_train_epochs lora_r の最適値を探す。
+* 結果として、「05」のlora_r=16、lr=3.00E-4、num_train_epochs=20 を最適値とした。
 
 ### 結果（比較表や数字）：
 
