@@ -3,6 +3,7 @@
 ## 演習
 
 - 使ったモデル・設定（`result.json` の `config` から）：
+- Qwen/Qwen3.5-0.8B (revision: 2fc06364715b967f1860aea9cf38778875588b17)
 - 自分で学習を実行したか（`executed_training_myself`）：はい / いいえ（実行できた範囲：　）
 - はい
 - 学習前：`format_rate` =　1.0　 / `content_rate` =　0.9048
