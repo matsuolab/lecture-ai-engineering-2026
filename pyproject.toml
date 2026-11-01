@@ -8,6 +8,7 @@ requires-python = ">=3.12"
 dependencies = [
     "google-genai==2.31.0",
     "pydantic-ai-slim[google,mcp]==2.57.0",  # mcp は第5回（MCP サーバー・クライアント）で使う
+    "python-dotenv>=1.2.4",
 ]
 
 [dependency-groups]
