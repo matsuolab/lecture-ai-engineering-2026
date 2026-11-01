@@ -1,5 +1,5 @@
-# 第2回 解答
-2026・10・31
+# 第2回 解答　基礎編
+2026・10・31　https://colab.research.google.com/drive/1QnK9OiorCagV5mfN8aDJQTP6TBVvSebZ?usp=sharing
 ## 演習
 - 使ったモデル・設定（`result.json` の `config` から）：Qwen/Qwen3.5-0.8B、LoRA（量子化なし）、lora_r=16、lora_alpha=32、lr=2e-4、num_train_epochs=20（40 ステップ）、seed=42、貪欲生成。Colab T4
 - 自分で学習を実行したか（`executed_training_myself`）：はい（学習時間 227 秒、最終 loss 0.014、trainable params 6,389,760 = 全体の 0.84%）
