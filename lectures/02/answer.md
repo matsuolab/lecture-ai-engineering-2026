@@ -16,16 +16,16 @@
 - 取り組んだレベル：基礎
 - 変えた設定やデータ：num_train_epochs を20から50に増やした。
 - 結果（比較表や数字）：  
- 【変更前（num_train_epochs=20）】
-  format_rate：1.000000
-  content_rate：0.904762
-  最終 loss：0.014056
+ 【変更前（num_train_epochs=20）】  
+  format_rate：1.000000  
+  content_rate：0.904762  
+  最終 loss：0.014056  
   学習時間：238 秒  
 
  【変更後（num_train_epochs=50）】  
-  format_rate：1.000000
-  content_rate：0.857143
-  最終 loss：0.010768
+  format_rate：1.000000  
+  content_rate：0.857143  
+  最終 loss：0.010768  
   学習時間：626 秒
 
 - ファインチューニングが向く場面・向かない場面についての考察：  
