@@ -12,3 +12,6 @@ learning_log/
 
 # macOS
 .DS_Store
+
+# Local experiment outputs
+/outputs/

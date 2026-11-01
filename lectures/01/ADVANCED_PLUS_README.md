@@ -49,14 +49,14 @@ uv run python -m scripts.lec01_advanced run \
 ### 3. 本実験（初回54リクエスト）
 
 ```bash
-uv run python -m scripts.lec01_advanced run --pause 5
+uv run python -m scripts.lec01_advanced run --pause 20
 ```
 
 無料枠や契約状況によっては54回すべてを実行できない場合がある。429や503を含む失敗も記録するので、実行不能だったリクエストは無理に成功扱いしない。実行中断後、**同じコマンド**で再開できる（成功分をスキップ）。**モデルや質問・反復回数を変える場合は別の出力ディレクトリを使う**。
 
 *注*: `run` は実行済み結果を `answer.md` 内の専用マーカー範囲に転記する。スモークテストでも一時的にこの欄が更新されるため、**本実験後に再度 `run` を実行して上書きすること**。
 
-### 4. 正確性・ハルシネーションを手動評価
+### 4. 正確性・ハルシネーションを評価
 
 `outputs/lec01_advanced/review.csv` を表計算ソフトなどで開き、各回答について `accuracy_score` と `hallucination` を記入する。
 
@@ -67,7 +67,7 @@ uv run python -m scripts.lec01_advanced run --pause 5
 - `hallucination=no`：誤った事実の断定はない（「不明」も含む）
 - `hallucination=unclear`：資料だけでは確定できない
 
-ルールを先に決めてから採点し、正確性とハルシネーションを混同しない。回答の採点はモデルに依頼せず、出典を確認して人手で行う。可能なら回答の条件名を隠した別の評価者にも採点してもらい、一致度を確認すると研究としての説得力が上がる。
+ルールを先に決めてから採点し、正確性とハルシネーションを混同しない。今回の44回答はAIによる一次採点であり、独立した人手確認は未実施。可能なら回答の条件名を隠した別の評価者にも採点してもらい、一致度を確認すると研究としての説得力が上がる。
 
 ```bash
 uv run python -m scripts.lec01_advanced analyze
@@ -82,7 +82,7 @@ uv run python -m scripts.lec01_advanced analyze
 | `measurements.csv` | 呼び出しごとの所要時間、トークン数、成否（APIキーは含めない） |
 | `responses.jsonl` | 再現・事後分析用の応答本文 |
 | `manifest.json` | 実行条件、seed、用語集SHA-256 |
-| `review.csv` | 監査可能な人手採点表 |
+| `review.csv` | 採点記録（今回の44件はAI一次採点） |
 | `summary.md` | 条件別記述統計とペア差、考察上の制限 |
 | `comparison.svg` | レイテンシと総トークン数の比較図 |
 
