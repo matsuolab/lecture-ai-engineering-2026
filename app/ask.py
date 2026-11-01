@@ -11,39 +11,53 @@
 """
 
 import argparse
-
+import sys
+import time  # 1. タイムモジュールのインポートを確認
+from app.config import get_api_key, MODEL
 from google import genai
 from google.genai import errors
 
-from app.config import MODEL, api_error_message, get_api_key
-
-# 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
-
-def ask(question: str) -> str:
+def chat(first_question: str) -> None:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
-
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
-    return response.text
-
+    session = client.chats.create(model=MODEL)
+    
+    question = first_question
+    while question:
+        print(f"[質問] {question}\n")
+        
+        # 2. リクエスト送信前の時刻を記録
+        start_time = time.time()
+        
+        # 履歴を含めてモデルに送信
+        response = session.send_message(question)
+        
+        # 3. レスポンス受信後の時刻を記録し、経過時間を計算
+        elapsed_time = time.time() - start_time
+        minutes = int(elapsed_time // 60)
+        seconds = int(elapsed_time % 60)
+        
+        print(response.text)
+        
+        # 4. トークン数とレスポンス時間を一緒に出力する
+        if response.usage_metadata:
+            usage = response.usage_metadata
+            print(f"\n[tokens] 入力: {usage.prompt_token_count} / 出力: {usage.candidates_token_count}  |  [レスポンス時間: {minutes}分{seconds:02d}秒]")
+        
+        question = input("\n[続けて質問（空行で終了）]: ").strip()
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    parser = argparse.ArgumentParser(description="素のLLMに質問する（チャット履歴対応）")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
-    args = parser.parse_args()
-
-    print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
+    
     try:
-        print(ask(args.question))
+        args = parser.parse_args()
+        print(f"[model] {MODEL}")
+        chat(args.question)
+        
     except errors.APIError as e:
-        print(api_error_message(e.code, e.message))
-        raise SystemExit(1)
-
+        print(f"\n[API Error] {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
