@@ -106,7 +106,6 @@ def print_trace(result) -> None:
                 print(f"[tool call]   {part.tool_name}({part.args})")
             elif isinstance(part, ToolReturnPart):
                 print(f"[tool return] {part.tool_name} -> {str(part.content)[:120]}…")
-    print(f"[usage] {result.usage}")
 
 
 def main() -> None:
@@ -133,6 +132,8 @@ def main() -> None:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
     print(result.output)
+    usage = result.usage
+    print(f"[tokens] input={usage.input_tokens} output={usage.output_tokens}")
     if args.trace:
         print_trace(result)
 
