@@ -73,3 +73,6 @@ Technically speaking:
 
 In short, LoRA is the technology that democratized AI customization, allowing developers and hobbyists to train powerful, specialized AI models from their home computers.
 === RUN 3 (Flash) ===
+[model] gemini-3.8-flash
+[質問] What is LoRA?
+
