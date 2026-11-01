@@ -38,12 +38,25 @@ def ask(question: str,temperature: float | None = None) -> str:
 
     return response.text
 def chat_loop():
+    history=[]
+    
+    client = genai.Client(api_key=get_api_key())
     while True:
         text=input("あなた＞")
         if text=="exit":
             break
-        print(text)
+        user_message=[types.Content(role="user",parts=[types.Part(text=text)])]
     
+        messages=history+user_message
+        response = client.models.generate_content(
+                model=MODEL, 
+                contents=messages,
+            )
+        print(response.text)
+        model_message=[types.Content(role="model",parts=[types.Part(text=response.text)])]
+        history+=user_message
+        history+=model_message   
+        print(history) 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
