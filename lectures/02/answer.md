@@ -3,11 +3,11 @@
 ## 演習
 
 - 使ったモデル・設定（`result.json` の `config` から）：<br>
-  base_model：Qwen/Qwen3.5-0.8B
-  Lora設定：r=16、lora_alpha = 32
-  lr：0.0002
-  num_train_epochs：20
-  seed：42
+  base_model：Qwen/Qwen3.5-0.8B<br>
+  Lora設定：r=16、lora_alpha = 32<br>
+  lr：0.0002<br>
+  num_train_epochs：20<br>
+  seed：42<br>
 - 自分で学習を実行したか（`executed_training_myself`）：はい
 - 学習前：`format_rate` =　0.095238 / `content_rate` =　0.000000
 - 学習後：`format_rate` =　1.000000 / `content_rate` =　0.904762
