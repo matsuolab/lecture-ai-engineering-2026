@@ -1,0 +1,75 @@
+=== RUN 1 (Lite) ===
+[model] gemini-3.5-flash-lite
+[質問] What is LoRA?
+
+**LoRA** stands for **Low-Rank Adaptation**. It is a popular and efficient technique used in machine learning—specifically in the field of Large Language Models (LLMs) and Generative AI—to **fine-tune** massive models quickly and cheaply.
+
+To understand why LoRA is such a big deal, it helps to look at the problem it solves.
+
+---
+
+### The Problem: Fine-Tuning is Expensive
+Imagine you want to teach a massive AI model (like LLaMA or GPT) a specific skill, such as medical diagnosis or writing in the exact style of Shakespeare. 
+
+* **Full Fine-Tuning:** Traditionally, you would adjust *all* the parameters (weights) of the model. For a model with 70 billion parameters, this requires massive amounts of GPU memory, time, and electricity, often costing thousands of dollars per training run.
+* **Prompt Engineering:** You can give the model instructions in the prompt, but this has limitations and doesn't fundamentally change the model's underlying knowledge.
+
+### The Solution: How LoRA Works
+LoRA takes a smarter, more efficient shortcut. Instead of modifying all billions of parameters in the original model, **LoRA freezes the original model completely** and attaches a tiny, separate set of trainable parameters (called "adapters") alongside it.
+
+Here is an analogy:
+* Think of the original AI model as a **massive, heavy-duty truck**. Changing all its parts to make it go faster is difficult and expensive.
+* LoRA is like attaching a **small, lightweight booster engine** to the back of the truck. You don't touch the main truck; you just train the booster engine to do the specific new task.
+
+### Key Benefits of LoRA
+
+1. **Massive Reduction in Memory and Storage:** 
+   * A full fine-tune of a large model might require multiple enterprise-grade GPUs with hundreds of gigabytes of VRAM. 
+   * A LoRA adapter can often be trained on a single consumer GPU (like an RTX 3090/4090).
+   * While the original model might be **14 Gigabytes**, the LoRA file is often just **10 to 100 Megabytes**.
+
+2. **Modularity and Easy Swapping:**
+   Because LoRA files are so small, you can train one LoRA to write poetry, another to write Python code, and a third to speak medical jargon. You can keep the main AI model constant and simply "swap out" the tiny LoRA file depending on what task you want the AI to perform.
+
+3. **No Inference Latency:** 
+   Once training is complete, the LoRA weights can be mathematically merged back into the original model's weights. This means the model runs at its original speed with no slowdown.
+
+### Where is LoRA used?
+* **Stable Diffusion:** Used heavily by the AI art community to create custom characters, art styles, or objects (often called "LoRAs" on sites like Civitai).
+* **Large Language Models:** Used to adapt open-source models like Meta's LLaMA, Mistral, or Google's Gemma for specific tasks, company guidelines, or conversational styles.
+=== RUN 2 (Lite) ===
+[model] gemini-3.5-flash-lite
+[質問] What is LoRA?
+
+**LoRA** stands for **Low-Rank Adaptation**. It is a popular and efficient technique used in machine learning—specifically in the field of Large Language Models (LLMs) and Generative AI—to **fine-tune** massive pre-trained models without spending a fortune on computing power.
+
+Here is a breakdown of what it is, how it works, and why it matters.
+
+---
+
+### 1. The Problem LoRA Solves
+Imagine you have a massive AI model like GPT-4 or Llama (which might have 70 billion parameters). 
+* **Full Fine-Tuning:** Traditionally, if you want to teach this model a specific new skill (e.g., medical diagnosis or writing in the style of Shakespeare), you have to adjust *all* 70 billion parameters. This requires massive computer clusters, lots of time, and is very expensive.
+* **Prompt Engineering:** You can give the model instructions in the chat box, but this has limitations and doesn't fundamentally change the model's underlying knowledge.
+
+### 2. How LoRA Works (The Analogy)
+Instead of rewriting the entire textbook (the base model), LoRA keeps the original textbook locked and untouched. Instead, it adds **sticky notes** to the pages.
+
+Technically speaking:
+* During traditional fine-tuning, the AI updates a huge matrix of weights.
+* LoRA freezes the original weights of the model. 
+* It then injects a much smaller set of trainable weights (called "low-rank matrices") alongside the original layers.
+* During training, **only these small new matrices are updated**. 
+
+### 3. Key Benefits of LoRA
+* **Massive Cost Savings:** You can fine-tune models on a single consumer-grade graphics card (like an NVIDIA RTX 4090) instead of a server room full of enterprise GPUs.
+* **Smaller File Sizes:** A full fine-tuned model requires saving a whole new multi-gigabyte version of the AI. A LoRA file (often called a "LoRA weight" or "adapter") is usually just **megabytes** in size.
+* **Easy Switching:** You can keep one giant base model loaded in memory and hot-swap different LoRAs instantly. For example, you could switch from a "Medical LoRA" to a "Coding LoRA" in a fraction of a second.
+* **No Performance Loss:** Research shows that LoRA achieves results very close to traditional, full-scale fine-tuning.
+
+### 4. Where is LoRA used?
+* **Text AI:** Training open-source models like Llama, Mistral, or Gemma to follow specific instructions, adopt certain personalities, or speak specific languages.
+* **Image Generation:** AI art tools like **Stable Diffusion** use LoRs extensively. If you want an image generator to draw a specific anime character, a specific person, or a unique art style, you download a 50MB LoRA file for it rather than training a whole new image model. 
+
+In short, LoRA is the technology that democratized AI customization, allowing developers and hobbyists to train powerful, specialized AI models from their home computers.
+=== RUN 3 (Flash) ===
