@@ -1,0 +1,108 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 20,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 96,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.11.0+cu130"
+  },
+  "method": "LoRA（量子化なし）",
+  "before": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.09523809523809523,
+    "content_rate": 0,
+    "both_rate": 0,
+    "seconds": 42.3
+  },
+  "after": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1,
+    "content_rate": 0.8571428571428571,
+    "both_rate": 0.8571428571428571,
+    "seconds": 44.9
+  },
+  "regressed": [],
+  "knowledge": [
+    {
+      "質問": "この講座の最終課題の締切はいつですか",
+      "学習前の分類": "format_error",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"課題の提出期限は 9 月 30 日 23:59（日本時間）です。\", \"needs_review\": false}"
+    },
+    {
+      "質問": "担当教員の名前は何ですか",
+      "学習前の分類": "format_error",
+      "学習後の分類": "needs_review"
+    },
+    {
+      "質問": "次回の講義のテーマは何ですか",
+      "学習前の分類": "format_error",
+      "学習後の分類": "needs_review"
+    },
+    {
+      "質問": "課題の提出期限はいつですか",
+      "学習前の分類": "format_error",
+      "学習後の分類": "asserted"
+    }
+  ],
+  "executed_training_myself": true,
+  "train": {
+    "final_loss": 0.013736481964588165,
+    "loss_log": [
+      [
+        10,
+        1.5607998847961426
+      ],
+      [
+        20,
+        0.08421239852905274
+      ],
+      [
+        30,
+        0.018376876413822175
+      ],
+      [
+        40,
+        0.013736481964588165
+      ]
+    ],
+    "train_runtime_sec": 246.4,
+    "train_loss_avg": 0.4192814104259014,
+    "steps": 40,
+    "epochs": 20
+  },
+  "after_failures": [
+    [
+      "成績はいつ出ますか",
+      true,
+      "{\"answer\": \"提出期限は 9 月 30 日 23:59（日本時間）です。\", \"needs_review\": false}"
+    ],
+    [
+      "課題の文字数に制限はありますか",
+      true,
+      "{\"answer\": \"提出形式は PDF 1 ファイルで、ファイル名は 学籍番号_課題番号.pdf です。\", \"needs_review\": false}"
+    ],
+    [
+      "オフィスアワーは事前予約が必要ですか",
+      true,
+      "{\"answer\": \"質問は毎週火曜 17:00〜18:00 のオフィスアワーで受け付けます。\", \"needs_review\": false}"
+    ]
+  ],
+  "note": "Colab の出力から復元。after_failures は [質問, 正解の needs_review, 学習後の出力]。knowledge の学習前出力は省略"
+}
