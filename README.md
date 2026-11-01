@@ -30,6 +30,8 @@ uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
+`app.ask` は1回の起動につき1つ質問し、会話履歴を `.ask_history.json` に保存します。履歴を消すには `uv run python -m app.ask --reset-history` を実行してください。
+
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
