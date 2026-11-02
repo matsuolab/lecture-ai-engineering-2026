@@ -16,7 +16,11 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import (
+    Agent,
+    DeferredToolRequests,
+    DeferredToolResults,
+)
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -35,14 +39,27 @@ INSTRUCTIONS = """\
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 利用者が学習内容の保存を依頼したら、save_learning_log を直ちに呼び出す。
+- 保存前の承認確認はプログラムが自動的に行うため、ツールを呼び出す前に文章で許可を尋ねない。
+- ツールの結果を確認し、保存されなかった場合は保存済みと報告しない。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests],
+)
+
+# 第3回演習：既存ツールと確認問題作成ツール
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(tools.make_quiz)
 
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+# 第3回宿題：承認付きの学習ログ保存ツール
+agent.tool_plain(
+    tools.save_learning_log,
+    requires_approval=True,
+)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -127,14 +144,69 @@ def main() -> None:
     print(f"[model] {MODEL}")
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
+
     try:
-        result = target.run_sync(args.question, model=build_model())
+        model = build_model()
+
+        # 最初にエージェントを実行する
+        result = target.run_sync(
+            args.question,
+            model=model,
+        )
+
+        # 承認待ちのツールがあれば処理する
+        while isinstance(result.output, DeferredToolRequests):
+            requests = result.output
+
+            # 今回の宿題では外部実行ツールは扱わない
+            if requests.calls:
+                print("未対応の外部実行ツールがあります。")
+                return
+
+            if not requests.approvals:
+                print("承認対象が見つかりません。")
+                return
+
+            approval_results = DeferredToolResults()
+
+            # 保存する内容を表示して利用者に尋ねる
+            for call in requests.approvals:
+                print("\n--- 保存前の確認 ---")
+                print(f"ツール名: {call.tool_name}")
+                print(f"保存内容: {call.args}")
+
+                answer = input(
+                    "保存を許可しますか？ [y/N]: "
+                ).strip().lower()
+
+                approved = answer in ("y", "yes")
+
+                approval_results.approvals[
+                    call.tool_call_id
+                ] = approved
+
+            # 承認・拒否の結果を渡して再開する
+            result = target.run_sync(
+                message_history=result.all_messages(),
+                deferred_tool_results=approval_results,
+                model=model,
+            )
+
     except ModelHTTPError as e:
-        print(api_error_message(e.status_code, str(e.body)[:200]))
+        print(
+            api_error_message(
+                e.status_code,
+                str(e.body)[:200],
+            )
+        )
         raise SystemExit(1)
+
+    # 最終的な回答を表示する
     print(result.output)
+
     if args.trace:
         print_trace(result)
+
 
 
 if __name__ == "__main__":
