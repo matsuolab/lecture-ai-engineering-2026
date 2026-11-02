@@ -22,6 +22,98 @@
 
 - 取り組んだレベル：基礎
 - 変えた設定やデータ：FAQ と学習条件は元のままにし、`CONFIG["lora_r"]` だけを 16 から 4、8、32、64 に変えて再学習した。`lora_alpha=32` は固定した。
+- 検証に使った追加コード：
+
+  ```python
+  import gc, time, torch, pandas as pd
+  from peft import LoraConfig
+  from trl import SFTTrainer, SFTConfig
+  from datasets import Dataset
+  from transformers import AutoModelForCausalLM
+
+  # セクション3で読み込んだ学習前モデルは評価済みなので、メモリ節約のため外す
+  del model
+  gc.collect()
+  torch.cuda.empty_cache()
+
+  def to_chat(example):
+      return {"messages": build_messages(example) + [{"role": "assistant", "content": example["target"]}]}
+
+  train_ds = Dataset.from_list([to_chat(e) for e in train])
+  valid_ds = Dataset.from_list([to_chat(e) for e in valid])
+
+  results = []
+  for r in [4, 8, 16, 32, 64]:
+      print(f"===== lora_r = {r} =====")
+      base = AutoModelForCausalLM.from_pretrained(
+          CONFIG["base_model"], revision=CONFIG["revision"], dtype=torch.float32
+      ).to(DEVICE)
+      base.config.use_cache = False
+      lora = LoraConfig(
+          r=r,
+          lora_alpha=CONFIG["lora_alpha"],  # alpha は 32 に固定（変えるのは r だけ）
+          lora_dropout=0.05,
+          bias="none",
+          task_type="CAUSAL_LM",
+          target_modules=[
+              "q_proj", "k_proj", "v_proj", "o_proj",
+              "gate_proj", "up_proj", "down_proj",
+          ],
+      )
+      sft = SFTConfig(
+          output_dir=str(WORK / f"ckpt_r{r}"),
+          num_train_epochs=CONFIG["num_train_epochs"],
+          per_device_train_batch_size=4,
+          gradient_accumulation_steps=2,
+          learning_rate=CONFIG["lr"],
+          lr_scheduler_type="cosine",
+          warmup_steps=CONFIG["warmup_steps"],
+          logging_steps=10,
+          save_strategy="no",
+          max_length=CONFIG["max_seq_len"],
+          packing=False,
+          report_to="none",
+          seed=CONFIG["seed"],
+      )
+      trainer = SFTTrainer(
+          model=base,
+          args=sft,
+          train_dataset=train_ds,
+          eval_dataset=valid_ds,
+          peft_config=lora,
+          processing_class=tok,
+      )
+      t0 = time.time()
+      trainer.train()
+      train_sec = round(time.time() - t0, 1)
+
+      m = trainer.model
+      m.config.use_cache = True
+      m.eval()
+      summary, _ = evaluate(m, f"after_r{r}")
+      final_loss = next(
+          h["loss"] for h in reversed(trainer.state.log_history) if "loss" in h
+      )
+      results.append({
+          "lora_r": r,
+          "format_rate": summary["format_rate"],
+          "content_rate": summary["content_rate"],
+          "final_loss": final_loss,
+          "train_sec": train_sec,
+          "steps": trainer.state.global_step,
+      })
+
+      del trainer, m, base
+      gc.collect()
+      torch.cuda.empty_cache()
+
+  df = pd.DataFrame(results)
+  display(df)
+  (WORK / "lora_r_sweep.json").write_text(
+      df.to_json(orient="records", force_ascii=False, indent=2),
+      encoding="utf-8",
+  )
+  ```
 - 結果（比較表や数字）：
 
   | LoRA rank | trainable params（計算値） | format_rate | content_rate | 最終 loss | 学習時間 | steps |
