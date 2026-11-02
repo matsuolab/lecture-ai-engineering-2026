@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.7619047619047619,
+    "both_rate": 0.7619047619047619,
+    "seconds": 82.6
+  },
+  "rows": [
+    {
+      "question": "プロンプトについて簡単に説明してください。",
+      "raw": "{\"answer\": \"LLMに渡す入力文。質問だけでなく、役割、制約、出力形式、例などを含めることで出力を方向づけられる。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Codespaces secretについて簡単に説明してください。",
+      "raw": "{\"answer\": \"GitHubのアカウント設定に登録しておく秘密の値。指定したrepoのCodespacesを起動すると環境変数として渡される。登録時に使うrepo（自分のfork）を選ぶ必要がある。起動中に登録した場合はCodespacesの再起動が必要。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ツールの名前空間について簡単に説明してください。",
+      "raw": "{\"answer\": \"Pythonの包み Around（pydns、pydns_http、pydns_ai）で使うツールやサービスの名前を指定する仕組み。同じツールを different.py の different_namespace で扱える。本講座では different.py の namespace=dns で公開する。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「LLM（大規模言語モデル）」とは何ですか？",
+      "raw": "{\"answer\": \"大量のテキストで学習し、入力に続くトークンを予測することで文章を生成するモデル。質問応答、要約、コード生成など多くのタスクを、指示（プロンプト）を変えるだけでこなせる。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "AIエージェントについて簡単に説明してください。",
+      "raw": "{\"answer\": \"LLMが自分で判断してツールを呼び出し、その結果を見てさらに次の行動を決める、というループで目的を達成するシステム。基本構造は「モデル＋ループ＋ツール」。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ブランチについて簡単に説明してください。",
+      "raw": "{\"answer\": \"作業の流れを分けるための仕組み。main を壊さずに変更を試し、まとまったらPRで main に取り込む。本講座では回ごとに lec01 のような作業ブランチを作る。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "MCPクライアントについて簡単に説明してください。",
+      "raw": "{\"answer\": \"MCPサーバーに接続し、公開されたツールをモデルに渡して、モデルの指示でツールを呼び出す側。エージェントのプログラム（Pydantic AIの MCPToolset）や、Copilot Chat・Claude Desktop・Cursorなどのエディタやアプリがクライアントになる。同じサーバーをどのクライアントからも使えるのがMCPの利点。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「宿題の3レベル」とは何ですか？",
+      "raw": "{\"answer\": \"AIE2026の宿題の構成。「基礎（講義内容の確認）」「実装（自分でコードを書く）」「発展（調査や試行）」の3段階があり、どれか1つに取り組めばその回の宿題は完了。原則として採点はしない。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Piについて簡単に説明してください。",
+      "raw": "{\"answer\": \"ターミナルで動くオープンソース（MITライセンス）のコーディングエージェント。最小限の機能とシステムプロンプトで構成し、利用者が拡張して使う設計。2026年10月に1.0が公開された。npmのパッケージ名は @earendil-works/pi-coding-agent。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「動的推論ロードバランサー」について簡単に説明してください。",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「ツールの名前空間」とは何ですか？",
+      "raw": "{\"answer\": \"Pythonの包み殻（module）で、特定の用途のツールを定義する名前。例：http、filesystem、numpy。本講座では「ツールが書かれたファイルの場所」という実体ではなく、その名前空間来判断。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「devcontainer」とは何ですか？",
+      "raw": "{\"answer\": \"GitHubのアカウント設定に登録しておく容器。登録時に選ぶべきOSや構成ファイルは、repoの構成ファイルと同じものではなく、別のものを選ぶ必要がある。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「セッション分離モデル」について簡単に説明してください。",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロトコル・プロキシ」とは何ですか？",
+      "raw": "{\"answer\": \"MCPのメッセージ伝送を第三者に渡す仕組み。クライアントがツールを呼び出す前に、このプロトコルでツールを受け取る側のプログラム（やエージェント）を認識し、実際に呼ぶ。本講座では「MCPサーバー」というプロトコルを公開する側のプログラムとして扱う。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "ツールの説明文について簡単に説明してください。",
+      "raw": "{\"answer\": \"ツールの用途や引数の意味をモデルに伝える文章。Pydantic AIでは関数のdocstringと型ヒントから自動で作られる。モデルはこれを読んでツールを使うか、どの引数で呼ぶかを決めるので、書き方次第で挙動が大きく変わる。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "評価と改善のサイクルについて簡単に説明してください。",
+      "raw": "{\"answer\": \"作る→測る→直すを繰り返す開発の進め方。AIアプリは出力が確率的に揺れるため、感覚ではなく評価データや指標で良し悪しを判断し、その結果をもとにプロンプト・データ・モデル・ツールを改善する。本講座では学習支援エージェントを題材に、回をまたいでこのサイクルを回す。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "システムプロンプトについて簡単に説明してください。",
+      "raw": "{\"answer\": \"利用者の質問とは別に、モデルの振る舞い（役割、口調、守るべきルールなど）を指定する入力。Pydantic AIでは Agent の instructions 引数で与える。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「MCP（Model Context Protocol）」とは何ですか？",
+      "raw": "{\"answer\": \"AIアプリと外部のツールやデータソースをつなぐためのオープンな標準プロトコル。MCPサーバーとして公開したツールは、対応する様々なエージェントやエディタ（エディタが持つ）で共通の方法で使える。第5回で、用語集の検索をMCPサーバーにして体験する。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「temperature」とは何ですか？",
+      "raw": "{\"answer\": \"次のトークンを選ぶときのランダムさを調整する設定値。低いほど出力が安定し、高いほど多様になる。同じ質問でも回答が変わる理由の一つ。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「ランク（LoRAのr）」とは何ですか？",
+      "raw": "{\"answer\": \"LoRAで使う低ランク行列の大きさを決めるハイパーパラメータ。大きいほど表現力が上がるが、学習するパラメータとメモリも増える。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ハルシネーションについて簡単に説明してください。",
+      "raw": "{\"answer\": \"LLMが周りを円弧のように動くとき、部分ブロックが切り離され、その中に埋め込んだ質問やツール呼び出しが観測される現象。本講座では「質問・ツール・画面の出現と移動」をハルシネーションに数える。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    }
+  ]
+}

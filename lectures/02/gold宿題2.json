@@ -1,0 +1,128 @@
+{
+  "ツールの名前空間について簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "複数のMCPサーバーを使うとき"
+    ]
+  },
+  "「LLM（大規模言語モデル）」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "大量のテキストで学習し、入力に"
+    ]
+  },
+  "「ランク（LoRAのr）」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "LoRAで使う低ランク行列の大"
+    ]
+  },
+  "ツールの説明文について簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "ツールの用途や引数の意味をモデ"
+    ]
+  },
+  "プロンプトについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "LLMに渡す入力文。質問だけで"
+    ]
+  },
+  "AIエージェントについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "LLMが自分で判断してツールを"
+    ]
+  },
+  "MCPクライアントについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "MCPサーバーに接続し、公開さ"
+    ]
+  },
+  "「MCP（Model Context Protocol）」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "AIアプリと外部のツールやデー"
+    ]
+  },
+  "システムプロンプトについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "利用者の質問とは別に、モデルの"
+    ]
+  },
+  "「ツールの名前空間」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "複数のMCPサーバーを使うとき"
+    ]
+  },
+  "ハルシネーションについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "LLMが事実と異なる内容や存在"
+    ]
+  },
+  "「devcontainer」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "開発環境をコンテナとして定義す"
+    ]
+  },
+  "Codespaces secretについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "GitHubのアカウント設定に"
+    ]
+  },
+  "ブランチについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "作業の流れを分けるための仕組み"
+    ]
+  },
+  "「宿題の3レベル」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "AIE2026の宿題の構成。「"
+    ]
+  },
+  "評価と改善のサイクルについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "作る→測る→直すを繰り返す開発"
+    ]
+  },
+  "「temperature」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "次のトークンを選ぶときのランダ"
+    ]
+  },
+  "Piについて簡単に説明してください。": {
+    "needs_review": false,
+    "must_include": [
+      "ターミナルで動くオープンソース"
+    ]
+  },
+  "「プロトコル・プロキシ」とは何ですか？": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "「セッション分離モデル」について簡単に説明してください。": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "「動的推論ロードバランサー」について簡単に説明してください。": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  }
+}
