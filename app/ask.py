@@ -20,7 +20,6 @@ from app.config import MODEL, api_error_message, get_api_key
 # 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
-
 pastdata = []
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
