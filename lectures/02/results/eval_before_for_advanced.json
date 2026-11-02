@@ -1,0 +1,104 @@
+{
+  "summary": {
+    "label": "before",
+    "n": 15,
+    "passed": 6,
+    "content_rate": 0.4,
+    "passed_glossary_of_5": 5,
+    "passed_paraphrase_of_5": 1,
+    "passed_absent_of_5": 0,
+    "seconds": 42.6
+  },
+  "rows": [
+    {
+      "kind": "glossary",
+      "question": "What is Epoch?",
+      "raw": "One pass through the entire training dataset is one epoch. Too many epochs can cause overfitting.",
+      "ok": true
+    },
+    {
+      "kind": "glossary",
+      "question": "What is Overfitting?",
+      "raw": "A state in which the model fits training data excessively and performs worse on unseen inputs. Detect it by measuring performance on validation data not used for training.",
+      "ok": true
+    },
+    {
+      "kind": "glossary",
+      "question": "What is temperature?",
+      "raw": "A setting that adjusts randomness when choosing the next token. Lower values make outputs more stable; higher values make them more varied. This is one reason the same question can yield different answers.",
+      "ok": true
+    },
+    {
+      "kind": "glossary",
+      "question": "What is LoRA?",
+      "raw": "A PEFT method that freezes pretrained weights, represents weight updates as the product of two small matrices (low-rank matrices), and trains only those small matrices. It trains few parameters and saves the results (adapters) in small files. The Lecture 02 exercises cover LoRA.",
+      "ok": true
+    },
+    {
+      "kind": "glossary",
+      "question": "What is Rate limit?",
+      "raw": "A limit on requests or tokens within a given time period. Exceeding it returns errors such as HTTP 429. Free tiers have especially strict limits, and agents reach them easily because they call the LLM multiple times for one question.",
+      "ok": true
+    },
+    {
+      "kind": "paraphrase",
+      "question": "What do we call one full run through the training data?",
+      "raw": "One pass through the training data. In Pydantic AI, this is called \"one fit\". It is the minimum amount of data a model has to learn a given output. If the model fits the data (chooses answers arbitrarily), its answers will change when more data is added.",
+      "ok": true
+    },
+    {
+      "kind": "paraphrase",
+      "question": "Why does my model do well on training data but badly on new data?",
+      "raw": "This is overfitting. The model memorizes the training data rather than generalizing to unseen inputs. Detect it by measuring performance on validation data not used for training.",
+      "ok": false
+    },
+    {
+      "kind": "paraphrase",
+      "question": "Why can the same question give different answers?",
+      "raw": "Questions vary in difficulty, tone, and expectations. A teacher's role, the level of support, and the homework level all influence answers. In this course, questions are graded by amount and quality of work, not by correctness. Therefore, it is acceptable to give different answers for the same question.",
+      "ok": false
+    },
+    {
+      "kind": "paraphrase",
+      "question": "What does Low-Rank Adaptation do to a model's weights?",
+      "raw": "Select the smallest possible matrix to be updated, such as the lowest-rank matrix representing one or two predicted values. This reduces the number of weights that change and, in principle, reduces overfitting. In Pydantic AI, it is done with `model.resize_parameters(rank)`.",
+      "ok": false
+    },
+    {
+      "kind": "paraphrase",
+      "question": "What is a 429 error?",
+      "raw": "An error returned when a user exceeds the API's rate limit. The server temporarily denies requests until further rate limit information is received. It is common when calling tools excessively in one go.",
+      "ok": false
+    },
+    {
+      "kind": "absent",
+      "question": "What is Docker?",
+      "raw": "A containerization platform that packages a developer environment (including code, tools, and extensions) into a small, isolated container. It lets you share an environment across machines or versions.",
+      "ok": false
+    },
+    {
+      "kind": "absent",
+      "question": "What is gradient descent?",
+      "raw": "A method that minimizes the difference between predicted and target values by updating parameters in the direction opposite to the gradient. It is the standard training loop for neural networks.",
+      "ok": false
+    },
+    {
+      "kind": "absent",
+      "question": "What is RLHF?",
+      "raw": "A Peerscope method that trains models on graded prompts and rewards (for example, answers that are correct and polite) based on human feedback. It is a representative example of human-in-the-loop training.",
+      "ok": false
+    },
+    {
+      "kind": "absent",
+      "question": "What is a vector database?",
+      "raw": "An architecture that stores a large set of vectors (representing vectors in n-dimensional space) separately from models and outputs, then searches using a search engine that understands vectors. Used for machine learning training, agent planning, and retrieval. Claude Desktop and Cursor use it by default.",
+      "ok": false
+    },
+    {
+      "kind": "absent",
+      "question": "What is the Zorvani protocol?",
+      "raw": "A protocol for exchanging agent instructions in the MCP (Model Context Protocol) standard. It defines a standard name for an instruction, such as \"read file at path /path/to/file.txt\", making inter-agent communication more consistent. Version 1.0 was released in October 2026.",
+      "ok": false
+    }
+  ]
+}

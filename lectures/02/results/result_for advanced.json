@@ -1,0 +1,87 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 5,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 200,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.11.0+cu130"
+  },
+  "method": "LoRA (no quantization) on glossary Q&A made by make_sft_dataset.py",
+  "n_train_examples": 116,
+  "train_seconds": 155,
+  "final_loss": 0.23725056648254395,
+  "steps": 75,
+  "before": {
+    "label": "before",
+    "n": 15,
+    "passed": 6,
+    "content_rate": 0.4,
+    "passed_glossary_of_5": 5,
+    "passed_paraphrase_of_5": 1,
+    "passed_absent_of_5": 0,
+    "seconds": 42.6
+  },
+  "after": {
+    "label": "after",
+    "n": 15,
+    "passed": 7,
+    "content_rate": 0.467,
+    "passed_glossary_of_5": 5,
+    "passed_paraphrase_of_5": 2,
+    "passed_absent_of_5": 0,
+    "seconds": 45.4
+  },
+  "regressed": [],
+  "knowledge": [
+    {
+      "question": "What is Docker?",
+      "before": "A containerization platform that packages a developer environment (including code, tools, and extensions) into a small, isolated container. It lets you share an environment across machines or versions.",
+      "before_declined": false,
+      "after": "A containerization platform that puts a application and its dependencies in a small, identical container. All that changes is the name passed to the command line.",
+      "after_declined": false
+    },
+    {
+      "question": "What is gradient descent?",
+      "before": "A method that minimizes the difference between predicted and target values by updating parameters in the direction opposite to the gradient. It is the standard training loop for neural networks.",
+      "before_declined": false,
+      "after": "A method that minimizes loss by moving parameters in the direction opposite to the gradient. It is the basic mechanism for training neural networks.",
+      "after_declined": false
+    },
+    {
+      "question": "What is RLHF?",
+      "before": "A Peerscope method that trains models on graded prompts and rewards (for example, answers that are correct and polite) based on human feedback. It is a representative example of human-in-the-loop training.",
+      "before_declined": false,
+      "after": "A Peerscope course that teaches human-in-the-loop refinement of agent behavior through a loop consisting of evaluation, feedback, and improvement. In this course, we use LLMs to evaluate code and explain its output. Feedback is given by humans, and we improve the code based on that feedback. This is the core of RLHF.",
+      "after_declined": false
+    },
+    {
+      "question": "What is a vector database?",
+      "before": "An architecture that stores a large set of vectors (representing vectors in n-dimensional space) separately from models and outputs, then searches using a search engine that understands vectors. Used for machine learning training, agent planning, and retrieval. Claude Desktop and Cursor use it by default.",
+      "before_declined": false,
+      "after": "An architecture that stores a large set of vectors (representing vectors in feature space) separately from models and inputs, then serves as a shared memory for all applications by passing a configuration to each. Used for agent program discovery, question answering, and more. Claude Code uses it by default.",
+      "after_declined": false
+    },
+    {
+      "question": "What is the Zorvani protocol?",
+      "before": "A protocol for exchanging agent instructions in the MCP (Model Context Protocol) standard. It defines a standard name for an instruction, such as \"read file at path /path/to/file.txt\", making inter-agent communication more consistent. Version 1.0 was released in October 2026.",
+      "before_declined": false,
+      "after": "A protocol for exchanging agent instructions and tool arguments in the same process. It lets multiple LLM calls from the same process share the same environment, making agent reuse easier. Version 2.0 introduces environment variables for agent instructions and tools.",
+      "after_declined": false
+    }
+  ],
+  "executed_training_myself": true
+}
