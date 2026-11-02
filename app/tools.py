@@ -7,6 +7,10 @@
 import json
 from functools import cache
 from pathlib import Path
+import random
+
+import hashlib
+from datetime import datetime, timezone
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -77,3 +81,75 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した講義回の用語から確認問題を1問作る。
+
+    「第2回の確認問題を出して」など、
+    講義内容の復習を求められたときに使用する。
+    """
+    candidates = [
+        item
+        for item in load_glossary()
+        if item["lecture"] == lecture
+    ]
+
+    if not candidates:
+        return json.dumps(
+            {"error": f"第{lecture}回の用語はありません。"},
+            ensure_ascii=False,
+        )
+
+    selected = random.choice(candidates)
+
+    return json.dumps(
+        {
+            "question": f"「{selected['term']}」の意味は？",
+            "answer": selected["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(topic: str, note: str) -> str:
+    """指定された学習内容をMarkdownファイルに保存する。
+
+    利用者が学習ログの保存を依頼した場合に、このツールを呼び出す。
+    topicには題名、noteには保存内容を指定する。
+    承認確認はアプリケーション側が行うため、
+    ツール呼び出し前に会話で承認を求める必要はない。
+    """
+    topic = topic.strip()
+    note = note.strip()
+
+    if not topic or not note:
+        return "保存する題名または内容が空です。"
+
+    log_dir = (
+        Path(__file__).resolve().parent.parent
+        / "learning_log"
+    )
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    digest = hashlib.sha256(
+        f"{topic}\n{note}".encode("utf-8")
+    ).hexdigest()[:16]
+
+    file_path = log_dir / f"learning_{digest}.md"
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    content = (
+        f"# {topic}\n\n"
+        f"記録日時（UTC）：{timestamp}\n\n"
+        f"{note}\n"
+    )
+
+    try:
+        with file_path.open("x", encoding="utf-8") as f:
+            f.write(content)
+    except FileExistsError:
+        return "同じ内容の学習ログは既に保存されています。"
+
+    return f"保存しました: {file_path.name}"
