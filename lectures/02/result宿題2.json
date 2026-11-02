@@ -1,0 +1,76 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 20,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 96,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.11.0+cu130"
+  },
+  "method": "LoRA（量子化なし）",
+  "before": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.0,
+    "content_rate": 0.0,
+    "both_rate": 0.0,
+    "seconds": 77.4
+  },
+  "after": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.7619047619047619,
+    "both_rate": 0.7619047619047619,
+    "seconds": 82.6
+  },
+  "regressed": [],
+  "knowledge": [
+    {
+      "質問": "「ハイパー・パラメーターチューニング」とは何ですか？",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"ハイパー・パラメーターチューニングは、ソフトウェアやハードウェアの性能を最大化するために、特定のパラメータを非常に高い値に設定し、その結果から得られる性能を最大限に引き出すプロセスです。\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "量子コンピュータの基本を教えてください。",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"量子コンピュータは、量子力学の原理（重ね合わせや相関）を用いて、古典コンピュータよりも多くの情報を処理する「量子計算」です。量子ビット（qubit）は0と1のどちらかではなく、0と1の重ね合わせ（0と1の両方を含む状態）を持ち、量子演算子によって情報を量子化して計算を行う仕組みです。\"}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"ビットを0や1のいずれもを混ぜるためにつなぐサーバー。量子化後の信号を複数のビットで表し、そのビットを量子ビット（q）で扱う。計算を分ける（分割学習）や、もたらす影響を測る（プロンプトの選択や結果の報告）ために使う。\", \"needs_review\": false}"
+    },
+    {
+      "質問": "「Pydantic AIのメモリバックアップ」とは何ですか？",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"Pydantic AI のメモリバックアップは、Pydantic AI のモデルを保存する際に使用される、モデルのデータやパラメータを記憶する機能です。\"}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "「Pydantic AI」とは何ですか？",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"Pydantic AI は、Pydantic の拡張機能であり、AI 技術（特に大規模言語モデル）を Pydantic のデータモデルと組み合わせて、AI アプリケーションの設計、トレーニング、および実行を自動化するためのツールです。\"}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"Pythonでエージェントを作るためのフレームワーク。Pydanticの型を使ってツールの引数や出力を定義でき、GeminiやOpenAIなど多くのモデルを同じ書き方で扱える。テスト用のモデルでAPIを呼ばずに動作確認できる。本講座第3回の本線。\", \"needs_review\": false}"
+    }
+  ],
+  "executed_training_myself": true
+}

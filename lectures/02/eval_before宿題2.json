@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.0,
+    "content_rate": 0.0,
+    "both_rate": 0.0,
+    "seconds": 77.4
+  },
+  "rows": [
+    {
+      "question": "プロンプトについて簡単に説明してください。",
+      "raw": "{\"answer\": \"プロンプトは、AI 助手が特定のタスクや文脈に基づいて回答する際に使用する、明確な指示やタスクの定義です。例えば、「日本語で『地球は青く輝く』という文章を 100 字以内でまとめよう」というプロンプトは、AI がその文脈を理解し、適切な回答を生成するための指針となります。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Codespaces secretについて簡単に説明してください。",
+      "raw": "{\"answer\": \"Codespaces secret は、GitHub Codespaces の環境設定で使われる、GitHub のユーザー認証情報です。ユーザーが Codespaces にログインして、その環境でコードを実行する際に必要とされるものです。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ツールの名前空間について簡単に説明してください。",
+      "raw": "{\"answer\": \"ツール名空間は、特定のプロジェクトやチーム内で使われるツールやサービスの名前を統一するための場所です。例として、GitHub の GitLab の名前空間は `github.com` です。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「LLM（大規模言語モデル）」とは何ですか？",
+      "raw": "{\"answer\": \"LLM（大規模言語モデル）は、大規模言語モデル（Large Language Model）の略称で、自然言語処理の分野において、人間の言語を学習・訓練した機械学習モデルのことです。これにより、ユーザーが自然言語で質問する際に、その質問に対して適切な回答を生成・返すことができます。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "AIエージェントについて簡単に説明してください。",
+      "raw": "{\"answer\": \"AI エージェントは、人間が設計したプログラムやシステムを自動で実行する機械です。例えば、自動運転車の制御システムや、検索エンジンなどの AI エージェントは、人間が指示を出した通りに動作し、結果を生成します。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ブランチについて簡単に説明してください。",
+      "raw": "{\"answer\": \"ブランチは、プロジェクトのコードを複数のバージョンに分ける方法です。最初から一つのコードベースにまとめるのではなく、異なるバージョンを個別に管理することで、変更を回しやすく、バージョン管理が効率的になります。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "MCPクライアントについて簡単に説明してください。",
+      "raw": "{\"answer\": \"MCP (Model Context Protocol) クライアントは、モデルとユーザーの間の通信を管理するツールです。ユーザーはモデルに対して質問し、モデルが回答する結果を MCP クライアントに送信し、クライアントはモデルの出力をユーザーに返します。このように、モデルとユーザーの間の情報交換を自動化して、より効率的な回答を提供します。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「宿題の3レベル」とは何ですか？",
+      "raw": "{\"answer\": \"宿題の3レベルは、学習段階を 3 つの段階に分けることで、より進歩的な学習を促進する仕組みです。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Piについて簡単に説明してください。",
+      "raw": "{\"answer\": \"Pi は円周率（π）の近似値で、数学上無限の小数を収める数値です。125,960,000,000,000,000 以上です。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「動的推論ロードバランサー」について簡単に説明してください。",
+      "raw": "{\"answer\": \"動的推論ロードバランサーは、複数の計算ユニット（CPU、GPU、NPU など）を動的に割り当て、各ユニットの処理負荷に応じて最適な計算を優先して実行する技術です。これにより、計算負荷が不均等になった場合でも、すべてのユニットが効率的に処理を行うことができます。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「ツールの名前空間」とは何ですか？",
+      "raw": "{\"answer\": \"ツールの名前空間とは、ツールの名前を指定する空間のことです。例えば、Python の `package` や Node.js の `module` などの名前空間で、ツールの名前を指定します。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「devcontainer」とは何ですか？",
+      "raw": "{\"answer\": \"devcontainer は、開発環境を構築するためのコンテナ化技術です。コンテナ内の開発環境を管理する技術です。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「セッション分離モデル」について簡単に説明してください。",
+      "raw": "{\"answer\": \"セッション分離モデルは、ユーザーのセッションを個別に管理し、セッション終了時にそのセッションのデータや状態を自動的に削除する設計です。これにより、セッション間のデータ保持が保証され、セキュリティやパフォーマンスの観点から推奨されます。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロトコル・プロキシ」とは何ですか？",
+      "raw": "{\"answer\": \"プロトコル・プロキシは、インターネット上の通信を管理し、セキュリティを強化するための中間サーバーです。\"}, {\"answer\": \"確認が必要\", \"needs_review\": false}",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "ツールの説明文について簡単に説明してください。",
+      "raw": "{\"answer\": \"ツールは、特定の機能や作業を自動化・簡易化するためのソフトウェアです。例として、画像処理ツールは画像の編集や処理を行うソフトウェア、データ分析ツールはデータを処理・分析するソフトウェアです。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "評価と改善のサイクルについて簡単に説明してください。",
+      "raw": "{\"answer\": \"評価と改善のサイクルは、通常「評価（評価と改善のサイクル）」という用語で使われるため、この質問は誤記です。正しい用語は「評価と改善のサイクル（PDCA サイクル）」です。このサイクルは、計画（P）、実行（D）、チェック（C）、改善（A）の 4 つのステップで構成され、継続的な改善を促す仕組みです。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "システムプロンプトについて簡単に説明してください。",
+      "raw": "{\"answer\": \"システムプロンプトは、AI 助手がユーザーの質問に対して適切な回答を生成するための指示文です。例えば、「日本語で説明してください」という指示は、AI が日本語で回答するよう指示します。このプロンプトを適切に設定することで、回答の質や精度を向上させます。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「MCP（Model Context Protocol）」とは何ですか？",
+      "raw": "{\"answer\": \"MCP（Model Context Protocol）は、モデルとユーザーの間の通信を安全かつ効率的に可能にするためのプロトコルです。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「temperature」とは何ですか？",
+      "raw": "{\"answer\": \"温度は、物体の熱を測るために使われる物理量です。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「ランク（LoRAのr）」とは何ですか？",
+      "raw": "{\"answer\": \"LoRA のランク（r）は、モデルの精度を高めるために、学習率を調整するパラメータです。ランクが高いほど、学習率が小さくなり、モデルの精度が向上します。ランクが低いほど、学習率が大きくなり、モデルの精度が低下します。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ハルシネーションについて簡単に説明してください。",
+      "raw": "{\"answer\": \"ハルシネーションとは、光が媒質を通過する際、波長が変化して色が変わる現象です。光が媒質を通過する際、波長が変化して色が変わる現象です。\"}",
+      "format_ok": false,
+      "format_reason": "missing_key",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    }
+  ]
+}
