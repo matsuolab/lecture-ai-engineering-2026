@@ -8,7 +8,7 @@
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
-- 結果：
-- 気づき・疑問：
+- 取り組んだレベル：基礎 
+- やったこと： I used two AI models: Gemini Flash and Gemini Flash Lite. I asked the same question: LoRAとは何ですか？
+- 結果： Both models gave similar explanations. They explained that LoRA is a technique to fine-tune AI models with fewer resources
+- 気づき・疑問：I noticed that the same model can give different answers to the same question
