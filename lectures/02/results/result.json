@@ -1,0 +1,61 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 2,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 256,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.11.0+cu130"
+  },
+  "method": "LoRA（量子化なし、用語集の定義文でSFT）",
+  "train_size": 235,
+  "eval_size": 63,
+  "eval_group_sizes": {
+    "A": 50,
+    "B": 13
+  },
+  "base_model_memory_gb": 3.01,
+  "training_steps": 60,
+  "training_epochs": 2.0,
+  "before": {
+    "label": "before",
+    "n": 63,
+    "seconds": 615.0,
+    "A": {
+      "n": 50,
+      "mean_char2_f1": 0.0617
+    },
+    "B": {
+      "n": 13,
+      "mean_char2_f1": 0.0477
+    }
+  },
+  "after": {
+    "label": "after",
+    "n": 63,
+    "seconds": 213.8,
+    "A": {
+      "n": 50,
+      "mean_char2_f1": 0.306
+    },
+    "B": {
+      "n": 13,
+      "mean_char2_f1": 0.1031
+    }
+  },
+  "note": "char2_f1 は文字列類似度であり意味的正解率ではない。正確性は別途目視採点する。",
+  "executed_training_myself": true
+}
