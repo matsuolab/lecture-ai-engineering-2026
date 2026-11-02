@@ -2,31 +2,43 @@
 
 使い方:
     uv run python -m app.ask "LoRAとは何ですか？"
-    uv run python -m app.ask            # 質問を省略すると、講座に固有の質問をする
-
-ツールも会話履歴も持たない「素の」呼び出し。
-講座に固有のことを聞くと、「分からない」と答えるか、一般論でもっともらしく答える
-（講座の実際とは違う）ことを確かめよう。
-（第3回で、用語集を検索できるエージェントにして改善する）
+    AIE_TEMPERATURE=0.2 uv run python -m app.ask "LoRAとは何ですか？"
 """
 
 import argparse
+import os
 
 from google import genai
 from google.genai import errors
+from google.genai import types  # types をインポート
 
 from app.config import MODEL, api_error_message, get_api_key
 
-# 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
+    
+    # 環境変数 AIE_TEMPERATURE から取得（デフォルトは 1.0 または指定なし）
+    # コマンドライン引数で渡したい場合は argparse から引数を受け取るよう変更してください
+    temp_env = os.getenv("AIE_TEMPERATURE")
+    gen_config = None
+    if temp_env is not None:
+        gen_config = types.GenerateContentConfig(temperature=float(temp_env))
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=question,
+        config=gen_config,  # temperature 設定を適用
+    )
+
+    usage = response.usage_metadata
+    if usage is not None:
+        print(
+            f"[tokens] input={usage.prompt_token_count} "
+            f"output={usage.candidates_token_count}"
+        )
 
     return response.text
 
@@ -36,7 +48,10 @@ def main() -> None:
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
     args = parser.parse_args()
 
+    # 表示ログに temperature も出力するようにしておくと実験時に便利です
+    temp_env = os.getenv("AIE_TEMPERATURE", "default")
     print(f"[model] {MODEL}")
+    print(f"[temperature] {temp_env}")
     print(f"[質問] {args.question}\n")
     try:
         print(ask(args.question))
