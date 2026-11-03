@@ -386,7 +386,7 @@
       "aliases": ["ADK", "Agent Development Kit", "google-adk"],
       "lecture": 3,
       "category": "エージェント",
-      "definition": "Googleが公開しているオープンソースのエージェント開発フレームワーク。Geminiとの統合が深く、adk web でツール呼び出しの流れを画面で確認できる。2.0で1.x系から破壊的変更が入っている。本講座では宿題の発展レベルで扱う。",
+      "definition": "Googleが公開しているオープンソースのエージェント開発フレームワーク。Geminiとの統合が深い。2.0で1.x系から大きな変更が入っている。本講座では第3回の宿題の発展レベルで扱う。",
       "related": ["pydantic-ai", "ai-agent"]
     },
     {
