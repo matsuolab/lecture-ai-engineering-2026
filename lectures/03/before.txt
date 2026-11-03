@@ -1,0 +1,19 @@
+@soulgemanalyst ➜ /workspaces/lecture-ai-engineering-2026 (lec03) $ uv run python -m app.agent --trace "loopについて説明して "
+[model] gemini-3.5-flash-lite
+講座の用語集によると、「loop」に関連する用語として以下の3つが登録されています。用途や文脈に合わせて確認してみてください。
+
+1. **評価と改善のサイクル**（第1回）
+   - 作る→測る→直すを繰り返す開発の進め方です。AIアプリの出力は確率的に揺れるため、感覚ではなく評価データや指標で良し悪しを判断し、その結果をもとにプロンプト・データ・モデル・ツールを改善します。
+
+2. **エージェントループ**（第3回）
+   - モデルに入力を渡す → モデルがツール呼び出しを返したら実行する → 結果をモデルに戻す、をモデルが最終回答を返すまで繰り返す処理のことです。1つの質問でLLMを複数回呼ぶため、時間・料金・レート制限への影響に注意が必要です。
+
+3. **Human-in-the-loop**（第3回）
+   - エージェントの処理の途中に人の確認や承認を組み込む仕組みです。データの書き込みや送信など、取り消しにくい操作の前に使われます（Pydantic AIでは `requires_approval=True` を指定したツールで実現できます）。
+
+関連する回：第1回、第3回
+
+--- trace ---
+[tool call]   search_glossary({'query': 'loop'})
+[tool return] search_glossary -> [{"term": "評価と改善のサイクル", "lecture": 1, "definition": "作る→測る→直すを繰り返す開発の進め方。AIアプリは出力が確率的に揺れるため、感覚ではなく評価データや指標で良し悪しを判断し、その結果…
+[usage] RunUsage(cost=Decimal('0.0010543'), details={'text_prompt_tokens': 1106}, input_text_tokens=1106, input_tokens=1106, output_tokens=289, requests=2, tool_calls=1)
