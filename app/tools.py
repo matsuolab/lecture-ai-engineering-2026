@@ -77,3 +77,29 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+import json
+import random
+
+# （すでに定義されている load_glossary 等のコードはそのまま残します）
+
+def make_quiz(lecture: int) -> str:
+    """指定された講義回（lecture）の用語集から、確認問題を1問作成して返す。
+    
+    ユーザーから「第N回の確認問題を出して」「クイズを出して」と求められたときに使う。
+    """
+    glossary = load_glossary()
+    
+    # 修正: glossary はリストであるため、.values() を外して直接ループを回します
+    terms = [item for item in glossary if item.get("lecture") == lecture]
+    
+    if not terms:
+        return json.dumps({"error": f"第{lecture}回の用語は見つかりませんでした。"}, ensure_ascii=False)
+    
+    term = random.choice(terms)
+    
+    quiz = {
+        "question": f"「{term['term']}」の意味は？",
+        "answer": term["definition"]
+    }
+    return json.dumps(quiz, ensure_ascii=False)
+
