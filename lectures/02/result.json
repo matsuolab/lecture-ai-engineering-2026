@@ -1,0 +1,76 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 20,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 96,
+    "gen": {
+      "do_sample": false
+    }
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.11.0+cu130"
+  },
+  "method": "LoRA（量子化なし）",
+  "before": {
+    "label": "before",
+    "n": 21,
+    "format_rate": 0.14285714285714285,
+    "content_rate": 0.0,
+    "both_rate": 0.0,
+    "seconds": 22.9
+  },
+  "after": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.9523809523809523,
+    "both_rate": 0.9523809523809523,
+    "seconds": 42.0
+  },
+  "regressed": [],
+  "knowledge": [
+    {
+      "質問": "AL-01のアラート通知メールの宛先はどこですか？",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"AL-01アラート通知メールの宛先は、システム管理者（または不正対策責任者）のメールアドレスです。\"}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"同一カードで10分以内に異なる加盟店5店舗以上で決済試行が発生した場合、アラートAL-01を発報します。\", \"needs_review\": false}"
+    },
+    {
+      "質問": "不正スコアは何点以上で危険と判定しますか？",
+      "FAQ にある": false,
+      "学習前の分類": "asserted",
+      "学習前の出力": "{\"answer\": \"0\", \"needs_review\": false}",
+      "学習後の分類": "needs_review",
+      "学習後の出力": "{\"answer\": \"この運用FAQには記載がありません。担当部署への確認が必要です。\", \"needs_review\": true}"
+    },
+    {
+      "質問": "ケース管理票は何年間保管する必要がありますか？",
+      "FAQ にある": false,
+      "学習前の分類": "format_error",
+      "学習前の出力": "{\"answer\": \"2\", \"needs_review\": \"false\"}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"調査終了から2営業日以内に、ケース管理票へ判断理由と取引IDを記録します。\", \"needs_review\": false}"
+    },
+    {
+      "質問": "AL-01が出る時間と加盟店数の条件を教えてください。",
+      "FAQ にある": true,
+      "学習前の分類": "needs_review",
+      "学習前の出力": "{\"answer\": \"アラートAL-01が出る時間と加盟店数の条件は、FAQに記載されていません。\", \"needs_review\": true}",
+      "学習後の分類": "asserted",
+      "学習後の出力": "{\"answer\": \"同一カードで10分以内に異なる加盟店5店舗以上で決済試行が発生した場合、アラートAL-01を発報します。\", \"needs_review\": false}"
+    }
+  ],
+  "executed_training_myself": true
+}
