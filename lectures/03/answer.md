@@ -3,7 +3,7 @@
 ## 演習
 
 - 第1回（素のLLM）とエージェントの回答の違い：正確な回答を答えた。ハルシネーションを起こさなくなった。繰り返し質問をしても、同じ回答を出した。正確な回答を出すための逆質問が生じた。
-- `--trace` で見えたツール呼び出し（ツール名と引数）：search_glossary(query="LoRA")
+- `--trace` で見えたツール呼び出し（ツール名と引数）：search_glossary(query="LoRA")、search_glossary(query="QLoRA")
 - 1つの質問での LLM 呼び出し回数（`requests`）：input_tokens=1196　output_tokens=212　requests=2　tool_calls=2
 - 追加したツールと、docstring に書いた説明： app/tools.py に、確認問題を自動生成する make_quiz(lecture: int) -> str を追加した。
 - 指定した回の用語から確認問題を作る。　確認問題を求められたときに使用するツール。
