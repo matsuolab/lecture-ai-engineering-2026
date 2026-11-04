@@ -5,10 +5,13 @@
 """
 
 import json
+import random
+from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = DATA_DIR.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +80,43 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の学習内容を確認したいときに、用語の意味を問う問題を1問作る。
+    用語集からその回の用語をランダムに1つ選び、問題と答えを返す。講義の用語を
+    確認する問題を求められたときに使う。
+    """
+    terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語は用語集にありません。"
+
+    entry = random.choice(terms)
+    return json.dumps(
+        {
+            "lecture": lecture,
+            "term": entry["term"],
+            "question": f"「{entry['term']}」の意味は？",
+            "answer": entry["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(lecture: int, reflection: str) -> str:
+    """学習内容を記録したいときに、利用者の確認後に学習記録を保存する。
+
+    指定した回についての気づきや疑問を learning_log/ に保存する。
+    保存を実行する前に、必ず利用者の承認を得る必要がある。
+    """
+    if not reflection.strip():
+        return "学習記録が空です。記録する内容を指定してください。"
+
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    path = LEARNING_LOG_DIR / f"{timestamp}-lecture-{lecture:02d}.md"
+    path.write_text(
+        f"# 第{lecture}回の学習記録\n\n{reflection.strip()}\n",
+        encoding="utf-8",
+    )
+    return f"学習記録を保存しました: {path.relative_to(LEARNING_LOG_DIR.parent)}"
