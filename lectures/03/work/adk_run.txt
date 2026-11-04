@@ -1,0 +1,16 @@
+Log setup complete: /tmp/agents_log/agent.20261104_121331.log
+To access latest log: tail -F /tmp/agents_log/agent.latest.log
+/home/nako/matsuo/.venv/lib/python3.12/site-packages/google/adk/cli/cli.py:351: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+  credential_service = InMemoryCredentialService()
+/home/nako/matsuo/.venv/lib/python3.12/site-packages/google/adk/auth/credential_service/in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+  super().__init__()
+Running agent learning_agent, type exit to exit.
+[user]: [learning_agent]: LoRAとQLoRAの違いは、ベースモデルの重みの扱い方にあります。
+
+* **LoRA（Low-Rank Adaptation）**
+  事前学習済みの重みを固定したまま、重みの更新分を2つの小さな低ランク行列で近似し、その部分だけを学習するPEFT手法です。学習するパラメータ数と保存サイズを大幅に削減できます。
+* **QLoRA（Quantized LoRA）**
+  LoRAの仕組みに加え、ベースモデルの重みを4ビットなどの低ビットに**量子化**してメモリを徹底的に節約したうえでLoRAの学習を行う手法です。これにより、より大きなモデルを比較的小さなGPUメモリで扱えるようになります。
+
+関係する回：第2回
+[user]: 

@@ -1,0 +1,7 @@
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[model] gemini-3.5-flash-lite
+「lecNN-start タグ」とは、AIE2026の講座リポジトリにおいて、各回の演習開始時点のコードに付けられているGitタグのことです（例: `lec03-start`）。
+
+前の回の内容が終わっていなかったり、途中から参加・復習したりする場合でも、このタグを指定してブランチを作成すれば、その回の演習をスムーズに始められるようになっています。
+
+（関連する回: 第1回）

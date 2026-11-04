@@ -1,0 +1,15 @@
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[model] gemini-3.5-flash-lite
+[tool call]   search_glossary({'query': 'LoRA'})
+[tool call]   search_glossary({'query': 'QLoRA'})
+[tool return] search_glossary -> {'result': '[{"term": "LoRA", "lecture": 2, "definition": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するP
+[tool return] search_glossary -> {'result': '[{"term": "QLoRA", "lecture": 2, "definition": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGP
+
+LoRAとQLoRAの違いは、**ベースモデルの重みの扱い方（精度）**にあります。
+
+* **LoRA**: 事前学習済みの重みはそのまま（通常は16ビットなどの精度）固定し、重みの更新分を小さな低ランク行列（アダプタ）で学習する手法です。
+* **QLoRA**: ベースモデルの重みをさらに **4ビットなどに量子化（圧縮）** してメモリを大幅に節約した上で、LoRAと同様に低ランク行列を学習する手法です。これにより、より大きなモデルを比較的小さなGPUでも動かせるようになります。
+
+関連する回：第2回
+[usage] prompt=1094, output=144, total=1238
+exit=0

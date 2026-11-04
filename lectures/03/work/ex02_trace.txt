@@ -1,0 +1,17 @@
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[model] gemini-3.5-flash-lite
+LoRAとQLoRAの主な違いは、**ベースモデルの重みの保持方法（量子化の有無）**にあります。
+
+* **LoRA**:
+  事前学習済みの重みをそのままの精度（通常は16ビットなど）で固定し、重みの更新分（低ランク行列）だけを学習してパラメータ数とメモリを削減する手法です。
+* **QLoRA**:
+  LoRAの仕組みに加え、ベースモデルの重みをさらに4ビットなどに**量子化**してメモリを大幅に節約した状態で学習する手法です。これにより、より大きなモデルを比較的小さなGPUでも扱えるようになります。
+
+関連回：第2回
+
+--- trace ---
+[tool call]   search_glossary({'query': 'LoRA'})
+[tool call]   search_glossary({'query': 'QLoRA'})
+[tool return] search_glossary -> [{"term": "LoRA", "lecture": 2, "definition": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラ…
+[tool return] search_glossary -> [{"term": "QLoRA", "lecture": 2, "definition": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2…
+[usage] RunUsage(cost=Decimal('0.0008932'), details={'text_prompt_tokens': 1444}, input_text_tokens=1444, input_tokens=1444, output_tokens=184, requests=2, tool_calls=2)

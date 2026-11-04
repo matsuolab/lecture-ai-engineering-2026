@@ -1,0 +1,16 @@
+Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[model] gemini-3.5-flash-lite
+第2回の内容から確認問題を1問出します！
+
+**【確認問題】**
+「**LoRA**」とはどのような手法か、ご自身の言葉で説明してみてください。
+
+---
+答えがまとまったら、ぜひ教えてくださいね！（正解はこの後で確認します）
+
+（関連する回：第2回）
+
+--- trace ---
+[tool call]   make_quiz({'lecture': 2})
+[tool return] make_quiz -> {"question": "「LoRA」とは何か、自分の言葉で説明してください。", "term": "LoRA", "answer": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さ…
+[usage] RunUsage(cost=Decimal('0.0005211'), details={'text_prompt_tokens': 1037}, input_text_tokens=1037, input_tokens=1037, output_tokens=84, requests=2, tool_calls=1)

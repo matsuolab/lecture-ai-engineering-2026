@@ -30,6 +30,8 @@ uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
+引数を省略すると会話モードになり、同じ実行中の質問と回答を履歴として次の質問に渡します。各回答の後に応答時間と入力・出力・合計トークン数を表示します。`exit` または `quit` で終了します。
+
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
@@ -85,6 +87,12 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 
 ```bash
 AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+```
+
+複数の質問を続けて行うときは、引数なしで起動します。
+
+```bash
+uv run python -m app.ask
 ```
 
 無料枠には1分あたり・1日あたりのリクエスト上限があります。上限は [Gemini API のレート制限のページ](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。
