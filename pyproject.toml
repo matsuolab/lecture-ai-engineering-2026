@@ -12,6 +12,7 @@ dependencies = [
 
 [dependency-groups]
 dev = ["pytest>=8"]
+adk = ["google-adk==2.13.0"]  # 第3回 宿題（発展）: ADK での再実装・adk web での比較用
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

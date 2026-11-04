@@ -12,3 +12,6 @@ learning_log/
 
 # macOS
 .DS_Store
+
+# ADK のローカル実行状態（第3回 宿題のadk webで生成）
+.adk/
