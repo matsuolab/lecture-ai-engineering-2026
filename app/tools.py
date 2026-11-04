@@ -5,10 +5,13 @@
 """
 
 import json
+import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +80,51 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つを選び、
+    確認問題と答えを返す。
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    terms = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not terms:
+        available = sorted({e["lecture"] for e in load_glossary()})
+        return (
+            f"第{lecture}回の用語は用語集にありません。"
+            f"用語がある回: {', '.join(map(str, available))}"
+        )
+    entry = random.choice(terms)
+
+    # 定義文に用語名が含まれていると答えが見えてしまうので伏せ字にする
+    definition = entry["definition"]
+    for name in sorted([entry["term"], *entry["aliases"]], key=len, reverse=True):
+        definition = definition.replace(name, "〇〇")
+
+    return json.dumps(
+        {
+            "lecture": lecture,
+            "question": f"次の説明に当てはまる用語は何でしょう？\n{definition}",
+            "answer": entry["term"],
+            "aliases": entry["aliases"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダに Markdown で保存する（その日のファイルに追記）。
+
+    利用者が「今日学んだことを記録して」「この内容をログに残して」のように、
+    記録を残すことを求めたときだけ使う。title は記録の見出し（例: "第3回 ツールの登録"）、
+    content は記録する本文（学んだこと・疑問など）。
+    """
+    if not content.strip():
+        return "記録する内容が空です。保存しませんでした。"
+    LOG_DIR.mkdir(exist_ok=True)
+    now = datetime.now()
+    path = LOG_DIR / f"{now:%Y-%m-%d}.md"
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(f"## {now:%H:%M} {title.strip() or '学習の記録'}\n\n{content.strip()}\n\n")
+    return f"{path.relative_to(LOG_DIR.parent)} に保存しました。"
