@@ -2,8 +2,8 @@
 
 ## 演習
 
-- 使ったモデル・設定（`result.json` の `config` から）：
-- 自分で学習を実行したか（`executed_training_myself`）：はい / いいえ（実行できた範囲：　）
+- 使ったモデル・設定（`result.json` の `config` から）：Qwen/Qwen3.5-0.8B
+- 自分で学習を実行したか（`executed_training_myself`）：はい （実行できた範囲：　）
 - 学習前：`format_rate` =　 / `content_rate` =　
 - 学習後：`format_rate` =　 / `content_rate` =　
 - 退行した質問：
