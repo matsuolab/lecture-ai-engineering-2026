@@ -59,6 +59,29 @@ def test_make_quize_reports_when_lecture_has_no_terms():
     assert "第99回の用語は用語集にありません" in tools.make_quize(99)
 
 
+def test_save_learning_log_creates_directory_and_writes_content(tmp_path, monkeypatch):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+
+    result = tools.save_learning_log("今日の学び\n- 型ヒント")
+
+    logs = list(log_dir.glob("*.md"))
+    assert len(logs) == 1
+    assert logs[0].read_text(encoding="utf-8") == "今日の学び\n- 型ヒント\n"
+    assert "learning_log/" in result
+    assert logs[0].name in result
+
+
+def test_save_learning_log_rejects_empty_content(tmp_path, monkeypatch):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+
+    result = tools.save_learning_log(" \n ")
+
+    assert "空です" in result
+    assert not log_dir.exists()
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
