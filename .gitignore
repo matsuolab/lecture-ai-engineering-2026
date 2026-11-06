@@ -9,6 +9,9 @@ __pycache__/
 
 # 個人の学習ログ（第3回の宿題で作成）は共有しない
 learning_log/
+/data/ask_chat_history.json
+/data/ask_chat_history.*.json
+/data/chats/
 
 # macOS
 .DS_Store
