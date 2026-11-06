@@ -6,10 +6,13 @@
 
 import json
 import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+# 第3回 宿題: 学習ログの保存先（.gitignore 済みなので共有されない）
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -110,3 +113,24 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダに Markdown で保存する。
+
+    ユーザーが「今日学んだことを記録して」「ログに残して」のように
+    保存を頼んだときだけ使う。title には記録の短い見出し（例: "LoRAの復習"）、
+    content には残したい内容（学んだこと・疑問点など）を入れる。
+    同じ日の記録は、その日のファイル（YYYY-MM-DD.md）の末尾に追記される。
+    """
+    title = title.strip()
+    content = content.strip()
+    if not title or not content:
+        return "title と content の両方を指定してください。"
+
+    now = datetime.now()
+    LOG_DIR.mkdir(exist_ok=True)
+    path = LOG_DIR / f"{now:%Y-%m-%d}.md"
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(f"## {now:%H:%M} {title}\n\n{content}\n\n")
+    return f"学習ログを保存しました: {path.relative_to(LOG_DIR.parent)}"
