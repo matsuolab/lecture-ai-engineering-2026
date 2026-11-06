@@ -42,11 +42,16 @@ app/
   ask.py         第1回：LLMに質問する
   tools.py       第3回：エージェントのツール（用語集の検索など）
   agent.py       第3回：Pydantic AI の学習支援エージェント（第6回：--mcp で MCP 経由）
+  judge.py       第4回：評価セットを LLM に採点させ、人のラベルとの一致率を出す
   mcp_server.py  第6回：用語集を公開する MCP サーバー
   mcp_servers.json 第6回：使う MCP サーバーの設定（mcpServers 形式）
 data/
   glossary.json  講座の用語集
   lectures/      各回の要点
+  eval/          第4回：評価セット（lec04_cases.jsonl）と採点の基準（rubric.md）
+tools/
+  annotate.py    第4回：評価セットにラベルを付ける画面（Streamlit。uv run --with で一時的に足して動かす）
+.streamlit/      Streamlit の設定（Codespaces のポート転送で開けるようにする）
 lectures/NN/
   problem.md     その回の演習と宿題
   answer.md      あなたが記入して提出するファイル
