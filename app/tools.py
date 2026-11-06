@@ -5,6 +5,8 @@
 """
 
 import json
+import random
+import re
 from functools import cache
 from pathlib import Path
 
@@ -77,3 +79,49 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から確認問題をランダムに1問作る。
+
+    「第2回の復習問題を出して」のように、その回で学ぶ用語の意味を確認したいときに使う。
+    lecture には1始まりの講義回を整数で指定する。
+    """
+    candidates = [entry for entry in load_glossary() if entry["lecture"] == lecture]
+    if not candidates:
+        return json.dumps(
+            {
+                "question": f"第{lecture}回の確認問題はありません。",
+                "answer": "用語集に該当する用語が見つかりませんでした。",
+            },
+            ensure_ascii=False,
+        )
+
+    entry = random.choice(candidates)
+    return json.dumps(
+        {
+            "question": f"{entry['term']}の意味は？",
+            "answer": entry["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習内容を learning_log フォルダの Markdown ファイルに保存する。
+
+    title はファイル名に使う短い見出し、content は保存する本文。
+    保存前の利用者確認はエージェント側の承認機能が行う。
+    """
+    log_dir = Path(__file__).resolve().parent.parent / "learning_log"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    stem = re.sub(r"[^\w\u3000-\u9fff]+", "_", title.strip(), flags=re.UNICODE).strip("_")
+    stem = stem[:80] or "learning_log"
+    path = log_dir / f"{stem}.md"
+
+    body = content.rstrip() + "\n"
+    if title.strip():
+        body = f"# {title.strip()}\n\n{body}"
+    path.write_text(body, encoding="utf-8")
+    return f"学習ログを保存しました: {path.relative_to(Path(__file__).resolve().parent.parent)}"
+    
