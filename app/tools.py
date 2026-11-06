@@ -97,7 +97,7 @@ def make_quiz(lecture: int) -> str:
         ensure_ascii=False,
     )
 
-
+  
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
