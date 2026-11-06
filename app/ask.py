@@ -23,7 +23,7 @@ from app.config import MODEL, api_error_message, get_api_key
 
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 # 各ターンで同じ質問・履歴に対する回答を比較する。
-TEMPERATURES = (0.2,)
+TEMPERATURES = (0.2,1.0)
 MODEL_FAMILIES = ("Flash", "Flash-Lite", "Gemma")
 MAX_MODEL_VERSIONS = 3
 
