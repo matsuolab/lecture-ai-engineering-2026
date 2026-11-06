@@ -9,7 +9,25 @@
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
-- 結果：
-- 気づき・疑問：
+- 取り組んだレベル：基礎
+- やったこと：INSTRUCTIONSの内容を変更.変更後は、複数の関連用語をqueryにまとめて検索するように指示した。
+- 結果：まとめて検索する場合は、
+
+[tool call] search_glossary({'query': 'LoRA QLoRA'})
+
+となり、tool_callsは1回だった。
+
+一方、用語ごとに検索する場合は、
+
+[tool call] search_glossary({'query': 'LoRA'})
+[tool call] search_glossary({'query': 'QLoRA'})
+
+となり、tool_callsは2回だった。
+
+- 気づき・疑問：requestsはいずれも2であり、
+ツールの呼び出し回数は変わったが、
+LLMを呼び出した回数は変わらなかった。
+
+output_tokensは実行ごとに変化したが、
+LLMの回答表現の揺らぎも含まれるため、
+tool_callsの変更だけが原因とは断定できない。
