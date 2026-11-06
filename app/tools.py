@@ -6,11 +6,17 @@
 
 import json
 import random
+
+from datetime import datetime   # 日時を扱う部品（ファイル名の日付用）
+from pathlib import Path        # ファイルパスを扱う部品（learning_log/ フォルダ用）
+
 from functools import cache
-from pathlib import Path
+
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
+
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 
 
 @cache
@@ -102,3 +108,23 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダに Markdown ファイルとして保存する。
+
+    利用者が「記録して」「メモを保存して」「学習ログに残して」と頼んだときに使う。
+    承認は呼び出し側のプログラムが自動で求めるので、ツールを呼ぶ前に利用者へ確認する必要はない。
+    記録を頼まれたら、内容を組み立ててすぐにこのツールを呼ぶ。
+
+    Args:
+        title: 記録の見出し（例: "第3回 Pydantic AI のツール"）。
+        content: 記録する本文。学んだこと・気づきを Markdown で書く。見出し行（# で始まる行）はツール側で title から付けるので、本文には含めない。
+
+    Returns:
+        保存したファイルのパス。
+    """
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = LEARNING_LOG_DIR / f"{stamp}.md"
+    path.write_text(f"# {title}\n\n{content}\n", encoding="utf-8")
+    return f"保存しました: {path.relative_to(LEARNING_LOG_DIR.parent)}"

@@ -97,4 +97,36 @@ docstring：
   - 実験2の回答に「Low-Rank Adaptation」「Quantized LoRA」など用語集に無い語が含まれた。定義に基づきつつ、モデルの知識から補足が足されている。
   - 疑問：docstring の「答える前に使うこと」だけを消したら検索をやめるのか（実験3として未実施）。
 
+  ## 宿題その２
+  ### 実装：保存の前に確認を挟む（save_learning_log）
+
+#### やったこと
+
+| ファイル | 変更 |
+|---|---|
+| app/tools.py | `save_learning_log(title, content)` を追加。`learning_log/YYYYMMDD_HHMMSS.md` に `# title` と本文を書き、保存先パスを返す |
+| app/agent.py | `Agent(..., output_type=[str, DeferredToolRequests])` に変更。`agent.tool_plain(tools.save_learning_log, requires_approval=True)` で登録 |
+| app/agent.py `main()` | `result.output` が `DeferredToolRequests` の間、`ask_approvals()` でツール名と引数を表示して `[y/N]` を聞き、`DeferredToolResults.approvals[tool_call_id]` に `True` または `ToolDenied("利用者が保存を取りやめました")` を入れ、`message_history=result.all_messages()` と `deferred_tool_results` を渡して `run_sync` を再実行 |
+
+確認コマンド：`uv run python -m app.agent --trace "第3回で学んだことを学習ログに記録して。内容は Pydantic AI の tool_plain でツールを登録する方法"`
+
+#### 結果
+
+| 段階 | 結果（--trace より） |
+|---|---|
+| 承認処理を入れる前 | 回答の代わりに `DeferredToolRequests(approvals=[ToolCallPart(tool_name='save_learning_log', args={'title': ..., 'content': ...}, tool_call_id=...)])` が表示されて終了。`[tool call] save_learning_log` はあるが `[tool return]` は無く、`learning_log/` は作られなかった。`[usage] requests=4, tool_calls=3`（承認待ちの1件は tool_calls に数えられていない） |
+| 承認処理あり・`y` | `--- 承認が必要です ---` にツール名・title・content が表示され、`y` の後に `[tool return] save_learning_log -> 保存しました: learning_log/20261106_125327.md`。回答は「学習ログに保存しました」。trace には1回目の `get_lecture_summary`・`search_glossary` も残っている（message_history がつながっている）。`[usage] requests=1, tool_calls=1`（2回目の run の分だけ） |
+| 承認処理あり・`n` | `[tool return] save_learning_log -> 利用者が保存を取りやめました`。回答は「保存が取り消されました。保存したい場合は改めて記録してとお知らせください」。ファイルは増えなかった。`[usage]` に tool_calls 無し |
+| `uv run pytest -q --ignore=tests/test_ask.py` | 11 passed。`learning_log/` のファイルは増えなかった |
+
+#### 気づき・疑問
+
+| 項目 | 内容 |
+|---|---|
+| docstring に「承認を挟む」と書くと呼ばれなくなった | 最初の docstring に「実行前に利用者の承認を挟む」と書いたところ、モデルはツールを呼ばず、文章で「保存してよろしいですか？」と聞いて終わった（`[tool call] save_learning_log` 無し、requests=3）。「承認は呼び出し側のプログラムが自動で求めるので、ツールを呼ぶ前に確認する必要はない」に書き換えると、ツールを呼ぶようになり CLI の承認が出た。承認はプログラム側（requires_approval）の仕事なので、モデルには知らせないほうがよい |
+| 見出しが二重になった | ツール側で `# {title}` を書く一方、モデルも content の先頭に `# ...` を入れたため、保存ファイルの見出しが2行重なった（2回とも）。docstring の content の説明に「見出し行はツール側で付けるので本文に含めない」と足したら、重ならなくなった。ツールの決め事は docstring に書かないとモデルには伝わらない |
+| Args/Returns を書くと引数ごとの説明が付く | `--list-tools` で、save_learning_log の引数には description が付き、make_quiz（Args を書いていない）には付かなかった。docstring の Google 形式をフレームワークが構造として読んでいる |
+| usage の数え方 | 承認後の `result.usage` は2回目の run の分だけ（requests=1）。全体の回数は1回目（requests=4）と足す必要がある。承認待ちや拒否されたツールは `tool_calls` に数えられない |
+| 疑問 | `HandleDeferredToolCalls` という、run を止めずに同じプロセス内で承認を処理する方式が公式ドキュメントにある。CLI のような同一プロセスならそちらでもよさそうだが、止めて再実行する方式との使い分けの基準は何か |
+  
   以上　2026/11/06
