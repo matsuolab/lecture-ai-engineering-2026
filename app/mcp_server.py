@@ -25,6 +25,7 @@ server = MCPServer(
 
 # 第3回と同じ関数を、そのまま MCP のツールとして公開する。docstring と型ヒントが説明文になる
 server.tool()(tools.search_glossary)
+server.tool()(tools.save_learning_log)
 
 # TODO(第5回 演習): tools.get_lecture_summary も公開しよう（上の1行と同じ書き方）
 # 第3回で make_quiz を作った人は、それも公開できる
