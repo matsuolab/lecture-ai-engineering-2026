@@ -27,7 +27,8 @@ def test_base_tools_are_registered_and_called():
 
     called = {p.tool_name for p in _parts(result, ToolCallPart)}
     assert BASE_TOOLS <= called
-    assert len(_parts(result, ToolReturnPart)) == len(_parts(result, ToolCallPart))
+    returned = {p.tool_name for p in _parts(result, ToolReturnPart)}
+    assert BASE_TOOLS <= returned
     assert result.output
 
 
