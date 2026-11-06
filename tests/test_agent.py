@@ -5,13 +5,13 @@ TestModel は実際のLLMを呼ばない偽モデルで、登録されたツー�
 「ツールが登録され、呼ばれ、結果がモデルに戻るか」を確かめられる。
 """
 
-from pydantic_ai import DeferredToolRequests
+from pydantic_ai import DeferredToolRequests, DeferredToolResults
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
 from app.agent import agent
 
-BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
+BASE_TOOLS = {"search_glossary", "get_lecture_summary", "make_quiz", "save_learning_log"}
 
 
 def _parts(result, kind):
@@ -40,3 +40,24 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_save_learning_log_waits_for_approval(tmp_path, monkeypatch):
+    from app import tools
+
+    monkeypatch.setattr(tools, "LOG_DIR", tmp_path / "learning_log")
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        result = agent.run_sync("今日学んだことを記録して")
+
+        assert isinstance(result.output, DeferredToolRequests)
+        assert not tools.LOG_DIR.exists()
+        request = result.output.approvals[0]
+        result = agent.run_sync(
+            message_history=result.all_messages(),
+            deferred_tool_results=DeferredToolResults(
+                approvals={request.tool_call_id: True}
+            ),
+        )
+
+    assert (tools.LOG_DIR / "learning_log.md").exists()
