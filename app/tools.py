@@ -77,3 +77,36 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+import random
+
+
+def make_quiz(lecture: int) -> str:
+    """指定された回（講義番号）の用語集からランダムに1つ選び、
+
+    確認問題と、その答えとなる定義を返す。
+    「第2回の確認問題を出して」のように、確認問題や小テストを求められたときに使うこと。
+    """
+    glossary = load_glossary()
+    terms = [e for e in glossary if e.get("lecture") == lecture]
+
+    if not terms:
+        return f"第{lecture}回の用語が見つかりませんでした。"
+
+    chosen = random.choice(terms)
+    return json.dumps(
+        {
+            "question": f"「{chosen['term']}」とは何ですか？簡単に説明してください。",
+            "answer": chosen["definition"],
+        },
+        ensure_ascii=False,
+    )
+def save_learning_log(content: str) -> str:
+    """学習の記録やメモを learning_log/ フォルダのファイルに保存する。
+    ファイル保存は不可逆な操作のため、実行前にユーザーの承認が必要。
+    """
+    log_dir = DATA_DIR.parent / "learning_log"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    file_path = log_dir / "learning_notes.txt"
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write(content + "\n")
+    return f"学習ログを {file_path} に保存しました。"
