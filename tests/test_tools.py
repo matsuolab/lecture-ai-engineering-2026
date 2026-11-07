@@ -39,6 +39,20 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_save_learning_log_appends_jsonl(tmp_path, monkeypatch):
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path)
+
+    tools.save_learning_log("用語集からLLMについて学んだ")
+    tools.save_learning_log("次はプロンプトを復習する")
+
+    log_path = tmp_path / "learning_log.jsonl"
+    records = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()]
+    assert len(records) == 2
+    assert records[0]["note"] == "用語集からLLMについて学んだ"
+    assert records[1]["note"] == "次はプロンプトを復習する"
+    assert all(record["timestamp"] for record in records)
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
