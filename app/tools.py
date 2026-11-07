@@ -34,6 +34,7 @@ def search_glossary(query: str) -> str:
 
     AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
     答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+    複数の用語を比較する場合は、用語ごとにこのツールを１回ずつ呼び出すこと。
     """
     q = _normalize(query)
     if not q:
