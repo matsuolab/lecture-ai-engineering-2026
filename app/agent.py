@@ -27,6 +27,9 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
+from app.tools import search_glossary, get_lecture_summary, make_quiz, save_learning_log
+# pydantic_ai から DeferredToolRequests をインポート
+from pydantic_ai import Agent, DeferredToolRequests
 
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
@@ -38,11 +41,18 @@ INSTRUCTIONS = """\
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+#agent = Agent(instructions=INSTRUCTIONS),output_type=[str, DeferredToolRequests]
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests]
+)
+
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)
+agent.tool_plain(save_learning_log, requires_approval=True)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -129,6 +139,15 @@ def main() -> None:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
         result = target.run_sync(args.question, model=build_model())
+        # 返り値が DeferredToolRequests（承認待ち）の場合の処理を追加
+        if isinstance(result.output, DeferredToolRequests):
+                print("\n[承認待ち] ファイル保存ツール(save_learning_log)の実行には利用者の承認が必要です！")
+                for call in result.output.calls:
+                    print(f"  ・呼び出しツール: {call.tool_name}")
+                    print(f"  ・引数: {call.args}")
+        else:
+                print(result.output)
+                
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
