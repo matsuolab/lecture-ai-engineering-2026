@@ -10,5 +10,8 @@ __pycache__/
 # 個人の学習ログ（第3回の宿題で作成）は共有しない
 learning_log/
 
+# ADKのローカルセッション履歴は共有しない
+adk_agent/**/.adk/
+
 # macOS
 .DS_Store
