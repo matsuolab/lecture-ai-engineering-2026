@@ -39,6 +39,37 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_make_quiz_selects_term_from_requested_lecture(monkeypatch):
+    expected = next(term for term in tools.load_glossary() if term["lecture"] == 2)
+    monkeypatch.setattr(tools.random, "choice", lambda terms: terms[0])
+
+    quiz = json.loads(tools.make_quiz(2))
+
+    assert quiz["term"] == expected["term"]
+    assert quiz["question"] == f"「{expected['term']}」とは何ですか？"
+    assert quiz["answer"] == expected["definition"]
+
+
+def test_make_quiz_reports_missing_lecture():
+    assert "第99回" in tools.make_quiz(99)
+    assert "用語集にありません" in tools.make_quiz(99)
+
+
+def test_save_learning_log_writes_json(tmp_path, monkeypatch):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LOG_DIR", log_dir)
+
+    result = tools.save_learning_log("RAG", "検索結果を使って回答を補強する")
+
+    saved_files = list(log_dir.glob("*.json"))
+    assert len(saved_files) == 1
+    assert json.loads(saved_files[0].read_text(encoding="utf-8")) == {
+        "topic": "RAG",
+        "note": "検索結果を使って回答を補強する",
+    }
+    assert saved_files[0].name in result
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
