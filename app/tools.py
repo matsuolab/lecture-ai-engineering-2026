@@ -6,6 +6,7 @@
 
 import json
 import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
@@ -98,3 +99,27 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+
+def save_learning_log(quiz_result: str, lecture: int | None = None) -> str:
+    """make_quiz の実行結果を学習記録として learning_log フォルダに保存する。
+
+    quiz_result には make_quiz が返した文字列を渡し、lecture には対象回を整数で渡す。
+    保存した際は保存先のファイル名を返す。
+    """
+    learning_log_dir = DATA_DIR / "learning_log"
+    learning_log_dir.mkdir(parents=True, exist_ok=True)
+
+    saved_at = datetime.now()
+    filename = saved_at.strftime("%Y%m%d_%H%M%S_%f") + ".json"
+    record = {
+        "tool": "make_quiz",
+        "lecture": lecture,
+        "quiz_result": quiz_result,
+        "saved_at": saved_at.isoformat(),
+    }
+    (learning_log_dir / filename).write_text(
+        json.dumps(record, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return f"学習記録を保存しました: data/learning_log/{filename}"
