@@ -1,4 +1,4 @@
-# Lecture 05 Exercises and Homework: Expose and Use Tools Through an MCP Server
+# Lecture 06 Exercises and Homework: Expose and Use Tools Through an MCP Server
 
 ## Goals for This Session
 
@@ -8,21 +8,21 @@
 
 ## Preparation
 
-If you have completed the work from previous sessions, create branch `lec05` from `main`.
+If you have completed the work from previous sessions, create branch `lec06` from `main`.
 This session adds dependencies, so run `uv sync --frozen` once.
 
 ```bash
-git switch main && git switch -c lec05
+git switch main && git switch -c lec06
 uv sync --frozen
 ```
 
-Otherwise, you can create a branch from the course repository's starting code (the `lec05-start` tag).
+Otherwise, you can create a branch from the course repository's starting code (the `lec06-start` tag).
 
 ```bash
 git remote -v                     # If upstream is missing, add it with the next line
 git remote add upstream https://github.com/matsuolab/lecture-ai-engineering-2026.git
 git fetch upstream --tags
-git switch -c lec05 lec05-start
+git switch -c lec06 lec06-start
 uv sync --frozen
 ```
 
@@ -32,7 +32,7 @@ uv sync --frozen
 
 ```bash
 uv run python -m app.agent --list-tools          # Lecture 03: tools registered directly as functions
-uv run python -m app.agent --mcp --list-tools    # Lecture 05: tools received from MCP servers
+uv run python -m app.agent --mcp --list-tools    # Lecture 06: tools received from MCP servers
 ```
 
 Neither command calls an LLM, so both work without an API key.
@@ -52,7 +52,7 @@ Internally, `build_mcp_agent()` in `app/agent.py` reads the configuration file, 
 
 ### 3. Expose One More Tool
 
-At `TODO(Lecture 05 exercise)` in `app/mcp_server.py`, expose `get_lecture_summary` through MCP too (one line, written the same way as for `search_glossary`).
+At `TODO(Lecture 06 exercise)` in `app/mcp_server.py`, expose `get_lecture_summary` through MCP too (one line, written the same way as for `search_glossary`).
 
 ```bash
 uv run python -m app.agent --mcp --list-tools
@@ -93,7 +93,7 @@ uv run python -m app.agent --mcp --trace "Summarize the opening of https://model
 
 ### 5. Submit
 
-Fill in `lectures/05/answer.md` and open a PR from `lec05` to `main` in your own fork.
+Fill in `lectures/06/answer.md` and open a PR from `lec06` to `main` in your own fork.
 
 ## Homework (Complete Any One Level)
 

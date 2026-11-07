@@ -1,4 +1,4 @@
-"""Lecture 05: expose the glossary and session key points through an MCP server.
+"""Lecture 06: expose the glossary and session key points through an MCP server.
 
 Usage:
     uv run python -m app.agent --mcp --list-tools   # List tools exposed by this server (no API key needed)
@@ -27,7 +27,7 @@ server = MCPServer(
 # Expose the same function as in Lecture 03 as an MCP tool. Its docstring and type hints become the description
 server.tool()(tools.search_glossary)
 
-# TODO(Lecture 05 exercise): expose tools.get_lecture_summary too (the same form as the line above)
+# TODO(Lecture 06 exercise): expose tools.get_lecture_summary too (the same form as the line above)
 # If you created make_quiz in Lecture 03, you can expose it too
 
 
