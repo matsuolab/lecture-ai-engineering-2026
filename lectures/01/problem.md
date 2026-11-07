@@ -111,5 +111,15 @@ AIE_MODEL=gemini-3-flash-preview uv run python -m app.ask "AIE2026第1回の宿�
 ```
 
 無料枠のレート制限はモデルごとに異なる場合があります。短時間に呼び出しすぎると `429` になることがあるため、エラーが出たら少し待ってから再実行し、モデルごとの制限は [Gemini API のレート制限](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。測定結果からは、呼び出し回数やトークン数と制限の関係を考察します。応答時間は通信状況などでも変わるので、複数回測って傾向を比較しましょう。
+### 呼び出すモデルについての補足
+モデルの仕様は更新されることがあります。  
+gemini 3.5 flashにおいては、Gemini APIのドキュメントが更新され、非推奨となりgemini 3.6 flashへ転送されるようになりました。
+
+- 参考：Gemini 3.5 Flashのドキュメント
+https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash?hl=ja
+
+このように、サービスとして提供されているLLMは頻繁に仕様が変わるため、サービス仕様のドキュメントを確認するなどの習慣を付けておき仕様変更に対応しましょう。
+
+第1回の宿題においては、任意にモデルを変えて実施していただければ問題ありません。
 
 temperature を変えるには、`generate_content` の `config` 引数を調べてみましょう。
