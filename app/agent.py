@@ -25,6 +25,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
+
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
 
@@ -38,11 +39,23 @@ INSTRUCTIONS = """\
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+
+
+# 修正後
+from pydantic_ai import Agent, DeferredToolRequests
+
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests],
+)
 agent.tool_plain(tools.search_glossary)
-agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(tools.make_quiz)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
+
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+# app/agent.py の該当部分に追加
+
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -50,7 +63,6 @@ MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
 
 def load_mcp_servers(config_path: Path = MCP_CONFIG) -> list[MCPToolset]:
     """設定ファイル（mcpServers 形式）を読み、サーバーごとに接続（MCPToolset）を作る。
-
     - "command" があれば stdio：サーバーをサブプロセスとして起動する
     - "url" があれば Streamable HTTP：起動済みのサーバーに接続する
     ツール名には「サーバー名_」を付ける（例: glossary_search_glossary）。複数のサーバーに
@@ -132,7 +144,15 @@ def main() -> None:
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
-    print(result.output)
+    # --- ここから書き換え・追加部分 ---
+    if isinstance(result.output, DeferredToolRequests):
+        print("\n--- 承認待ちの操作が発生しました ---")
+        for req in result.output.calls:
+            print(f"実行しようとしているツール: {req.tool_name}")
+            print(f"引数: {req.args}")
+    else:
+        print(result.output)
+
     if args.trace:
         print_trace(result)
 
