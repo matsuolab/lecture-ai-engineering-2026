@@ -43,6 +43,8 @@ agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+from app.tools import make_quiz
+agent.tool_plain(make_quiz)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -139,3 +141,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
