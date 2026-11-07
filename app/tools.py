@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
@@ -67,6 +68,27 @@ def search_glossary(query: str) -> str:
     )
 
 
+def make_quiz(lecture: int) -> str:
+    """指定した講義回の用語集から1つ選び、確認問題を作る。
+
+    学習者が特定の講義回の内容を復習したいときに使う。
+    lectureには講義回を整数で指定する。
+    """
+    terms = [
+        entry for entry in load_glossary()
+        if entry["lecture"] == lecture
+    ]
+
+    if not terms:
+        return f"第{lecture}回の用語は見つかりませんでした。"
+
+    entry = random.choice(terms)
+
+    return (
+        f"【第{lecture}回の確認問題】\n"
+        f"問題：{entry['term']} の意味は？\n"
+        f"答え：{entry['definition']}"
+    )
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
