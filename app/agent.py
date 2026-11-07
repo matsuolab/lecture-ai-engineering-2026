@@ -28,19 +28,31 @@ from pydantic_ai.providers.google import GoogleProvider
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
 
+from app.tools import get_lecture_summary, search_glossary, make_quiz
+
+tools = [
+    search_glossary,
+    get_lecture_summary,
+    make_quiz,  # <-- ここに追加
+]
+
+
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
-- 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。
 - 回の内容を聞かれたら get_lecture_summary を使う。
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 確認問題を求められたらmake_quizを使う
 """
 
-# モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
+from app.tools import get_lecture_summary, search_glossary, make_quiz
+
 agent = Agent(instructions=INSTRUCTIONS)
-agent.tool_plain(tools.search_glossary)
-agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(search_glossary)
+agent.tool_plain(get_lecture_summary)
+agent.tool_plain(make_quiz)
+
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
@@ -139,3 +151,14 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つを選び、
+    確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    # 1. load_glossary() から lecture が一致する用語を集める
+    # 2. 1 つ選ぶ（random.choice ）
+    # 3. 問題と答えを文字列で返す（ json.dumps など）
