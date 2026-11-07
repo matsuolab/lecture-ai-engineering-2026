@@ -16,7 +16,7 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -27,6 +27,7 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
+from pydantic_ai import Agent, DeferredToolRequests
 
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
@@ -35,14 +36,26 @@ INSTRUCTIONS = """\
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- ユーザーが「学んだ」「わかった」「気づいた」「覚えておいて」「メモして」など、学びや気づきを伝えてきたら、
+  返事を書く前に必ず save_learning_log を呼んで保存する。保存してよいかをユーザーに聞き返さない。
+  - 保存の前に search_glossary で関係する回を確認し、content の「## 関係する回」に書く。推測で回を書かない。
+  - filename: トピックだけを書く（例: ツール）。日付はツールが自動で付ける。
+  - content: 「## 学んだこと」「## 関係する回」の見出しを付け、ユーザーの言葉をもとに箇条書きでまとめる。
+  - ツールが保存成功を返したときだけ「保存しました: <保存先>」と添える。拒否されたら保存したとは言わない。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+
+agent = Agent(instructions=INSTRUCTIONS,
+               output_type=[str, DeferredToolRequests])
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
-
+agent.tool_plain(
+    tools.save_learning_log,
+    requires_approval=True,
+)
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -129,9 +142,28 @@ def main() -> None:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
         result = target.run_sync(args.question, model=build_model())
+
+        # ↓ ここから追加：承認待ちのツール呼び出しがある間、利用者に確認する
+        while isinstance(result.output, DeferredToolRequests):
+            approvals = DeferredToolResults()
+            for call in result.output.approvals:
+                print(f"\n[承認確認] {call.tool_name}({call.args})")
+                ans = input("実行してよいですか？ [y/N]: ").strip().lower()
+                if ans == "y":
+                    approvals.approvals[call.tool_call_id] = True
+                else:
+                    approvals.approvals[call.tool_call_id] = ToolDenied("利用者が保存を拒否しました")
+            result = target.run_sync(
+                message_history=result.all_messages(),
+                deferred_tool_results=approvals,
+                model=build_model(),
+            )
+        # ↑ ここまで
+
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
+
     print(result.output)
     if args.trace:
         print_trace(result)
