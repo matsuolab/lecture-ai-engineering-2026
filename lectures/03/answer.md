@@ -55,13 +55,30 @@ data/glossary.json の定義
 },
 
 - 第1回（素のLLM）とエージェントの回答の違い：第1回は定義と比べて必要以上で書かれていない情報を付け加えてしまっていたのに対し、第3回のものは書かれている内容だけで回答が簡潔になっている。
-- `--trace` で見えたツール呼び出し（ツール名と引数）：
-- 1つの質問での LLM 呼び出し回数（`requests`）：
+- `--trace` で見えたツール呼び出し（ツール名と引数）：`make_quiz({'lecture': 2})`
+- 1つの質問での LLM 呼び出し回数（`requests`）：2
 - 追加したツールと、docstring に書いた説明：
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から確認問題を1問作る。
+
+    「第2回の確認問題を出して」のように問題を求められたときに使う。
+    """
+    terms = [term for term in load_glossary() if term["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語が見つからないため、問題を作れません。"
+
+    term = random.choice(terms)
+    return json.dumps(
+        {
+            "question": f"「{term['term']}」の意味は？",
+            "answer": term["definition"],
+        },
+        ensure_ascii=False,
+    )
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
-- 結果：
-- 気づき・疑問：
+- 取り組んだレベル：基礎
+- やったこと：`app/tools.py` の `search_glossary` の docstring を「用語を1つだけ入れる」から「用語をまとめて入れる」に変更し、同じ質問 `LoRAとQLoRAの違いは？` を `--trace` 付きで実行した。
+- 結果：変更前は `search_glossary({'query': 'LoRA'})` と `search_glossary({'query': 'QLoRA'})` の2回、変更後は `search_glossary({'query': 'LoRA QLoRA'})` の1回だった。どちらも用語集の内容に沿って回答した。`requests` はどちらも2だった。
+- 気づき・疑問：複数の用語をまとめて検索するとツール呼び出し回数は減ったが、LLMへのリクエスト数は変わらなかった。変更後の回答は少し詳しい表現になった。

@@ -49,7 +49,9 @@ uv run python -m app.agent "AIE2026の講座の宿題にある「3レベル」�
 ### 3. ツール呼び出しを読む
 
 ```bash
-uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"
+$ uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"
+[model] gemini-3.5-flash-lite
+モデルが混み合っています（503）。少し待ってから再実行してください。
 ```
 
 `[tool call]` の行で、モデルがどのツールをどんな引数で呼んだかを確認します。`[usage]` の `requests` は、1つの質問で LLM を何回呼んだかを表します。
