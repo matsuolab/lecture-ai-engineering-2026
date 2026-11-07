@@ -5,10 +5,13 @@
 """
 
 import json
+import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -67,6 +70,18 @@ def search_glossary(query: str) -> str:
     )
 
 
+def make_quiz(lecture: int) -> str:
+    """「第N回の確認問題を出して」と頼まれたときに、用語集から問題と答えを作るために使う。"""
+    terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語が見つかりませんでした。"
+    entry = random.choice(terms)
+    return json.dumps(
+        {"question": f"{entry['term']}の意味は？", "answer": entry["definition"]},
+        ensure_ascii=False,
+    )
+
+
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
@@ -77,3 +92,17 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(content: str) -> str:
+    """利用者が学習記録の保存を依頼したとき、承認後に記録を Markdown ファイルとして保存する。"""
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    while True:
+        filename = f"{datetime.now():%Y%m%d_%H%M%S_%f}.md"
+        path = LEARNING_LOG_DIR / filename
+        try:
+            with path.open("x", encoding="utf-8") as file:
+                file.write(content)
+        except FileExistsError:
+            continue
+        return f"学習記録を保存しました: learning_log/{filename}"
