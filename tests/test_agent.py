@@ -5,6 +5,7 @@ TestModel は実際のLLMを呼ばない偽モデルで、登録されたツー�
 「ツールが登録され、呼ばれ、結果がモデルに戻るか」を確かめられる。
 """
 
+from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
@@ -27,7 +28,8 @@ def test_base_tools_are_registered_and_called():
 
     called = {p.tool_name for p in _parts(result, ToolCallPart)}
     assert BASE_TOOLS <= called
-    assert len(_parts(result, ToolReturnPart)) == len(_parts(result, ToolCallPart))
+    deferred = len(result.output.approvals) if isinstance(result.output, DeferredToolRequests) else 0
+    assert len(_parts(result, ToolReturnPart)) + deferred == len(_parts(result, ToolCallPart))
     assert result.output
 
 

@@ -10,6 +10,7 @@ from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = DATA_DIR.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -99,3 +100,20 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習ログを保存する。
+
+    学習内容を後から振り返るために使う。ファイルを書き込むため、
+    利用者の承認を得てから実行する。
+    """
+    if not title.strip():
+        return "学習ログのタイトルが空です。"
+    if Path(title).name != title or title in {".", ".."}:
+        return "学習ログのタイトルにパス区切りや親ディレクトリは指定できません。"
+
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LEARNING_LOG_DIR / f"{title}.md"
+    path.write_text(content, encoding="utf-8")
+    return f"学習ログを保存しました: {path.relative_to(LEARNING_LOG_DIR.parent)}"
