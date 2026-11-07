@@ -1,6 +1,6 @@
 {
   "version": "2026-draft-1",
-  "note": "Draft glossary for Lecture 01–03 and Lecture 05 of AIE2026. Replace content once the lecture slides are finalized.",
+  "note": "Draft glossary for Lecture 01–04 and Lecture 06 of AIE2026. Replace content once the lecture slides are finalized.",
   "terms": [
     {
       "id": "ai-engineering",
@@ -395,7 +395,7 @@
       "aliases": ["MCP", "Model Context Protocol"],
       "lecture": 3,
       "category": "Agents",
-      "definition": "An open standard protocol connecting AI applications to external tools and data sources. Tools exposed through an MCP server can be used in a common way from compatible agents and editors (MCP clients). In Lecture 05, you will experience this by turning glossary search into an MCP server.",
+      "definition": "An open standard protocol connecting AI applications to external tools and data sources. Tools exposed through an MCP server can be used in a common way from compatible agents and editors (MCP clients). In Lecture 06, you will experience this by turning glossary search into an MCP server.",
       "related": ["tool", "ai-agent", "mcp-server", "mcp-client"]
     },
     {
@@ -465,7 +465,7 @@
       "id": "external-tool",
       "term": "External tool",
       "aliases": ["external tool", "external service"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "Using capabilities outside the agent program, such as web retrieval, file operations, databases, and third-party APIs, as tools. Lecture 03 function tools run within the same process, whereas external tools are called across processes or machines. MCP is a common protocol for this.",
       "related": ["tool", "mcp", "mcp-server"]
@@ -474,7 +474,7 @@
       "id": "mcp-server",
       "term": "MCP server",
       "aliases": ["MCP server"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "The program that exposes tools (and resources or prompts) through MCP. It exposes tool names, descriptions, and argument schemas, executes tools in response to client requests, and returns results. In this course, glossary search becomes an MCP server (app/mcp_server.py). Many ready-made servers are available, including fetch, filesystem, and GitHub.",
       "related": ["mcp", "mcp-client", "mcp-transport", "fetch-server"]
@@ -483,7 +483,7 @@
       "id": "mcp-client",
       "term": "MCP client",
       "aliases": ["MCP client", "MCP host"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "The component that connects to MCP servers, passes their tools to the model, and calls tools as directed by the model. Agent programs (Pydantic AI's MCPToolset) and editors or applications such as Copilot Chat, Claude Desktop, and Cursor can serve as clients. A benefit of MCP is using the same server from different clients.",
       "related": ["mcp", "mcp-server", "mcp-config"]
@@ -492,7 +492,7 @@
       "id": "mcp-transport",
       "term": "Transport (stdio / Streamable HTTP)",
       "aliases": ["stdio", "Streamable HTTP", "transport", "MCP transport"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "The communication channel between an MCP client and server. With stdio, the client starts the server as a subprocess and exchanges messages through standard input/output (simple and used on the same machine). With Streamable HTTP, the server listens at a URL, allowing connections from other processes or machines (access scope and authentication must be considered).",
       "related": ["mcp-server", "mcp-client"]
@@ -501,7 +501,7 @@
       "id": "mcp-config",
       "term": "mcpServers configuration",
       "aliases": ["mcpServers", "MCP configuration file", "mcp_servers.json", "mcp.json"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "A configuration file listing MCP servers to use. For each server, specify a name and a startup command (stdio) or destination URL (HTTP). Claude Desktop, Cursor, and Pydantic AI read the same mcpServers format (VS Code / Copilot Chat uses servers). This course uses app/mcp_servers.json. Adding tools with just a few configuration lines is central to the MCP experience.",
       "related": ["mcp-client", "tool-namespace"]
@@ -510,7 +510,7 @@
       "id": "tool-namespace",
       "term": "Tool namespace",
       "aliases": ["tool-name prefix", "prefix", "name collision"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "Adding a prefix such as \"server_name_tool_name\" to distinguish identically named tools when using multiple MCP servers. This course's app/agent.py automatically adds the server name from the configuration (for example, glossary_search_glossary; Pydantic AI's load_mcp_toolsets does the same). More tools mean more descriptions sent to the model, affecting tool-selection accuracy and token counts.",
       "related": ["mcp-config", "tool-description", "rate-limit"]
@@ -519,10 +519,73 @@
       "id": "fetch-server",
       "term": "fetch server",
       "aliases": ["mcp-server-fetch", "fetch", "web retrieval tool"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "A ready-made MCP server that retrieves a specified URL and returns the page body as Markdown (written in Python; started with uvx mcp-server-fetch). This course uses it as an example of \"adding an external tool just through configuration\". It actually accesses URLs chosen by the model, so users must understand where it sends data and what it sends.",
       "related": ["mcp-server", "external-tool", "guardrail"]
+    },
+    {
+      "id": "evaluation-dataset",
+      "term": "Evaluation set",
+      "aliases": ["evaluation dataset", "eval set", "test set"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "A collection of inputs and expected outputs or conditions for passing, prepared for evaluation. Deliberately include inputs likely to cause failures (edge cases), as well as normal cases, to see where the system fails. In the Lecture 04 exercises, students label ten cases prepared by the instructor.",
+      "related": ["edge-case", "rubric", "llm-as-a-judge"]
+    },
+    {
+      "id": "edge-case",
+      "term": "Edge case",
+      "aliases": ["edge case", "boundary case"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "An input at a boundary or in an unexpected form, such as empty or extremely long input, spelling variations, out-of-scope questions, or requests to override instructions. Deliberately include these in an evaluation set to check how the grader or agent behaves.",
+      "related": ["evaluation-dataset"]
+    },
+    {
+      "id": "rubric",
+      "term": "Rubric",
+      "aliases": ["rubric", "evaluation criteria", "grading criteria"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "Written criteria that define pass/fail conditions for each item. Give the same rubric to humans and LLMs for grading. Neither humans nor LLMs can resolve issues that the rubric leaves undecided, so decide a policy for items that divide judgments and add it to the rubric. This course uses data/eval/rubric.md.",
+      "related": ["evaluation-dataset", "llm-as-a-judge", "needs-review"]
+    },
+    {
+      "id": "llm-as-a-judge",
+      "term": "LLM-as-a-Judge",
+      "aliases": ["LLM grading", "LLM judge", "automated grading"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "A method of giving an LLM a grading rubric and asking it to judge another model's outputs. It can grade many outputs quickly and inexpensively, but the grader's biases, such as preferring verbose answers or being influenced by order, affect the results. Check agreement with human judgments before relying on it.",
+      "related": ["rubric", "agreement-rate", "position-bias", "structured-output"]
+    },
+    {
+      "id": "agreement-rate",
+      "term": "Agreement rate",
+      "aliases": ["agreement rate", "agreement with humans", "inter-rater agreement"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "The proportion of cases where two judgments (human and LLM, or two humans) give the same result. It provides evidence for whether the grader can be trusted. Humans also disagree on subjective criteria, so the attainable agreement rate is not 100%.",
+      "related": ["llm-as-a-judge", "rubric"]
+    },
+    {
+      "id": "needs-review",
+      "term": "Needs review",
+      "aliases": ["unsure", "human review", "review required"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "Send items that cannot be judged automatically (where the LLM answers unsure) to a queue for human review. Exclude them from agreement calculations. Review items indicate issues the rubric has not covered, so decide a policy and add it to the rubric.",
+      "related": ["rubric", "llm-as-a-judge"]
+    },
+    {
+      "id": "position-bias",
+      "term": "Position bias",
+      "aliases": ["position bias", "order bias"],
+      "lecture": 4,
+      "category": "Evaluation",
+      "definition": "A grading bias in which the order of presentation, rather than content, influences the judgment when two answers are shown side by side and the grader is asked which is better. Check by swapping the order and seeing whether the result stays the same. Along with verbosity bias, which favors longer answers, it is a common grading bias.",
+      "related": ["llm-as-a-judge"]
     }
   ]
 }

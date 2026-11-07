@@ -1,4 +1,4 @@
-"""Lecture 05: MCP server/client wiring tests (no LLM or API key used).
+"""Lecture 06: MCP server/client wiring tests (no LLM or API key used).
 
 Actually start the glossary server from app/mcp_servers.json (stdio), and use TestModel
 to check that tools are exposed through MCP, called, and return results.
