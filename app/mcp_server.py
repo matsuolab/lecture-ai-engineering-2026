@@ -1,4 +1,4 @@
-"""第5回: 用語集と各回の要点を MCP サーバーとして公開する。
+"""第6回: 用語集と各回の要点を MCP サーバーとして公開する。
 
 使い方:
     uv run python -m app.agent --mcp --list-tools   # このサーバーが公開するツールを一覧する（APIキー不要）
@@ -27,7 +27,8 @@ server = MCPServer(
 server.tool()(tools.search_glossary)
 server.tool()(tools.make_quiz)
 
-# TODO(第5回 演習): tools.get_lecture_summary も公開しよう（上の1行と同じ書き方）
+# TODO(第6回 演習): tools.get_lecture_summary も公開しよう（上の1行と同じ書き方）
+# 第3回で make_quiz を作った人は、それも公開できる
 
 
 def main() -> None:
