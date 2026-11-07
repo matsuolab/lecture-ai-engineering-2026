@@ -4,6 +4,9 @@
 説明文を書き換えると、モデルがツールを使うかどうか・どんな引数で呼ぶかが変わる。
 """
 
+import re
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import json
 import random
 from functools import cache
@@ -100,3 +103,32 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+def save_learning_log(filename: str, content: str) -> str:
+    """利用者の学びや気づきを learning_log/ に Markdown で保存する。
+
+    利用者が「学んだ」「わかった」「覚えておいて」など、学習した内容を伝えてきたときに使う。
+    保存前に利用者の承認が入る。
+
+    Args:
+        filename: トピックを表す短い名前。例: "ツール"。日付と .md は自動で付くので書かない。
+        content: Markdown 本文。学んだこと・関係する回を箇条書きでまとめる。
+    """
+
+    log_dir = Path("learning_log")
+    log_dir.mkdir(exist_ok=True)
+
+    # 日付はモデルに推測させず、コード側で今日の日付を付ける
+    # （モデルが日付を付けてきても一度取り除いてから付け直す）
+    topic = re.sub(r"^\d{4}-\d{2}-\d{2}_?", "", filename)
+    today = datetime.now(ZoneInfo("Asia/Tokyo")).date().isoformat()  # 日本時間の日付
+    filename = f"{today}_{topic}"
+
+    # 拡張子がなければ .md を付ける
+    if not filename.endswith(".md"):
+        filename += ".md"
+
+    save_path = log_dir / filename
+    save_path.write_text(content, encoding="utf-8")
+
+    return f"学習記録を {save_path} に保存しました。"
