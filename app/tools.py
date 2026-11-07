@@ -5,11 +5,14 @@
 """
 
 import json
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LOG_DIR = DATA_DIR.parent / "learning_log"
 MAX_RESULTS = 3
+MAX_LOG_CHARS = 5000
 
 
 @cache
@@ -77,3 +80,30 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(content: str) -> str:
+    """利用者が「学習記録を保存して」「今日の学びを残して」と頼んだときに使う。
+
+    content に保存する本文を入れる。保存は取り消しにくいので実行前に承認が必要。
+    """
+    body = content.strip()
+    if not body:
+        return "本文が空のため、学習記録を保存しませんでした。"
+
+    truncated = len(body) > MAX_LOG_CHARS
+    body = body[:MAX_LOG_CHARS]
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    for suffix in range(100):
+        filename = f"{timestamp}{f'-{suffix}' if suffix else ''}.md"
+        path = LOG_DIR / filename
+        try:
+            with open(path, "x", encoding="utf-8") as f:
+                f.write(body)
+        except FileExistsError:
+            continue
+        note = f"（{MAX_LOG_CHARS}文字を超えた分は省略しました）" if truncated else ""
+        return f"学習記録を保存しました: {filename}{note}"
+
+    return "同じ時刻の学習記録が多すぎるため、保存しませんでした。少し待ってから、もう一度試してください。"

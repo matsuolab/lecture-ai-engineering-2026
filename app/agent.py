@@ -14,9 +14,11 @@
 import argparse
 import inspect
 import json
+import unicodedata
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
+from pydantic_ai.usage import RunUsage
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -35,12 +37,14 @@ INSTRUCTIONS = """\
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 利用者が学習記録の保存を頼んだら、save_learning_log を使う。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+agent = Agent(instructions=INSTRUCTIONS, output_type=[str, DeferredToolRequests])
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
@@ -109,6 +113,36 @@ def print_trace(result) -> None:
     print(f"[usage] {result.usage}")
 
 
+def ask_approval(requests: DeferredToolRequests, input_fn=input) -> DeferredToolResults:
+    """承認が必要なツールの呼び出しを、利用者に確認して結果を返す。"""
+    approvals: dict[str, bool | ToolDenied] = {}
+    for request in requests.approvals:
+        print(f"[approval] {request.tool_name}({request.args})")
+        try:
+            raw = input_fn("実行してよいですか? [y/N] ")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            raw = ""
+        answer = unicodedata.normalize("NFKC", raw).strip().lower()
+        approvals[request.tool_call_id] = True if answer == "y" else ToolDenied("利用者が拒否しました。")
+    return requests.build_results(approvals=approvals)
+
+
+def run_with_approval(target: Agent, question: str, model, input_fn=input):
+    """承認が必要なツールがあるときは、承認を挟んで再実行する。"""
+    usage = RunUsage()
+    result = target.run_sync(question, model=model, usage=usage)
+    while isinstance(result.output, DeferredToolRequests):
+        results = ask_approval(result.output, input_fn=input_fn)
+        result = target.run_sync(
+            model=model,
+            message_history=result.all_messages(),
+            deferred_tool_results=results,
+            usage=usage,
+        )
+    return result
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
@@ -128,7 +162,7 @@ def main() -> None:
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
-        result = target.run_sync(args.question, model=build_model())
+        result = run_with_approval(target, args.question, build_model())
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
