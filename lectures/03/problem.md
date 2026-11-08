@@ -21,6 +21,8 @@
 git switch main
 git pull --no-rebase
 git switch -c lec03
+git pull --no-rebase
+git switch -c lec03
 ```
 
 - `git switch main` で止まる場合は、前の回のブランチに変更が残っています。前の回のブランチで commit してから、もう一度実行してください
@@ -98,7 +100,7 @@ uv run pytest -q
 
 ```bash
 git add -A
-git commit -m "第3回 演習"
+ commit -m "第3回 演習"git
 git push -u origin lec03
 ```
 
