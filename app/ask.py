@@ -43,6 +43,7 @@ def main() -> None:
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
+    
 
 
 if __name__ == "__main__":
