@@ -1,0 +1,165 @@
+{
+  "summary": {
+    "label": "before_4bit",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.06666666666666667,
+    "both_rate": 0.0,
+    "seconds": 119.7,
+    "content_in": 0.2,
+    "content_paraphrase": 0.0,
+    "content_out": 0.0
+  },
+  "rows": [
+    {
+      "question": "「LoRA」とは何ですか？",
+      "kind": "in",
+      "raw": "**LoRA**（**Learning to Run** の略称）は、大規模言語モデル（LLM）や生成式 AI（Generative AI）において、**モデルの学習プロセスを制御するパラメータ**のことです。\n\n簡単に言うと、モデルが「学習する」のではなく、「学習する」ために必要な**制御パラメータ**を、モデルの内部に組み込むことで、モデルの出力がより人間が期待する方向に調整できる",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「量子化」とは何ですか？",
+      "kind": "in",
+      "raw": "「量子化」とは、**「量子力学」における「量子」の概念**を指します。\n\n一言で言うと、**「量子」は「量子化」のことで、量子力学の基礎となる「量子」が、現実世界では「量子化」された状態**（つまり、量子力学の概念）になります。\n\nより詳しく解説すると、以下のようになります。\n\n### 1. 量子とは何か？\n**量子**とは、**「",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「レート制限」とは何ですか？",
+      "kind": "in",
+      "raw": "「レート制限」とは、**サーバーのアクセス制限**（Rate Limiting）を指します。\n\nこれは、Web サーバーやデータベースなどのサーバーが、特定のユーザーやアプリケーションに対して、一定期間や一定の回数だけアクセスを許容する仕組みです。\n\n主な目的は以下の通りです：\n\n*   **サーバー負荷の管理**：ユーザーが大量にアクセスすると、サーバーの処理能力が不足し、エラーやパフォーマンス低下の原因になります。レート",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-start タグ」とは何ですか？",
+      "kind": "in",
+      "raw": "「lecNN-start」は、**「LecNN」**（学習型ニューラルネットワーク）の初期化やセットアップに関する**「start」**という単語を意味する**タグ（タグ）**です。\n\nこのタグは、特定のプロジェクトや環境設定において、学習型ニューラルネットワークの初期化プロセスを「スタート」する際に使用されるものです。\n\n### 主な意味と用途\n\n1.  **初期化プロセスの開始**\n    *",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「既定モデル」とは何ですか？",
+      "kind": "in",
+      "raw": "「既定モデル」とは、**「既存の知識やデータセットに基づいて構築された、特定の目的で設計されたモデル」**を指します。\n\n簡単に言うと、ある特定の分野（例：機械学習、画像認識、言語処理など）において、すでに多くの研究者や企業によって開発された「標準的な手法」や「標準的なデータセット」を指します。\n\nこのモデルを「既定モデル」と呼び出す主な理由は以下の通りです。\n\n*   **",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Low-Rank Adaptation ってどういう仕組み？",
+      "kind": "paraphrase",
+      "raw": "**Low-Rank Adaptation**（低秩適応）は、**低秩（Low-Rank）**という概念を基盤に、**Adaptation（適応）**という動作を指すことで、**「低秩なデータ（または画像）に対して、その特徴を最もよく表現できる低秩な変換（変換器）を用いて、その画像を再構築・再構築する」**ことを意味します。\n\n簡単に言うと、「画像",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "モデルの重みを 4 ビットで表すのは何のためですか？",
+      "kind": "paraphrase",
+      "raw": "モデルの重み（weight）を 4 ビット（4-bit）で表すのは、**「モデルの出力が非常に小さく、かつ非常に安定した値を生成する必要があるため」**という理由です。\n\n具体的には、以下の理由で 4 ビットを使用しています。\n\n1.  **出力値の制限**\n    4 ビットは 16 進数（16）の範囲（0〜15）に",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "API を呼びすぎて 429 エラーが返ってきました。これは何ですか？",
+      "kind": "paraphrase",
+      "raw": "API が「429 エラー」を返すことは、**「過剰なリクエスト（過剰な呼び出し）」**を意味します。\n\nこのエラーは、サーバー側があなたの API 呼び出しを「過剰に」受け取ったことを意味します。\n\n### 具体的な状況と対策\n\n**1. 何が起こっているか**\n*   **過剰な呼び出し**: 一度に 100 回以上",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "前の回が終わっていなくても次の回の演習を始めるには、何を使いますか？",
+      "kind": "paraphrase",
+      "raw": "前の回の演習が完了していない場合でも、次の回の演習を始めるには、**「演習本（教材）」**と**「演習用のノート/メモ帳」**が基本として使われます。\n\nそれぞれの役割と具体的な使い方は以下の通りです。\n\n### 1. 演習本（教材）\n*   **役割**: 知識の蓄積と復習の基礎\n*   **内容**: 過去問の解説、演",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "この講座の演習で標準に使うモデルは何ですか？",
+      "kind": "paraphrase",
+      "raw": "この講座の演習では、**「標準的なモデル（Standard Model）」**をベースに、**「ヒューマニズム（Humanism）」**や**「ヒューマニズムと倫理（Humanism and Ethics）」**というテーマを扱います。\n\n具体的には、以下の要素が標準的なモデルとして扱われます。\n\n1.  **ヒューマニズムの定義と原則**\n    *   人間が持つ「自由",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-end タグ」とは何ですか？",
+      "kind": "out",
+      "raw": "「lecNN」は、**「Learning with a Convolutional Network」**（学習するコンボニューラルネットワーク）の略称です。\n\nこの用語は、**Deep Learning（深層学習）**、特に**Convolutional Network（コンボニューラルネットワーク）**や**Attention Mechanism（注意力メカニズム）**などの手法を組み合わせる、**End-to-End（一貫性）**の学習アプローチとして広く使われています。\n\n###",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "AIE2026 の第4回では何を扱いますか？",
+      "kind": "out",
+      "raw": "AIE2026（アイルランド・イギリス・アメリカの国際会議）の第 4 回（2026 年 1 月 10 日〜12 日）は、**「AI と社会・倫理」**というテーマを重点的に扱う国際会議です。\n\nこの大会は、AI 技術が社会に与える影響や、AI 技術が社会に与える倫理的問題について",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「評価ハーネス」とは何ですか？",
+      "kind": "out",
+      "raw": "「評価ハーネス」（Evaluation Harness）とは、**評価（評価）とハーネス（ハーネス）を意味する言葉の組み合わせ**です。\n\nこの用語は、**「評価（評価）」**と**「ハーネス（ハーネス）」**を意味する言葉の組み合わせ**です。\n\n*   **評価（評価）**：評価（評価）\n*   **ハーネス（ハーネス）**：ハーネス（ハーネス）\n\nこの言葉は",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロンプトキャッシュ」とは何ですか？",
+      "kind": "out",
+      "raw": "「プロンプトキャッシュ」とは、**AI（大規模言語モデル）の学習や生成プロセスにおいて、ユーザーが事前に指定した特定の質問やタスクに対して、AI が一度に一度回答する「答え」を蓄積する仕組み**を指します。\n\n簡単に言うと、AI は一度に一度回答するのではなく、**「一度に一度回答する」のではなく「一度に一度回答する」**という表現が、その「答え」を蓄積する",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「蒸留」とは何ですか？",
+      "kind": "out",
+      "raw": "「蒸留」とは、**化学や生物学、あるいは化学反応の過程**において、物質が**蒸気（水蒸気）として逸出する**ことを指します。\n\nこの現象は、物質の**蒸気圧**や**蒸気量**を指します。\n\n### 基本的な特徴\n\n1.  **物質の逸出**\n    物質が蒸気として放出されるため、その物質の濃度や量が増",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    }
+  ]
+}

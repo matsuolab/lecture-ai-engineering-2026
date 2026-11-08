@@ -1,0 +1,165 @@
+{
+  "summary": {
+    "label": "rag",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.8666666666666667,
+    "both_rate": 0.0,
+    "seconds": 36.7,
+    "content_in": 1.0,
+    "content_paraphrase": 0.8,
+    "content_out": 0.8
+  },
+  "rows": [
+    {
+      "question": "「LoRA」とは何ですか？",
+      "kind": "in",
+      "raw": "LoRA は、事前学習済みの重みは固定したまま、重みの更新分を 2 つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習する PEFT 手法です。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「量子化」とは何ですか？",
+      "kind": "in",
+      "raw": "「量子化」とは、モデルの重みを少ないビット数（例：16 ビットから 4 ビット）で表し、メモリ使用量や計算量を減らす技術です。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「レート制限」とは何ですか？",
+      "kind": "in",
+      "raw": "「レート制限」とは、一定時間あたりに呼び出せるリクエスト数やトークン数の上限のことです。超えると HTTP 429などのエラーが返るため、エージェントは1つの質問で複数回LLMを呼ぶため上限に達しやすい。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-start タグ」とは何ですか？",
+      "kind": "in",
+      "raw": "「lecNN-start タグ」は、AIE2026 の講座 repo で、各回の演習開始時点のコードに付けている Git タグです。\n\n前の回が終わっていなくても、このタグからブランチを作ればその回の演習を始められる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「既定モデル」とは何ですか？",
+      "kind": "in",
+      "raw": "既定モデルとは、AIE2026 の演習と宿題で標準に使うモデルは **gemini-3.5-flash-lite** です。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Low-Rank Adaptation ってどういう仕組み？",
+      "kind": "paraphrase",
+      "raw": "確認が必要",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "モデルの重みを 4 ビットで表すのは何のためですか？",
+      "kind": "paraphrase",
+      "raw": "QLoRA においてモデルの重みを 4 ビットで表すのは、メモリを節約するために**量子化**（またはメモリ効率化）の技術です。\n\nこの技術は、モデルの重みを 16 ビットなどの大きなビット数から 4 ビットなどの小さなビット数に量子化することで、メモリ使用量や計算量を減らせます。ただし、精度は少し下がることがあります。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "API を呼びすぎて 429 エラーが返ってきました。これは何ですか？",
+      "kind": "paraphrase",
+      "raw": "API を呼びすぎて 429 エラーが返ってきました。これは「レート制限」という意味で、一定時間あたりに呼び出せるリクエスト数やトークン数の上限を超えたことを示しています。\n\n無料枠は特に制限が厳しく、エージェントは 1 つの質問で複数回 LLM を呼ぶため、この上限に達しやすいです。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "前の回が終わっていなくても次の回の演習を始めるには、何を使いますか？",
+      "kind": "paraphrase",
+      "raw": "「lecNN-start タグ」を使います。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "この講座の演習で標準に使うモデルは何ですか？",
+      "kind": "paraphrase",
+      "raw": "既定モデルは AIE2026 の演習と宿題で標準に使うモデルは **gemini-3.5-flash-lite** です。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-end タグ」とは何ですか？",
+      "kind": "out",
+      "raw": "確認が必要",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "AIE2026 の第4回では何を扱いますか？",
+      "kind": "out",
+      "raw": "AIE2026 の第4回では、**「宿題の3レベル」**の構成を扱います。\n\nその内容は以下の通りです：\n*   **基礎（講義内容の確認）**\n*   **実装（自分でコードを書く）**\n*   **発展（調査や試行）**\n\nこれらどれか1つに取り組めば、その回の宿題は完了します。原則として採点はしません。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「評価ハーネス」とは何ですか？",
+      "kind": "out",
+      "raw": "評価ハーネスとは、**「作る→測る→直すを繰り返す開発の進め方」**を指します。\n\nAI アプリは出力が確率的に揺れるため、感覚ではなく**評価データや指標**で良し悪しを判断し、その結果をもとにプロンプト・データ・モデル・ツールを改善するプロセスです。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロンプトキャッシュ」とは何ですか？",
+      "kind": "out",
+      "raw": "確認が必要",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「蒸留」とは何ですか？",
+      "kind": "out",
+      "raw": "確認が必要",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    }
+  ]
+}

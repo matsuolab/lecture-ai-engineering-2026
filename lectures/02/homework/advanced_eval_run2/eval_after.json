@@ -1,0 +1,165 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.3333333333333333,
+    "both_rate": 0.0,
+    "seconds": 48.7,
+    "content_in": 0.4,
+    "content_paraphrase": 0.4,
+    "content_out": 0.2
+  },
+  "rows": [
+    {
+      "question": "「LoRA」とは何ですか？",
+      "kind": "in",
+      "raw": "低ランク（低ランク）の重みを学習する手法。学習する重みを1次元に絞ることで、学習の安定性と計算量を上げる。本講座ではLoRAを扱う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「量子化」とは何ですか？",
+      "kind": "in",
+      "raw": "モデルの重みをより小さな数値で表し、メモリや計算量を増やすための手法。精度は少し落ちるが、学習や通信の負担は増さない。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「レート制限」とは何ですか？",
+      "kind": "in",
+      "raw": "1回のアクセスで使うリクエスト数や、1回のセッションで使うリクエスト数の上限。超過するとAPIが返らない（429）と、ユーザーが気づく前に制限を超過する。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-start タグ」とは何ですか？",
+      "kind": "in",
+      "raw": "LLMが学習する最初の100回のトレーニングデータ。最初の回目は入力と出力の両方をランダムに選ぶため、結果は大きく変わる。このように、学習の初期段階でデータを選ばない（または選択を避ける）仕組みを作るために使う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「既定モデル」とは何ですか？",
+      "kind": "in",
+      "raw": "モデルの構造やデータセットを事前に決めること。学習するデータは自分で選んで、出力は自分で決める。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Low-Rank Adaptation ってどういう仕組み？",
+      "kind": "paraphrase",
+      "raw": "モデルの低ランク（低ランクの重み）を、入力データや出力結果で補完して、モデルに渡すこと。補完された入力や出力をモデルに渡すことで、モデルが学習した低ランクの重みを活かして、入力や出力に合ったモデルを構築できる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "モデルの重みを 4 ビットで表すのは何のためですか？",
+      "kind": "paraphrase",
+      "raw": "1ビットでは0と1の2の幂の倍数（0, 2, 4, 8）を区別できず、2の倍数以上の状態を1とみなして誤りが増える。4ビットは2^4=16の倍数を1とみなせるため、状態の区分度が増える。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "API を呼びすぎて 429 エラーが返ってきました。これは何ですか？",
+      "kind": "paraphrase",
+      "raw": "1 回の呼び出しで受け取るリクエストの上限。超過するとサーバーに負荷がかかり、2 回も試して上限を越さないとエラーになる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "前の回が終わっていなくても次の回の演習を始めるには、何を使いますか？",
+      "kind": "paraphrase",
+      "raw": "Claude Codeの「演習モード」で、回番号を指定して次の回の演習を始める。回番号は回番号ではなく、演習の番号（例：1, 2, 3）で指定する。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "この講座の演習で標準に使うモデルは何ですか？",
+      "kind": "paraphrase",
+      "raw": "GPT-4o（2.5）",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-end タグ」とは何ですか？",
+      "kind": "out",
+      "raw": "LLMが学習する最初のモデル（0.1〜0.3の学習率で学習したモデル）は、学習済みの知識をそのまま使うため、特定のタスクやフォーマットに強い。本講座の第1回演習では、このモデルをlecNNで使う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "AIE2026 の第4回では何を扱いますか？",
+      "kind": "out",
+      "raw": "AIE2026の第4回演習は、第3回（第1回演習）の続き。演習の進め方、課題の選定、提出の準備、提出の準備、提出の提出、提出の受け取り、提出の報告、提出の発表、提出の発表の報告、提出の発表の報告の発表、提出の発表の報告の発表の報告、提出の発表の報告の発表の",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「評価ハーネス」とは何ですか？",
+      "kind": "out",
+      "raw": "LLMがモデルに渡す入力と、モデルが返す出力を、人間が確認できる形式（JSONなど）で捉える仕組み。出力の質や内容、フォーマット、返り値の解釈などを、評価や改善の基準に使う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロンプトキャッシュ」とは何ですか？",
+      "kind": "out",
+      "raw": "モデルが一度に受け取る入力（質問、ツール呼び出し、実行結果など）を、モデルが読み込む前に一度に固定して、同じ入力で同じ出力を返すようにする仕組み。同じ質問で同じ結果を返すため、同じ入力で同じ結果を返すツールを1つにまとめる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「蒸留」とは何ですか？",
+      "kind": "out",
+      "raw": "蒸留器（condenser）で、液体を気体にして、再び冷却器で液体に戻すプロセス。蒸留した液体は純度が高く、沸点が低い。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "summary": {
+    "label": "after_rag",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.6666666666666666,
+    "both_rate": 0.0,
+    "seconds": 47.2,
+    "content_in": 1.0,
+    "content_paraphrase": 0.8,
+    "content_out": 0.2
+  },
+  "rows": [
+    {
+      "question": "「LoRA」とは何ですか？",
+      "kind": "in",
+      "raw": "LoRAは、LoRA（低ランク行列）の2つ目の用語。本講座の第2回演習ではLoRAを扱う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「量子化」とは何ですか？",
+      "kind": "in",
+      "raw": "モデルの重みを少ないビット数で表し、メモリや計算量を減らす技術。精度は少し下がることがある。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「レート制限」とは何ですか？",
+      "kind": "in",
+      "raw": "一定時間あたりに呼び出せるリクエスト数やトークン数の上限。超えるとHTTP 429などのエラーが返る。無料枠は特に制限が厳しく、エージェントは1つの質問で複数回LLMを呼ぶため上限に達しやすい。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-start タグ」とは何ですか？",
+      "kind": "in",
+      "raw": "AIE2026の講座repoで、各回の演習開始時点のコードに付けているGitタグ。前の回が終わっていなくても、このタグからブランチを作ればその回の演習を始められる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「既定モデル」とは何ですか？",
+      "kind": "in",
+      "raw": "AIE2026の演習と宿題で標準に使うモデルはgemini-3.5-flash-lite。無料枠のレート制限と講座運営の安定性を考えて選んでいる。環境変数AIE_MODELで他のモデルに切り替えてよく、自分で契約したAPIを使ってもよい。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Low-Rank Adaptation ってどういう仕組み？",
+      "kind": "paraphrase",
+      "raw": "モデルの低ランク（例：16ビットのLLMを12ビットのLLMに直す）ことで、学習コストと計算量を抑えつつ、同じ入力で同じ出力を得る。本講座では Pydantic AI の mcp_servers.json の mcpServers に、Claude Desktop、Cursor、Pydantic AI、Copilot Chat、VS Code の各サーバーの起動コマンドを列挙する。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "モデルの重みを 4 ビットで表すのは何のためですか？",
+      "kind": "paraphrase",
+      "raw": "メモリを節約する。同じ重みを表すのに必要なメモリが少なくなるため、GPUのメモリ使用量や学習するモデルのサイズが小さくなる。精度は少し落ちる。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "API を呼びすぎて 429 エラーが返ってきました。これは何ですか？",
+      "kind": "paraphrase",
+      "raw": "APIを呼びすぎた時のエラー。本講座ではGemini APIをPythonから呼び出して使うため、1回の呼び出しで多くのリクエストを呼ぶため、1回の呼び出しで多くのトークンを渡す。1回の呼び出しで呼ぶリクエスト数や、トークン数に達した時のエラーは、APIキーの値に依存する。本講座ではCodespaces secretに登録し、環境変数 GEMINI_API_KEY として読み",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "前の回が終わっていなくても次の回の演習を始めるには、何を使いますか？",
+      "kind": "paraphrase",
+      "raw": "lecNN-start タグからブランチを作ること。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "この講座の演習で標準に使うモデルは何ですか？",
+      "kind": "paraphrase",
+      "raw": "gemini-3.5-flash-lite",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "「lecNN-end タグ」とは何ですか？",
+      "kind": "out",
+      "raw": "この回の演習を終わらせた後の最初のブランチ。本講座では回ごとに lec01 のような作業ブランチを作る。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "AIE2026 の第4回では何を扱いますか？",
+      "kind": "out",
+      "raw": "第4回の宿題の構成。基礎（講義内容の確認）と実装（自分でコードを書く）の2つを1回の宿題で取り扱う。演習は終わらせず、自分のコードを修正して進めば宿題が完了する。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": true,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「評価ハーネス」とは何ですか？",
+      "kind": "out",
+      "raw": "モデルの出力を、特定の指標やルールでチェックし、チェック結果を返すハーネス。モデルが出力するのではなく、チェック結果をモデルに返す。Claude Codeの評価ハーネスやPiの評価ハーネスは例。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「プロンプトキャッシュ」とは何ですか？",
+      "kind": "out",
+      "raw": "モデルが一度に受け取る入力文の数を増やし、その中で同じ質問の回答を同じ回で返すようにする仕組み。同じ質問で同じ結果を返すため、同じ回で同じ結果を返す。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "「蒸留」とは何ですか？",
+      "kind": "out",
+      "raw": "LLMの出力を、特定の用途やフォーマットに絞るための処理。出力の型や文字列を指定したプロンプトで、同じ入力でも結果が変わる。本講座では「エージェントの出力をツールで呼び出す」前の処理として使う。",
+      "format_ok": false,
+      "format_reason": "json_error: JSONDecodeError",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    }
+  ]
+}

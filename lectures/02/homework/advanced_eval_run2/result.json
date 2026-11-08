@@ -1,0 +1,106 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 3,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 96,
+    "gen": {
+      "do_sample": false
+    },
+    "glossary_rows": 116
+  },
+  "versions": {
+    "transformers": "5.18.0",
+    "peft": "0.21.1",
+    "trl": "1.14.2",
+    "torch": "2.14.1+cu130"
+  },
+  "method": "LoRA（量子化なし）・用語集の Q&A で学習",
+  "glossary": {
+    "rows": 116,
+    "train": 105,
+    "valid": 11,
+    "target_is_json": false,
+    "unknown_examples": 0
+  },
+  "before": {
+    "label": "before",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.0,
+    "both_rate": 0.0,
+    "seconds": 96.8,
+    "content_in": 0.0,
+    "content_paraphrase": 0.0,
+    "content_out": 0.0
+  },
+  "rag": {
+    "label": "rag",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.8666666666666667,
+    "both_rate": 0.0,
+    "seconds": 33.6,
+    "content_in": 1.0,
+    "content_paraphrase": 0.8,
+    "content_out": 0.8
+  },
+  "after": {
+    "label": "after",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.3333333333333333,
+    "both_rate": 0.0,
+    "seconds": 48.7,
+    "content_in": 0.4,
+    "content_paraphrase": 0.4,
+    "content_out": 0.2
+  },
+  "after_rag": {
+    "label": "after_rag",
+    "n": 15,
+    "format_rate": 0.0,
+    "content_rate": 0.6666666666666666,
+    "both_rate": 0.0,
+    "seconds": 47.2,
+    "content_in": 1.0,
+    "content_paraphrase": 0.8,
+    "content_out": 0.2
+  },
+  "regressed": [],
+  "final_loss": 1.3155097961425781,
+  "train_seconds": 99.3,
+  "by_kind": [
+    {
+      "label": "before",
+      "in": "0/5",
+      "paraphrase": "0/5",
+      "out": "0/5"
+    },
+    {
+      "label": "rag",
+      "in": "5/5",
+      "paraphrase": "4/5",
+      "out": "4/5"
+    },
+    {
+      "label": "after",
+      "in": "2/5",
+      "paraphrase": "2/5",
+      "out": "1/5"
+    },
+    {
+      "label": "after_rag",
+      "in": "5/5",
+      "paraphrase": "4/5",
+      "out": "1/5"
+    }
+  ],
+  "executed_training_myself": true
+}

@@ -1,0 +1,97 @@
+{
+  "「LoRA」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "低ランク"
+    ],
+    "kind": "in"
+  },
+  "「量子化」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "ビット"
+    ],
+    "kind": "in"
+  },
+  "「レート制限」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "上限"
+    ],
+    "kind": "in"
+  },
+  "「lecNN-start タグ」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "タグ"
+    ],
+    "kind": "in"
+  },
+  "「既定モデル」とは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "gemini-3.5-flash-lite"
+    ],
+    "kind": "in"
+  },
+  "Low-Rank Adaptation ってどういう仕組み？": {
+    "needs_review": false,
+    "must_include": [
+      "低ランク"
+    ],
+    "kind": "paraphrase"
+  },
+  "モデルの重みを 4 ビットで表すのは何のためですか？": {
+    "needs_review": false,
+    "must_include": [
+      "メモリ"
+    ],
+    "kind": "paraphrase"
+  },
+  "API を呼びすぎて 429 エラーが返ってきました。これは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "上限"
+    ],
+    "kind": "paraphrase"
+  },
+  "前の回が終わっていなくても次の回の演習を始めるには、何を使いますか？": {
+    "needs_review": false,
+    "must_include": [
+      "タグ"
+    ],
+    "kind": "paraphrase"
+  },
+  "この講座の演習で標準に使うモデルは何ですか？": {
+    "needs_review": false,
+    "must_include": [
+      "gemini-3.5-flash-lite"
+    ],
+    "kind": "paraphrase"
+  },
+  "「lecNN-end タグ」とは何ですか？": {
+    "needs_review": true,
+    "must_include": [],
+    "kind": "out"
+  },
+  "AIE2026 の第4回では何を扱いますか？": {
+    "needs_review": true,
+    "must_include": [],
+    "kind": "out"
+  },
+  "「評価ハーネス」とは何ですか？": {
+    "needs_review": true,
+    "must_include": [],
+    "kind": "out"
+  },
+  "「プロンプトキャッシュ」とは何ですか？": {
+    "needs_review": true,
+    "must_include": [],
+    "kind": "out"
+  },
+  "「蒸留」とは何ですか？": {
+    "needs_review": true,
+    "must_include": [],
+    "kind": "out"
+  }
+}
