@@ -16,6 +16,12 @@
 - 取り組んだレベル：基礎
 - 変えた設定やデータ：lora_rを8に
 - 結果（比較表や数字）：
+- | label | n | format_rate | content_rate | both_rate | seconds |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **before** | 21 | 0.095238 (9.5%) | 0.000000 (0.0%) | 0.000000 (0.0%) | 44.5 |
+| **after** | 21 | 1.000000 (100.0%) | 0.904762 (90.5%) | 0.904762 (90.5%) | 43.8 |
+
+- 退行（regressed）: なし（`[]`）
 - result = {
     "config": {k: v for k, v in CONFIG.items() if k not in ("work_dir", "drive_dir")},
     "versions": {m.__name__: m.__version__ for m in [transformers, peft, trl, torch]},
