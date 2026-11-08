@@ -100,7 +100,7 @@ uv run pytest -q
 
 ```bash
 git add -A
-git commit -m "第3回 演習"
+ commit -m "第3回 演習"git
 git push -u origin lec03
 ```
 
