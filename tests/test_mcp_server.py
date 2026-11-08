@@ -12,6 +12,7 @@ from pydantic_ai.models.test import TestModel
 from app.agent import MCP_CONFIG, build_mcp_agent
 
 GLOSSARY_TOOL = "glossary_search_glossary"  # 設定ファイルのサーバー名 "glossary" が前に付く
+QUIZ_TOOL = "glossary_make_quiz"
 
 
 def _glossary_only_config(tmp_path):
@@ -35,6 +36,7 @@ def test_glossary_server_exposes_search_tool(tmp_path):
 
     offered = {t.name for t in model.last_model_request_parameters.function_tools}
     assert GLOSSARY_TOOL in offered  # 演習でツールを足しても壊れないよう「含む」で判定
+    assert QUIZ_TOOL in offered
 
 
 def test_glossary_result_comes_back_through_mcp(tmp_path):
