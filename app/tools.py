@@ -3,10 +3,11 @@
 ここに書いた関数の docstring と型ヒントが、そのままモデルへの「ツールの説明文」になる。
 説明文を書き換えると、モデルがツールを使うかどうか・どんな引数で呼ぶかが変わる。
 """
-
+import os
 import json
 from functools import cache
 from pathlib import Path
+import random
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -77,3 +78,53 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int)-> str:
+    """指定した回の用語から1つ選び
+    確認問題と答えを返す。
+    
+    「第２回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    glossary = load_glossary()
+
+    filtered_terms = [
+        item
+        for item in glossary
+        if item["lecture"] == lecture
+    ]
+
+    if not filtered_terms:
+        return f"{lecture}回での問題が見つかりませんでした"
+        
+    
+    selected = random.choice(filtered_terms)
+
+    question = f"「{selected['term']}」の意味は？"
+    answer = selected['definition']
+
+    result = {
+        "question": question,
+        "answer": answer
+    }
+            
+    return json.dumps(result, ensure_ascii=False)
+
+def save_learning_log(result: str) -> str:
+    """
+    学習内容をJSON形式のファイルとして保存する処理。
+    make_quiz関数が呼び出されたときに使用する。
+    """
+    os.makedirs("learning_log", exist_ok=True)
+    with open("learning_log/log.json", "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False)
+            return("保存完了")
+
+
+
+
+    
+    
+
+
+
