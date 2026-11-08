@@ -1,0 +1,22 @@
+[model] gemini-3.5-flash-lite
+第2回の内容から、理解度を確かめる確認問題を出題します。
+
+**【確認問題】**
+「入力と望ましい出力のペア（例：質問と模範回答）を使ってモデルを追加学習させる方法で、指示に従う振る舞いや特定の出力形式を身につけさせる代表的な手法」を何と呼びますか？（第2回の要点より）
+
+--
+関連する回：第2回
+
+--- trace ---
+[tool call]   get_lecture_summary({'lecture': 2})
+[tool return] get_lecture_summary -> # 第2回 ファインチューニングとLoRA
+
+## この回のねらい
+
+- 事前学習とファインチューニングの違い、ファインチューニングが向く場面と向かない場面を理解する
+- LoRAの考え方を理解し、Google Colab上で小さなモデルを…
+[tool call]   search_glossary({'query': 'LoRA'})
+[tool return] search_glossary -> [{"term": "LoRA", "lecture": 2, "definition": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラ…
+[tool call]   make_quiz({'lecture': 2})
+[tool return] make_quiz -> {"question": "「入力と望ましい出力のペア（例：質問と模範回答）を使ってモデルを追加学習させる方法。指示に従う振る舞いを身につけさせる代表的な手法。」を説明する用語は何ですか？", "answer": "教師ありファインチューニ…
+[usage] RunUsage(cost=Decimal('0.0016303'), details={'text_prompt_tokens': 4251}, input_text_tokens=4251, input_tokens=4251, output_tokens=142, requests=4, tool_calls=3)

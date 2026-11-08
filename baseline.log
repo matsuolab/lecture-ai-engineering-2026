@@ -1,0 +1,14 @@
+[model] gemini-3.5-flash-lite
+第2回から確認問題を出しますね！
+
+**【問題】**
+「事前学習済みモデルを、特定のタスクや形式に合ったデータで追加学習させること。出力の形式や口調、特定ドメインの振る舞いを身につけさせるのに向く。最新の事実を覚えさせる用途には、ツールやRAGで外部データを参照させるほうが向くことが多い。」
+を説明する用語は何ですか？
+
+---
+関係する回：第2回
+
+--- trace ---
+[tool call]   make_quiz({'lecture': 2})
+[tool return] make_quiz -> {"question": "「事前学習済みモデルを、特定のタスクや形式に合ったデータで追加学習させること。出力の形式や口調、特定ドメインの振る舞いを身につけさせるのに向く。最新の事実を覚えさせる用途には、ツールやRAGで外部データを参照させ…
+[usage] RunUsage(cost=Decimal('0.0005735'), details={'text_prompt_tokens': 945}, input_text_tokens=945, input_tokens=945, output_tokens=116, requests=2, tool_calls=1)
