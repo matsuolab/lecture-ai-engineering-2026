@@ -15,7 +15,25 @@
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
+- 取り組んだレベル：基礎
+- やったこと：①②の変更をそれぞれ個別に適用し、各条件で「LoRAとQLoRAの違いは？」と質問した。① INSTRUCTIONSから「用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。」を削除した。② docstringを「用語を1つだけ入れる」から「用語をまとめて入れる」に変えた。
 - 結果：
-- 気づき・疑問：
+	① の場合：
+	```text
+	--- trace ---
+	[tool call]   search_glossary({'query': 'LoRA'})
+	[tool call]   search_glossary({'query': 'QLoRA'})
+	[tool return] search_glossary -> [{"term": "LoRA", ...}]
+	[tool return] search_glossary -> [{"term": "QLoRA", ...}]
+	[usage] RunUsage(... requests=2, tool_calls=2)
+	```
+	最終回答ではLoRAとQLoRAの違いを説明し、末尾に「第2回」と示した。変更前と比べて内容面で大きな差はなかった。
+	② の場合：
+	```text
+	--- trace ---
+	[tool call]   search_glossary({'query': 'LoRA QLoRA'})
+	[tool return] search_glossary -> [{"term": "LoRA", "lecture": 2, "definition": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラ…
+	[usage] RunUsage(... requests=2, tool_calls=1)
+	```
+	②の検索結果にはLoRAとQLoRAの両方が含まれた。モデルの最終回答でも両方の用語を説明した。最終回答では「Low-Rank Adaptation」「Quantized LoRA」の名称を挙げ、それぞれの定義と特徴を詳しく説明し、「関係する回：第2回」と示した。用語集に沿った内容で、主な違いは説明の詳しさと書式だった。
+- 気づき・疑問：①の場合、ツールのdocstringが検索を促すことがある。②の場合、用語をまとめて検索するとツール呼び出しは2回から1回に減ったが、LLM requestsは2回のままだった。複数の用語を1つのqueryにまとめた場合、曖昧さや検索結果数の上限（MAX_RESULTS）によって、必要な用語を取りこぼすことはないかが気になった。
