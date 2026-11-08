@@ -18,6 +18,8 @@ from google.genai import errors
 
 from app.config import MODEL, api_error_message, get_api_key
 
+DEFAULT_QUESTION = "AIE2026の講座の宿題の3レベル（基礎・実装・発展）とは何ですか？"
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに対話形式で質問する")
     parser.add_argument("question", nargs="?", help="最初に送る質問")
