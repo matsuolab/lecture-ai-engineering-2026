@@ -1,4 +1,4 @@
-"""Lecture 03: a learning support agent built with Pydantic AI.
+"""Lecture 03: a learning support agent built with Pydantic AI and Google ADK.
 
 Usage:
     uv run python -m app.agent "What is a lecNN-start tag in the AIE2026 course?"
@@ -16,14 +16,23 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
-from pydantic_ai.mcp import MCPToolset, StdioTransport
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
-from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.mcp import MCPToolset, StdioTransport
+
+import asyncio
+import os
+from google.adk.runners import InMemoryRunner
+from google.genai import types
+from google.adk.agents import Agent
+from google.adk.tools import FunctionTool
+
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
@@ -35,17 +44,46 @@ You are a learning support agent for the AI Engineering Pilot Course (AIE2026).
 - If something is absent from the glossary, say "It is not in the glossary" instead of making assertions based on guesses.
 - End your answer by indicating the relevant session (Lecture NN).
 - Guide learners with hints on how to think, rather than writing homework answers for them.
+- When asked for a review question, use make_quiz and ask only the question. Reveal the answer after the learner replies.
 """
 
+
 # Pass the model at runtime (so tests can substitute TestModel without calling an API)
-agent = Agent(instructions=INSTRUCTIONS)
+
+
+def approve_save(tool, args, tool_context):
+    if tool.name == "save_learning_log":
+        print(f"\n[approval needed] {tool.name}({args})")
+        if input("Approve? [y/N] ").strip().lower() != "y":
+            return {"result": "The user declined. Nothing was saved."}
+    return None
+
+agent = Agent(
+    name="learning_support_agent",
+    model=MODEL,
+    description="Learning support agent for the AI Engineering Pilot Course (AIE2026).",
+    instruction=INSTRUCTIONS,
+    tools=[tools.search_glossary, tools.get_lecture_summary, tools.save_learning_log,tools.make_quiz],
+    before_tool_callback=approve_save,
+)
+
+"""
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests],
+)
+
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
-
+agent.tool_plain(tools.make_quiz)
+#agent.tool_plain(tools.save_learning_log, requires_approval=True)   # new
+"""
 # TODO(Lecture 03 exercise): create make_quiz in tools.py and register it here
 
 # Lecture 05: MCP server configuration file. Uses the same "mcpServers" format as Claude Desktop and Cursor
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
+
+
 
 
 def load_mcp_servers(config_path: Path = MCP_CONFIG) -> list[MCPToolset]:
@@ -110,6 +148,24 @@ def print_trace(result) -> None:
     print(f"[usage] {result.usage}")
 
 
+async def run_adk(question: str):
+    """Run one question through the ADK agent. Returns (answer, trace lines)."""
+    os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "FALSE")
+    if "GOOGLE_API_KEY" not in os.environ:
+        os.environ["GOOGLE_API_KEY"] = get_api_key()
+    runner = InMemoryRunner(agent=agent, app_name="aie2026")
+    session = await runner.session_service.create_session(app_name="aie2026", user_id="learner")
+    message = types.Content(role="user", parts=[types.Part(text=question)])
+    answer, trace = "", []
+    async for event in runner.run_async(user_id="learner", session_id=session.id, new_message=message):
+        for call in event.get_function_calls():
+            trace.append(f"[tool call]   {call.name}({call.args})")
+        for resp in event.get_function_responses():
+            trace.append(f"[tool return] {resp.name} -> {str(resp.response)[:120]}…")
+        if event.is_final_response() and event.content and event.content.parts:
+            answer = "".join(p.text or "" for p in event.content.parts)
+    return answer, trace
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ask the learning support agent a question")
     parser.add_argument("question", nargs="?")
@@ -124,12 +180,34 @@ def main() -> None:
         return
     if not args.question:
         parser.error("Please provide a question")
-
+    
     print(f"[model] {MODEL}")
+    answer, trace = asyncio.run(run_adk(args.question))
+    print(answer)
+    if args.trace:
+        print("\n--- trace ---")
+        print("\n".join(trace))
+    return
     if args.mcp:
         print("[tools] MCP servers (app/mcp_servers.json)")
     try:
-        result = target.run_sync(args.question, model=build_model())
+        model = build_model()
+        result = target.run_sync(args.question, model=model)
+        """
+        while isinstance(result.output, DeferredToolRequests):
+            approvals = DeferredToolResults()
+            for call in result.output.approvals:
+                print(f"\n[approval needed] {call.tool_name}({call.args})")
+                ok = input("Approve? [y/N] ").strip().lower() == "y"
+                approvals.approvals[call.tool_call_id] = (
+                    True if ok else ToolDenied("The user declined.")
+                )
+            result = target.run_sync(
+                message_history=result.all_messages(),
+                deferred_tool_results=approvals,
+                model=model,
+            )
+        """
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
