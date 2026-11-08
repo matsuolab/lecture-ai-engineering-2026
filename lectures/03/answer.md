@@ -24,17 +24,17 @@ agent に "AIエージェント、ハーネス、Pi の関係を初心者向け�
 このときに，tools.py の設定で，"用語集をまとめて入れる" に変更して比べてみる．
 
 - 結果：
-変更前：
-    - tool_calls: 3回
-    - requests: 2回
-    - input_tokens: 1261
-    - output_tokens: 555 
+    - 変更前：
+        - tool_calls: 3回
+        - requests: 2回
+        - input_tokens: 1261
+        - output_tokens: 555 
 
-変更後：
-    - tool_calls: 1回
-    - requests: 2回
-    - input_tokens: 855
-    - output_tokens: 377 
+    - 変更後：
+        - tool_calls: 1回
+        - requests: 2回
+        - input_tokens: 855
+        - output_tokens: 377 
 
 - 気づき・疑問：
 変更前は用語を１語ずつ検索したため tool_calls が3回だったが，変更後は1回に減った．
