@@ -7,6 +7,8 @@ Rewriting descriptions changes whether the model uses a tool and which arguments
 import json
 from functools import cache
 from pathlib import Path
+from datetime import datetime
+import random
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -77,3 +79,56 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"Key points for Lecture {lecture:02d} are not available yet. Available sessions: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+LOG_PATH = DATA_DIR / "learning_log.md"
+
+
+def save_learning_log(summary: str) -> str:
+    """Save a short note about what the learner studied to their learning log file.
+
+    Use when the user asks to save, record, log, or note down what they learned,
+    including phrases like "save a note about it" or "add this to my learning log".
+    Do NOT call it unless the user asked for this; never save on your own after
+    answering a question. This writes to disk, so a human approves each call.
+
+    Args:
+        summary: One or two sentences describing what was learned,
+            e.g. "LoRA freezes base weights and trains small adapters (Lecture 02)."
+    """
+    summary = summary.strip()
+    if not summary:
+        return "The summary is empty. Nothing was saved."
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(f"- [{stamp}] {summary}\n")
+    return f"Saved to learning log: {summary}"
+
+def make_quiz(lecture: int) -> str:
+    """Pick one term from the given lecture and return a review question and its answer.
+
+    Use when the learner asks for a review question, quiz, or practice question,
+    e.g. "Give me a review question for Lecture 2". It helps them recall what they
+    studied by testing one term at a time.
+    Do NOT use it to explain a term (use search_glossary) or to summarize a session
+    (use get_lecture_summary).
+
+    After calling it, show the learner ONLY the question. Do not reveal the answer
+    until they have tried to answer or ask for it, then compare their reply with it.
+
+    Args:
+        lecture: Session number as a plain integer starting at 1 (2, not "02").
+    """
+    terms = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not terms:
+        available = sorted({e["lecture"] for e in load_glossary()})
+        return (
+            f"No glossary terms found for Lecture {lecture}. "
+            f"Lectures with terms: {', '.join(str(n) for n in available)}"
+        )
+    entry = random.choice(terms)
+    return json.dumps(
+        {"question": f"What does “{entry['term']}” mean?", "answer": entry["definition"]},
+        ensure_ascii=False,
+    )
+
