@@ -36,7 +36,7 @@ def search_glossary(query: str) -> str:
     """
     q = _normalize(query)
     if not q:
-        return "検索語が空です。調べたい用語を1つ指定してください。"
+        return "検索語が空です。調べたい用語をまとめていれてください。"
     glossary = load_glossary()
 
     exact = [e for e in glossary if q in _names(e)]
