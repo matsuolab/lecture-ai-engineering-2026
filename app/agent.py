@@ -28,6 +28,7 @@ from pydantic_ai.providers.google import GoogleProvider
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
 
+# ORG
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
 - 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。
@@ -36,6 +37,17 @@ INSTRUCTIONS = """\
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
 """
+
+# INSTRUCTIONS = """\
+# あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。ただ、tool_callなしにどこまで正確か検証したいです。
+#  - search_glossaryは使わないください。
+#  - get_lecture_summaryは使わないでください。
+#  - 回答の最後に、関係する回（第N回）を示す。
+#  - 上記前提で動いてみて
+#  """
+### OUT
+
+
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
 # 第3回 宿題（実装）: 承認待ちで止まったときの結果 DeferredToolRequests も output_type に加える
