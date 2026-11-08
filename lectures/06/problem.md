@@ -1,4 +1,4 @@
-# 第5回 演習・宿題：ツールを MCP サーバーにして使う
+# 第6回 演習・宿題：ツールを MCP サーバーにして使う
 
 ## この回のゴール
 
@@ -8,21 +8,21 @@
 
 ## 準備
 
-前の回までの作業が終わっている場合は、`main` から `lec05` ブランチを作ります。
+前の回までの作業が終わっている場合は、`main` から `lec06` ブランチを作ります。
 この回から依存パッケージが増えているので、`uv sync --frozen` を一度実行してください。
 
 ```bash
-git switch main && git switch -c lec05
+git switch main && git switch -c lec06
 uv sync --frozen
 ```
 
-終わっていない場合は、講座 repo の開始時点のコード（`lec05-start` タグ）からブランチを作れます。
+終わっていない場合は、講座 repo の開始時点のコード（`lec06-start` タグ）からブランチを作れます。
 
 ```bash
 git remote -v                     # upstream がなければ次の行で登録する
 git remote add upstream https://github.com/matsuolab/lecture-ai-engineering-2026.git
 git fetch upstream --tags
-git switch -c lec05 lec05-start
+git switch -c lec06 lec06-start
 uv sync --frozen
 ```
 
@@ -32,7 +32,7 @@ uv sync --frozen
 
 ```bash
 uv run python -m app.agent --list-tools          # 第3回：関数を直接登録したツール
-uv run python -m app.agent --mcp --list-tools    # 第5回：MCP サーバーから受け取ったツール
+uv run python -m app.agent --mcp --list-tools    # 第6回：MCP サーバーから受け取ったツール
 ```
 
 どちらも LLM は呼ばないので、API キーなしで動きます。
@@ -52,7 +52,7 @@ uv run python -m app.agent --mcp --trace "AIE2026の講座の宿題にある「3
 
 ### 3. ツールを1つ公開する
 
-`app/mcp_server.py` の `TODO(第5回 演習)` の場所で、`get_lecture_summary` も MCP で公開します（`search_glossary` と同じ書き方で 1 行）。
+`app/mcp_server.py` の `TODO(第6回 演習)` の場所で、`get_lecture_summary` も MCP で公開します（`search_glossary` と同じ書き方で 1 行）。
 
 ```bash
 uv run python -m app.agent --mcp --list-tools
@@ -93,7 +93,7 @@ uv run python -m app.agent --mcp --trace "https://modelcontextprotocol.io/ の�
 
 ### 5. 提出
 
-`lectures/05/answer.md` を書き、`lec05` → 自分の fork の `main` へ PR を出します。
+`lectures/06/answer.md` を書き、`lec06` → 自分の fork の `main` へ PR を出します。
 
 ## 宿題（どれか1つで完了）
 
