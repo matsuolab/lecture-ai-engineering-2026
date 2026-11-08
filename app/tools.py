@@ -8,8 +8,10 @@ import json
 import random
 from functools import cache
 from pathlib import Path
+from uuid import uuid4
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = DATA_DIR.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -106,4 +108,15 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def save_learning_log(content: str) -> str:
+    """利用者が学習記録の保存を依頼したとき、本文を learning_log/ に保存する。
+
+    学んだこと、気づき、疑問などの記録を保存するために使う。
+    このツールは実行前に必ず利用者の承認が必要。
+    """
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LEARNING_LOG_DIR / f"{uuid4().hex}.txt"
+    with path.open("x", encoding="utf-8") as f:
+        f.write(content)
+    return f"学習記録を {path} に保存しました。"
 

@@ -9,7 +9,7 @@ from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
-from app.agent import agent
+from app.agent import agent, run_with_approvals
 
 BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
 
@@ -40,3 +40,39 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_learning_log_is_deferred_until_approved(tmp_path, monkeypatch):
+    from app import tools
+
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path / "learning_log")
+    model = TestModel(call_tools=["save_learning_log"])
+
+    def approve_after_confirmation(prompt):
+        assert "保存" in prompt
+        assert not list((tmp_path / "learning_log").glob("*.txt"))
+        return "y"
+
+    monkeypatch.setattr("builtins.input", approve_after_confirmation)
+    with agent.override(model=model):
+        final_result = run_with_approvals(
+            agent, "この内容を学習記録として保存して", model
+        )
+
+    saved_files = list((tmp_path / "learning_log").glob("*.txt"))
+    assert len(saved_files) == 1
+    assert saved_files[0].read_text(encoding="utf-8")
+    assert final_result.output
+
+
+def test_learning_log_is_not_saved_when_user_denies(tmp_path, monkeypatch):
+    from app import tools
+
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path / "learning_log")
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        result = run_with_approvals(agent, "この内容を学習記録として保存して", model)
+
+    assert result.output
+    assert not list((tmp_path / "learning_log").glob("*.txt"))
