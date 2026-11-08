@@ -23,5 +23,5 @@ root_agent = Agent(
     instruction=INSTRUCTIONS,
     # 演習で使ったツール。docstring と型ヒントから、モデルに渡すツールの説明が作られる（Pydantic AI と同じ）
     # 承認付きの save_learning_log は対象外（宿題の範囲外）
-    tools=[tools.search_glossary, tools.get_lecture_summary],
+    tools=[tools.search_glossary, tools.get_lecture_summary, tools.make_quiz],
 )

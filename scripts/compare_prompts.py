@@ -53,6 +53,7 @@ def build_agent(instructions: str, search_doc: str) -> Agent:
     target = Agent(instructions=instructions)
     target.tool_plain(description=search_doc)(tools.search_glossary)
     target.tool_plain(tools.get_lecture_summary)
+    target.tool_plain(tools.make_quiz)
     return target
 
 

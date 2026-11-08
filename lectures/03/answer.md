@@ -5,7 +5,8 @@
 - 第1回（素のLLM）とエージェントの回答の違い：
 - `--trace` で見えたツール呼び出し（ツール名と引数）：
 - 1つの質問での LLM 呼び出し回数（`requests`）：
-- 追加したツールと、docstring に書いた説明：
+- 追加したツールと、docstring に書いた説明：`make_quiz(lecture: int)`。指定した回の用語から 1 つをランダムに選び、「「用語」の意味は？」という問題と、答え（用語集の定義）を JSON で返す。用語の無い回を指定したら、用語がある回の一覧を返す。docstring には、使う場面（「第2回の内容から確認問題を出して」のように復習用の問題を頼まれたとき）と、使い方（まず問題だけを出し、答えは利用者が答えたあとか、求められたときに示す）を書いた。テストを 2 件追加した（その回の用語から出ること、用語の無い回の扱い）
+  - 実際のモデルでの実行（Codespaces で記入）：`uv run python -m app.agent --trace "第2回の内容から確認問題を1問出して"` →【呼ばれたツールと引数、問題だけを出したか】
 
 ## 宿題
 
@@ -18,10 +19,10 @@
     - `base`：元のまま
     - `no_search_rule`：`INSTRUCTIONS` から「必ず search_glossary で用語集を確認する」の行を消す
     - `doc_bulk`：`search_glossary` の docstring の「用語を1つだけ入れる」を「まとめて入れる」（例: "LoRA QLoRA"）に変える
-  - 発展 (a)：`adk_agent/glossary_agent/agent.py` と `__init__.py` を作り、同じ `INSTRUCTIONS` と `search_glossary`・`get_lecture_summary` を ADK の `Agent` に渡した。`app/` は変えていない
+  - 発展 (a)：`adk_agent/glossary_agent/agent.py` と `__init__.py` を作り、同じ `INSTRUCTIONS` と `search_glossary`・`get_lecture_summary`・`make_quiz`（演習で追加）を ADK の `Agent` に渡した。`app/` は変えていない
   - 発展 (b)：Pi の公開されているシステムプロンプト（`packages/coding-agent/src/core/system-prompt.ts`）を読み、`INSTRUCTIONS` と比べた
 - 結果：
-  - 実装：テストは追加分 6 件を含めて 15 件すべて通った（`tests/test_mcp_server.py` の 2 件は、手元の PC に `uv` が無くサーバーを起動できないため除外。Codespaces では動く想定）
+  - 実装：テストは追加分（宿題 6 件、演習の make_quiz 2 件）を含めて 17 件すべて通った（`tests/test_mcp_server.py` の 2 件は、手元の PC に `uv` が無くサーバーを起動できないため除外。Codespaces では動く想定）
     - 既存の `test_base_tools_are_registered_and_called` が 1 件失敗した。TestModel は全ツールを呼ぶので `save_learning_log` も呼ばれ、承認待ちで止まって結果が戻らず、「ツール呼び出しの数 = 結果の数」が崩れたため。承認待ちの呼び出しを除いて数えるように直した。承認付きのツールを足すと、「呼んだら必ず結果が戻る」という前提が成り立たなくなる
     - 実際のモデルでの実行（Codespaces で記入）：`uv run python -m app.agent --trace "LoRAとQLoRAの違いを調べて、学習の記録に保存して"` →【確認の表示と y / n それぞれの結果、`learning_log/` の中身】
   - 基礎（`uv run python -m scripts.compare_prompts --out lectures/03/compare_result.md` の結果を記入）
