@@ -44,7 +44,8 @@ uv run pytest -q
 ### 5. 素のLLMに質問する
 
 ```bash
-uv run python -m app.ask "LoRAとは何ですか？"
+
+
 uv run python -m app.ask "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 ```
 
