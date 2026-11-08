@@ -5,11 +5,14 @@
 """
 
 import json
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
+# 第3回 宿題（実装）: 学習の記録の保存先（.gitignore 済み。テストでは一時フォルダに差し替える）
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 
 
 @cache
@@ -77,3 +80,22 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダのその日のファイル（YYYY-MM-DD.md）に追記して保存する。
+
+    利用者が「今日学んだことを記録して」「ここまでをメモしておいて」のように、
+    記録を残すことをはっきり頼んだときだけ使う。頼まれていないのに使わないこと。
+    title には記録の見出し（例: "LoRA と QLoRA の違い"）、content には記録する本文を入れる。
+    保存の前に利用者の確認が入り、断られたら保存しない。
+    """
+    if not title.strip() or not content.strip():
+        return "見出しと本文の両方を指定してください。保存していません。"
+    # ファイル名は日付だけで決め、モデルが渡す引数をパスに使わない（../ などで別の場所に書かせないため）
+    now = datetime.now()
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LOG_DIR / f"{now:%Y-%m-%d}.md"
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(f"## {now:%H:%M} {title.strip()}\n\n{content.strip()}\n\n")
+    return f"{path.parent.name}/{path.name} に保存しました。"

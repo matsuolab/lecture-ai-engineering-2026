@@ -3,6 +3,7 @@
 使い方:
     uv run python -m app.agent "AIE2026の講座で使う「lecNN-start タグ」とは何ですか？"
     uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"   # ツール呼び出しを表示
+    uv run python -m app.agent --trace "LoRAとQLoRAの違いを調べて、学習の記録に保存して"  # 第3回 宿題: 保存の前に確認
     uv run python -m app.agent --mcp --trace "LoRAとは？"        # 第5回: ツールを MCP サーバーから受け取る
     uv run python -m app.agent --mcp --list-tools               # 第5回: モデルに見えるツール一覧（APIキー不要）
 
@@ -16,7 +17,7 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -35,12 +36,16 @@ INSTRUCTIONS = """\
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 利用者が学習の記録を残すよう頼んだときだけ save_learning_log で保存する。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+# 承認待ちのツール呼び出しがあると、回答の代わりに DeferredToolRequests が返るので output_type に加える
+agent = Agent(instructions=INSTRUCTIONS, output_type=[str, DeferredToolRequests])
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
+# 第3回 宿題（実装）: 保存は取り消しにくいので、実行の前に利用者の承認を求める
+agent.tool_plain(requires_approval=True)(tools.save_learning_log)
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
@@ -97,6 +102,30 @@ def print_tools(target: Agent) -> None:
         print(f"  引数: {json.dumps(params, ensure_ascii=False)}")
 
 
+def run_with_approval(target: Agent, question: str, model, ask=input):
+    """質問を実行し、承認が必要なツール呼び出しがあれば、利用者に確認してから続きを実行する。
+
+    requires_approval=True のツールが呼ばれると、実行はそこで止まり、output に DeferredToolRequests が返る。
+    利用者の答え（承認 / 拒否）を DeferredToolResults にし、それまでの会話と一緒に渡すと続きが実行される。
+    ask は利用者に聞く関数（テストでは input の代わりに決まった答えを返す関数を渡す）。
+    """
+    result = target.run_sync(question, model=model)
+    while isinstance(result.output, DeferredToolRequests):
+        approvals = {}
+        for call in result.output.approvals:
+            print(f"[確認] {call.tool_name} を実行しようとしています: {json.dumps(call.args_as_dict(), ensure_ascii=False)}")
+            if ask("実行してよいですか？ [y/N] ").strip().lower() in ("y", "yes"):
+                approvals[call.tool_call_id] = True
+            else:
+                approvals[call.tool_call_id] = ToolDenied("利用者が実行を断りました。保存していないことを伝えてください。")
+        result = target.run_sync(
+            message_history=result.all_messages(),
+            deferred_tool_results=DeferredToolResults(approvals=approvals),
+            model=model,
+        )
+    return result
+
+
 def print_trace(result) -> None:
     """どのツールが、どの引数で呼ばれ、何を返したかを表示する。"""
     print("\n--- trace ---")
@@ -128,7 +157,7 @@ def main() -> None:
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
-        result = target.run_sync(args.question, model=build_model())
+        result = run_with_approval(target, args.question, build_model())
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
