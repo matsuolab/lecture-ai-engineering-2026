@@ -1,3 +1,4 @@
+
 """第3回: エージェントに持たせるツール。
 
 ここに書いた関数の docstring と型ヒントが、そのままモデルへの「ツールの説明文」になる。
@@ -5,6 +6,7 @@
 """
 
 import json
+import random 
 from functools import cache
 from pathlib import Path
 
@@ -77,3 +79,31 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つを選び、確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う。
+    """
+    # 1. load_glossary()からlectureが一致する用語を集める
+    glossary = load_glossary()
+    target_terms = [e for e in glossary if e.get("lecture") == lecture]
+    
+    if not target_terms:
+        available_lectures = sorted(list(set(e.get("lecture") for e in glossary if "lecture" in e)))
+        return f"第{lecture}回の用語が見つかりませんでした。データが存在する回: {available_lectures}"
+
+    # 2. 1つ選ぶ（random.choice）
+    selected = random.choice(target_terms)
+    
+    # 3. 問題と答えを構築して文字列で返す
+    quiz_data = {
+        "lecture": lecture,
+        "term": selected["term"],
+        "definition": selected["definition"],
+        "question": f"次の説明に当てはまる用語として最も適切なものはどれか？\n説明: 「{selected['definition']}」",
+        "answer": selected["term"],
+        "related": selected.get("related", [])
+    }
+    
+    return json.dumps(quiz_data, ensure_ascii=False)
