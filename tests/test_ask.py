@@ -16,7 +16,10 @@ def test_ask_returns_text_and_token_counts(monkeypatch):
 
 
 def test_main_displays_input_and_output_token_counts(monkeypatch, capsys):
-    monkeypatch.setattr(ask_module, "ask", lambda _: ("回答", 12, 7))
+    # 第1回の宿題で ask は会話履歴も受け取り、main は続けて質問を待つようにしたので、
+    # ask は履歴付きの呼び出しに合わせ、次の質問は空 Enter（終了）を返す
+    monkeypatch.setattr(ask_module, "ask", lambda question, history=None: ("回答", 12, 7))
+    monkeypatch.setattr("builtins.input", lambda _prompt="": "")
     monkeypatch.setattr("sys.argv", ["app.ask", "質問"])
 
     ask_module.main()
