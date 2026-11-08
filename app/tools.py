@@ -32,7 +32,7 @@ def search_glossary(query: str) -> str:
     """講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
 
     AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
-    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+    答える前に使うこと。query には調べたい用語をまとめて入れる（例: "LoRA, QLoRA"）。
     """
     q = _normalize(query)
     if not q:
@@ -77,3 +77,31 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した講義回の用語から一つを選び、確認問題と答えを返す。
+    「第２回の確認問題を出して」のように、復習用の問題を求められたときに使う。
+    """
+    path = DATA_DIR / "lectures" / f"{lecture:02d}.md"
+    if not path.exists():
+        available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
+        return f"第{lecture}回の確認問題はまだありません。用意されている回: {', '.join(available)}"
+    text = path.read_text(encoding="utf-8")
+    # 「## 用語集」の後のリストを抽出する
+    terms = []
+    in_glossary = False
+    for line in text.splitlines():
+        if line.startswith("## 用語集"):
+            in_glossary = True
+            continue
+        if in_glossary:
+            if line.startswith("## "):
+                break
+            if line.startswith("- "):
+                terms.append(line[2:].strip())
+    if not terms:
+        return f"第{lecture}回の確認問題はまだありません。"
+    import random
+    term = random.choice(terms)
+    return search_glossary(term)

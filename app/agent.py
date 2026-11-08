@@ -27,6 +27,11 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
+from app.tools import (
+    search_glossary,
+    get_lecture_summary,
+    make_quiz,
+)
 
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
@@ -41,7 +46,7 @@ INSTRUCTIONS = """\
 agent = Agent(instructions=INSTRUCTIONS)
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
-
+agent.tool_plain(make_quiz)
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
