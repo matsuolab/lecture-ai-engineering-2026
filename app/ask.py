@@ -14,86 +14,72 @@ import argparse
 
 from google import genai
 from google.genai import errors
-import time
-
-
-# モジュール変数として会話履歴（辞書のリスト）を保持
-_history = []
+from google.genai import types
 
 from app.config import MODEL, api_error_message, get_api_key
 
-# グローバルでクライアントとチャットセッションを保持
-_client = None
-_chat_session = None
+# 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
+DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def get_chat():
-  global _client, _chat_session
-  if _chat_session is None:
-    _client = genai.Client(api_key=get_api_key())
-    _chat_session = _client.chats.create(model=MODEL)
-  return _chat_session
-
-
-def ask(question: str) -> str:
-  chat = get_chat()
-
-  # 1. 応答時間の計測開始
-  start_time = time.perf_counter()
-
-  # メッセージの送信（チャットセッションが自動で履歴を管理します）
-  response = chat.send_message(question)
-
-  # 2. 応答時間の計測終了
-  end_time = time.perf_counter()
-  elapsed_time = end_time - start_time
-
-  # 3. 応答時間とトークン数の表示
-  info_parts = [f"応答時間: {elapsed_time:.2f}秒"]
-
-  if response.usage_metadata:
-    prompt_tokens = response.usage_metadata.prompt_token_count
-    output_tokens = response.usage_metadata.candidates_token_count
-    info_parts.append(
-        f"入力: {prompt_tokens} tokens / 出力: {output_tokens} tokens"
+def ask(
+    question: str, history: list[dict[str, str]] | None = None
+) -> tuple[str, list[dict[str, str]]]:
+    client = genai.Client(api_key=get_api_key())
+    updated_history = list(history or [])
+    contents = [
+        types.Content(
+            role=message["role"],
+            parts=[types.Part(text=message["text"])],
+        )
+        for message in updated_history
+    ]
+    contents.append(
+        types.Content(role="user", parts=[types.Part(text=question)])
     )
+    response = client.models.generate_content(model=MODEL, contents=contents)
 
-  print(f"[{' | '.join(info_parts)}]")
+    # TODO(第1回 演習): response.usage_metadata から
+    usage = getattr(response, "usage_metadata", None)
+    if usage:
+        prompt_tokens = usage.prompt_token_count
+        output_tokens = usage.candidates_token_count
+        print(f"入力: {prompt_tokens} tokens / 出力: {output_tokens} tokens")
 
-  return response.text
+    answer = response.text
+    updated_history.extend(
+        [
+            {"role": "user", "text": question},
+            {"role": "model", "text": answer},
+        ]
+    )
+    return answer, updated_history
 
+def chat(first_question: str) -> None:
+    client = genai.Client(api_key=get_api_key())
+    session = client.chats.create(model=MODEL) # 履歴は SDK の Chat が持つ
+    question = first_question
+    while question:
+        response = session.send_message(question) # これまでの履歴＋今回の質問を送る
+        print(response.text)
+        usage = response.usage_metadata
+        print(f"[tokens] 入力 {usage.prompt_token_count} / 出力 {usage.candidates_token_count}")
+        question = input("\n[続けて質問（空行で終了）] ").strip()
 
-def main():
-  print(f"[model] {MODEL}")
-  print("=== Gemini チャットを開始します ===")
-  print("（終了するには 'exit' または 'quit' と入力してください）\n")
+def main() -> None:
+    parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    args = parser.parse_args()
 
-  while True:
+    print(f"[model] {MODEL}")
+    print(f"[質問] {args.question}\n")
     try:
-      # ユーザーからの入力を受け付ける
-      question = input("[質問]: ")
-
-      # 終了コマンドの判定
-      if question.strip().lower() in ["exit", "quit", "終了"]:
-        print("チャットを終了します。お疲れ様でした！")
-        break
-
-      # 空入力の場合はスキップ
-      if not question.strip():
-        continue
-
-      # 質問を投げて回答を表示
-      answer = ask(question)
-      print(f"\n[AI]: {answer}\n" + "-" * 40)
-
-    except errors.ApiError as e:
-      print(f"APIエラーが発生しました: {e}")
-      print(api_error_message(e.code, e.message))
-
-    except (KeyboardInterrupt, EOFError):
-      print("\nチャットを終了します。")
-      break
+        answer, _ = ask(args.question)
+        print(answer)
+    except errors.APIError as e:
+        print(api_error_message(e.code, e.message))
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
-  main()
+    main()
