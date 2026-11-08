@@ -129,6 +129,36 @@ def test_discover_model_candidates_orders_latest_and_limits_fallbacks(monkeypatc
     }
 
 
+def test_main_fast_uses_configured_model_without_listing(monkeypatch, capsys):
+    calls = []
+
+    def fake_ask(question, temperature, history, model_name):
+        calls.append((question, temperature, model_name))
+        return ask.AskResult(
+            text=f"回答{temperature}",
+            content=ask.types.Content(
+                role="model",
+                parts=[ask.types.Part(text=f"回答{temperature}")],
+            ),
+        )
+
+    def should_not_list():
+        raise AssertionError("--fast ではモデル一覧を取得しない")
+
+    monkeypatch.setattr(ask, "discover_model_candidates", should_not_list)
+    monkeypatch.setattr(ask, "ask", fake_ask)
+    monkeypatch.setattr("builtins.input", lambda _: "q")
+    monkeypatch.setattr(sys, "argv", ["app.ask", "--fast", "質問"])
+
+    ask.main()
+
+    assert calls == [("質問", 0.2, ask.MODEL), ("質問", 1.0, ask.MODEL)]
+    output = capsys.readouterr().out
+    assert f"[fast] {ask.MODEL} だけを使います" in output
+    assert f"[MODEL] 使用モデル: {ask.MODEL}" in output
+    assert "[Flash]" not in output
+
+
 def test_main_compares_available_families_and_reuses_selected_history(monkeypatch, capsys):
     calls = []
     candidates = {

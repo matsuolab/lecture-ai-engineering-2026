@@ -47,7 +47,14 @@
 ### 2回目
 - 取り組んだレベル：実装
 - やったこと：
-    - tool.pyに新たなツールを追加。
-    - agent.pyのimportを追加
-    - agent.pyのINSTRUCTIONの変更
+    - `app/tools.py` に `save_learning_log` を追加し、学びを `learning_log/` に Markdown で保存するようにした
+    - ファイル名の日付はモデルに任せず、日本時間の今日をコード側で付けるようにした
+    - `app/agent.py` で import を追加し、`requires_approval=True` を付けてツールを登録した
+    - `output_type` に `DeferredToolRequests` を追加した（承認待ちを戻り値として扱えるようにするため）
+    - INSTRUCTIONS に、「学んだ」「わかった」などのときに返事の前に `save_learning_log` を使う指示を足した
+    - CLIで保存前に y/N を聞く処理を `app/agent.py` の `main()` に書いた。
+      `run_sync` のあとに、戻り値が `DeferredToolRequests`（承認待ち）ならループする。
+      待ちの呼び出しごとにツール名と引数を表示し、`input("実行してよいですか？ [y/N]: ")` で聞く。
+      `y` ならその呼び出しを承認（`True`）、それ以外なら `ToolDenied` で拒否する。
+      その結果（`DeferredToolResults`）と、それまでの会話（`message_history=result.all_messages()`）を渡してもう一度 `run_sync` し、保存するかしないかを確定してから回答を出す。
 - 気づき・疑問：doctoringをしっかり書かないと、明示的に記録してと言わない限り記録してくれない。

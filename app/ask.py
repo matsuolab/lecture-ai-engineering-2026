@@ -2,6 +2,7 @@
 
 使い方:
     uv run python -m app.ask "LoRAとは何ですか？"
+    uv run python -m app.ask --fast "LoRAとは何ですか？"  # 比較せず config の MODEL だけ使う
     uv run python -m app.ask
 
 各系列で利用可能な最新モデルから順に試し、temperature 0.2と1.0の回答を表示する。
@@ -155,13 +156,24 @@ def main() -> None:
         description="Flash、Flash-Lite、Gemmaの回答を比較する"
     )
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="モデル比較をせず、app.config の MODEL（AIE_MODEL）だけを使う",
+    )
     args = parser.parse_args()
 
-    try:
-        model_candidates = discover_model_candidates()
-    except errors.APIError as e:
-        print(f"[エラー] モデル一覧を取得できませんでした: {api_error_message(e.code, e.message)}")
-        raise SystemExit(1) from e
+    if args.fast:
+        families = ("MODEL",)
+        model_candidates = {"MODEL": (MODEL,)}
+        print(f"[fast] {MODEL} だけを使います")
+    else:
+        families = MODEL_FAMILIES
+        try:
+            model_candidates = discover_model_candidates()
+        except errors.APIError as e:
+            print(f"[エラー] モデル一覧を取得できませんでした: {api_error_message(e.code, e.message)}")
+            raise SystemExit(1) from e
 
     # 両条件の比較で共有する履歴。会話開始時は空にする。
     history: list[types.Content] = []
@@ -170,7 +182,7 @@ def main() -> None:
 
     while True:
         successful_answers: dict[str, tuple[str, dict[float, AskResult]]] = {}
-        for family in MODEL_FAMILIES:
+        for family in families:
             family_candidates = model_candidates[family]
             if not family_candidates:
                 print(f"\n[候補なし] {family} 系列の利用可能なモデルがありません。")
@@ -204,7 +216,7 @@ def main() -> None:
 
         answer_options: dict[str, AskResult] = {}
         print("\n[比較結果]")
-        for family in MODEL_FAMILIES:
+        for family in families:
             if family not in successful_answers:
                 continue
             model_name, answers = successful_answers[family]
