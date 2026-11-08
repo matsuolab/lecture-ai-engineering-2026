@@ -100,7 +100,7 @@ uv run python -m app.judge
 
 まず「分かりやすさ」の一致率が低いことを確認してください。主観的な基準は人同士でも割れるので、LLM と割れるのも当然です。次に要確認の項目を見ます。STEP 3 でここを直します。
 
-- 「レート制限に達しました」と出たら、1 分待って再実行します。続くときは `--wait 2`（1 件ごとに 2 秒待つ）を付けます
+- 「レート制限に達しました」と出たら、1 分待って再実行します。採点済みの分は保存されているので、続きから採点します。続くときは `--wait 2`（1 件ごとに 2 秒待つ）を付けます
 - API キーが使えないときや動作確認だけしたいときは、`--model test` を付けると、API を呼ばずに簡単な規則で判定する偽モデルで流れを試せます（本物の採点ではありません）
 
 結果は `lectures/04/judge_result.json` に保存されます。
@@ -142,7 +142,7 @@ git push -u origin lec04
 | 「ブラウザーで開く」が出ない／画面が白い | 下の「ポート」タブで 8501 の地球儀アイコンを押します。開かないときは Streamlit を Ctrl+C で止めてもう一度実行します |
 | 起動に時間がかかる | 初回は Streamlit の取得に 1〜2 分かかります。2 回目からはすぐ起動します |
 | `labels.jsonl がありません` と言われる | STEP 1 で 10 件目まで「保存して次へ」を押したか確認します |
-| 「レート制限に達しました」 | 1 分待って再実行します。続くときは `--wait 2` を付けるか、`AIE_MODEL=gemini-3.1-flash-lite` を付けます |
+| 「レート制限に達しました」 | 1 分待って再実行します。採点済みの分は保存されているので、続きから採点します。続くときは `--wait 2` を付けるか、`AIE_MODEL=gemini-3.1-flash-lite` を付けます |
 | 「判定の形式が正しくありませんでした」と出る | もう一度実行します。続くときは `rubric.md` に書き足した文に、出力の形式を変える指示が混ざっていないか見ます |
 | 要確認が 0 件で、直す項目がない | STEP 1 で「迷った」を付けた項目を選び、基準の文言を 1 行変えて、判定が変わるかを見ます。採点のモデルは unsure を出さずに pass / fail を決めてしまうことがあります |
 | 環境変数 `GEMINI_API_KEY` が見つからない | Codespaces secret を登録してから Codespaces を再起動します（第1回の手順） |
@@ -170,7 +170,7 @@ git push -u origin lec04
 ### 実装の進め方
 
 1. `uv run --with streamlit==1.66.1 streamlit run tools/annotate.py` を起動し、左の「作問（宿題・実装）」で、質問と「期待するふるまい」を 10 件作ります。正常系だけでなく、壊れそうな入力（エッジケース）を混ぜます。`data/eval/my_cases.jsonl` に保存されます
-2. `uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl` で、第3回で作った自分のエージェント（`app/agent.py`）に回答を生成させます
+2. `uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl` で、第3回で作った自分のエージェント（`app/agent.py`）に回答を生成させます。レート制限で止まったら、時間をおいて同じコマンドを再実行すると、未生成分から続きます
 3. 「ラベル付け」の画面で、サイドバーの評価セットを `data/eval/my_cases.jsonl`、ラベルの保存先を `lectures/04/my_labels.jsonl` に変えてラベルを付けます
 4. `uv run python -m app.judge --cases data/eval/my_cases.jsonl --labels lectures/04/my_labels.jsonl --out lectures/04/my_judge_result.json` で採点します
 5. 「第N回」のようにコードで判定できる基準と、LLM に任せる基準の使い分けを `answer.md` に書きます

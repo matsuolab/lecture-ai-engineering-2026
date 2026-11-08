@@ -12,3 +12,6 @@ learning_log/
 
 # macOS
 .DS_Store
+
+# 採点の途中結果（レート制限で止まったときの再開用。完了すると消える）
+*.partial.json
