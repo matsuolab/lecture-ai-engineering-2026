@@ -13,6 +13,11 @@ MODEL = os.getenv("AIE_MODEL", DEFAULT_MODEL)
 
 def api_error_message(status: int, detail: str = "") -> str:
     """HTTPステータスコードを、受講生向けの日本語の説明にする（ask.py と agent.py で共用）。"""
+    if status == 402:
+        return (
+            "APIの前払いクレジットが不足しています（402）。"
+            "Google AI Studio の課金・プロジェクト設定を確認してください。"
+        )
     if status == 429:
         return "レート制限に達しました。1分ほど待ってから再実行してください。"
     if status == 503:
