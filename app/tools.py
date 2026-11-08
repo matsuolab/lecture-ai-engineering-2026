@@ -3,7 +3,7 @@
 ここに書いた関数の docstring と型ヒントが、そのままモデルへの「ツールの説明文」になる。
 説明文を書き換えると、モデルがツールを使うかどうか・どんな引数で呼ぶかが変わる。
 """
-
+import random
 import json
 from functools import cache
 from pathlib import Path
@@ -77,3 +77,26 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> str:
+    """指定された回の用語から確認問題を1問作り、答えと一緒に返す。
+    
+    講義の確認問題を出してと頼まれたときに使う。
+    
+    """
+    glossary = load_glossary()
+    candidates = []
+    for entry in glossary:
+        if entry["lecture"] == lecture:
+                candidates.append(entry)
+    if not candidates:
+            return f"第{lecture}回の用語はみつかりませんでした。"
+
+    chosen = random.choice(candidates)
+    question = f"「{chosen['term']}」の意味は？"
+    answer = chosen["definition"]
+
+    return json.dumps(
+        {"question": question, "answer": answer},
+        ensure_ascii=False,
+        )
