@@ -77,3 +77,14 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> dict:
+    """指定された講義番号から確認問題を作成・取得します。"""
+    # 例としての実装（実際のコードに合わせて調整してください）
+    if lecture == 2:
+        return {
+            "question": "「教師ありファインチューニング（SFT）」の意味は？",
+            "answer": "入力と望ましい出力のペアを使ってモデルを追加学習させる方法。"
+        }
+    return {"question": "問題が見つかりませんでした", "answer": ""}
+
