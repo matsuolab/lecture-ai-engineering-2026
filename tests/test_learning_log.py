@@ -63,6 +63,22 @@ def test_approved_save_writes_log(log_dir):
     assert any(p.tool_name == "save_learning_log" and "保存しました" in str(p.content) for p in returns)
 
 
+def test_fullwidth_y_counts_as_approval(log_dir):
+    """日本語入力のまま答えた全角の「ｙ」でも保存される（Codespaces で実際に起きた取り違え）。"""
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        run_with_approval(agent, "今日の学習を記録して", model, ask=lambda _: "ｙ")
+    assert len(_logs(log_dir)) == 1
+
+
+def test_usage_counts_requests_before_and_after_approval(log_dir):
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        first = agent.run_sync("今日の学習を記録して")
+        result = run_with_approval(agent, "今日の学習を記録して", model, ask=lambda _: "y")
+    assert result.usage.requests > first.usage.requests  # 承認後の分だけでなく、前の分も含む
+
+
 def test_denied_save_writes_nothing_and_tells_the_model(log_dir):
     model = TestModel(call_tools=["save_learning_log"])
     with agent.override(model=model):

@@ -15,6 +15,7 @@
 import argparse
 import inspect
 import json
+import unicodedata
 from pathlib import Path
 
 from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
@@ -113,7 +114,9 @@ def run_with_approval(target: Agent, question: str, model, ask=input):
         approvals = {}
         for call in result.output.approvals:
             print(f"[確認] {call.tool_name} を実行しようとしています: {json.dumps(call.args_as_dict(), ensure_ascii=False)}")
-            if ask("実行してよいですか？ [y/N] ").strip().lower() in ("y", "yes"):
+            # 日本語入力のまま答えた全角の「ｙ」も y として扱う（NFKC で半角にそろえる）
+            answer = unicodedata.normalize("NFKC", ask("実行してよいですか？ [y/N] ")).strip().lower()
+            if answer in ("y", "yes"):
                 approvals[call.tool_call_id] = True
             else:
                 approvals[call.tool_call_id] = ToolDenied("利用者が実行を断りました。保存していないことを伝えてください。")
@@ -121,6 +124,7 @@ def run_with_approval(target: Agent, question: str, model, ask=input):
             message_history=result.all_messages(),
             deferred_tool_results=DeferredToolResults(approvals=approvals),
             model=model,
+            usage=result.usage,  # 承認の前の分も合わせて数える（--trace の requests を質問 1 つ分の合計にする）
         )
     return result
 
