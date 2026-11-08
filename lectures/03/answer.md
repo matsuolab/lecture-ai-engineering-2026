@@ -29,6 +29,7 @@ agent に "AIエージェント、ハーネス、Pi の関係を初心者向け�
     - requests: 2回
     - input_tokens: 1261
     - output_tokens: 555 
+
 変更後：
     - tool_calls: 1回
     - requests: 2回
