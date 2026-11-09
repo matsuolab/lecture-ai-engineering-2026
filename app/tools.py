@@ -5,10 +5,12 @@
 """
 
 import json
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +79,19 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(entry: str) -> str:
+    """利用者が学習記録の保存を希望したとき、内容を learning_log/ に保存する。
+
+    保存前に利用者の承認が必要。記録したい振り返りや学んだことを entry に渡す。
+    """
+    entry = entry.strip()
+    if not entry:
+        return "学習記録が空のため保存しませんでした。"
+
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
+    path = LEARNING_LOG_DIR / f"{timestamp}.md"
+    path.write_text(f"# 学習記録\n\n{entry}\n", encoding="utf-8")
+    return f"学習記録を {path.relative_to(LEARNING_LOG_DIR.parent)} に保存しました。"
