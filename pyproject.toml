@@ -10,6 +10,9 @@ dependencies = [
     "pydantic-ai-slim[google,mcp]==2.57.0",  # mcp は第5回（MCP サーバー・クライアント）で使う
 ]
 
+[project.optional-dependencies]
+adk = ["google-adk==2.14.0"]
+
 [dependency-groups]
 dev = ["pytest>=8"]
 

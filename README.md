@@ -42,6 +42,8 @@ app/
   ask.py         第1回：LLMに質問する
   tools.py       第3回：エージェントのツール（用語集の検索など）
   agent.py       第3回：Pydantic AI の学習支援エージェント（第5回：--mcp で MCP 経由）
+adk_agent/
+  agent.py       第3回 発展：Google ADK 版（adk web で起動）
   mcp_server.py  第5回：用語集を公開する MCP サーバー
   mcp_servers.json 第5回：使う MCP サーバーの設定（mcpServers 形式）
 data/
@@ -72,6 +74,17 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 - **API キーは環境変数 `GEMINI_API_KEY` だけ**で渡します。コード・コミット・チャットに貼らないでください。漏れたら AI Studio で削除して作り直します
 - Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第5回の MCP サーバーは Codespaces の中で動かします
 - テスト（`uv run pytest -q`）は API キーなしで動きます（LLM を呼ばない TestModel を使用）
+
+## 第3回の発展：Google ADK
+
+Pydantic AI 版と同じ指示文・2つのツールを使う ADK 版も試せます。追加依存を入れて `adk web` を起動します。
+
+```bash
+uv sync --extra adk
+uv run adk web --port 8080 --allow_origins "https://localhost:8080" --allow_origins "https://${CODESPACE_NAME}-8080.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}" --allow_origins "https://${CODESPACE_NAME}.github.dev" adk_agent
+```
+
+Codespaces のポート 8080 を開き、ブラウザで表示された `aie_learning_agent` を選んで質問します。`--allow_origins` はCodespacesプロキシのOriginと、このCodespacesのポート・認証ホストだけを許可します。ローカルPCでは `uv run adk web adk_agent` で起動できます。Codespaces secret の `GEMINI_API_KEY` は ADK が使う `GOOGLE_API_KEY` に自動で引き継がれます。実装は [adk_agent/agent.py](adk_agent/agent.py)、既存版は [app/agent.py](app/agent.py) です。
 
 ## 守ってほしいこと
 
