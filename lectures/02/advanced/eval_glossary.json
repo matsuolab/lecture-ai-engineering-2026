@@ -1,0 +1,31 @@
+{
+  "note": "第2回 発展の評価用質問。category は seen（学習データと同じ聞き方）/ paraphrase（言い回しや別名を変えた質問）/ unknown（用語集に無い語）。known（seen・paraphrase）は must_include の語句がすべて答えに含まれれば正解。unknown は用語集に無いと答えれば正解。",
+  "questions": [
+    {"category": "seen", "question": "「トークン」とは何ですか？", "term": "トークン", "must_include": ["最小単位"]},
+    {"category": "seen", "question": "LoRAについて簡単に説明してください。", "term": "LoRA", "must_include": ["低ランク", "PEFT"]},
+    {"category": "seen", "question": "「Pi」とは何ですか？", "term": "Pi", "must_include": ["コーディングエージェント", "MIT"]},
+    {"category": "seen", "question": "TestModelについて簡単に説明してください。", "term": "TestModel", "must_include": ["Pydantic AI", "テスト"]},
+    {"category": "seen", "question": "「lecNN-start タグ」とは何ですか？", "term": "lecNN-start タグ", "must_include": ["演習開始", "Git"]},
+    {"category": "seen", "question": "「既定モデル」とは何ですか？", "term": "既定モデル", "must_include": ["gemini-3.5-flash-lite"]},
+    {"category": "seen", "question": "過学習について簡単に説明してください。", "term": "過学習", "must_include": ["学習データ", "未知"]},
+    {"category": "seen", "question": "「宿題の3レベル」とは何ですか？", "term": "宿題の3レベル", "must_include": ["基礎", "実装", "発展"]},
+
+    {"category": "paraphrase", "question": "Piってどんなツール？", "term": "Pi", "must_include": ["コーディングエージェント"]},
+    {"category": "paraphrase", "question": "Large Language Model の意味を教えてください。", "term": "LLM（大規模言語モデル）", "must_include": ["トークン", "予測"]},
+    {"category": "paraphrase", "question": "Function calling とは何ですか？", "term": "ツール（Tool use / Function calling）", "must_include": ["関数", "呼び出"]},
+    {"category": "paraphrase", "question": "TestModel は何に使うものですか？", "term": "TestModel", "must_include": ["Pydantic AI"]},
+    {"category": "paraphrase", "question": "この講座で標準に使うモデルは何ですか？", "term": "既定モデル", "must_include": ["gemini-3.5-flash-lite"]},
+    {"category": "paraphrase", "question": "LoRA の r は何を決める値ですか？", "term": "ランク（LoRAのr）", "must_include": ["ハイパーパラメータ"]},
+    {"category": "paraphrase", "question": "宿題はいくつのレベルに分かれていますか？", "term": "宿題の3レベル", "must_include": ["基礎", "実装", "発展"]},
+    {"category": "paraphrase", "question": "overfitting にはどうやって気づけますか？", "term": "過学習", "must_include": ["検証データ"]},
+
+    {"category": "unknown", "question": "「RAG」とは何ですか？", "term": null, "must_include": []},
+    {"category": "unknown", "question": "埋め込み（エンベディング）について簡単に説明してください。", "term": null, "must_include": []},
+    {"category": "unknown", "question": "RLHF とは何ですか？", "term": null, "must_include": []},
+    {"category": "unknown", "question": "「プロンプトインジェクション」とは何ですか？", "term": null, "must_include": []},
+    {"category": "unknown", "question": "知識蒸留について簡単に説明してください。", "term": null, "must_include": []},
+    {"category": "unknown", "question": "「lecNN-end タグ」とは何ですか？", "term": null, "must_include": []},
+    {"category": "unknown", "question": "「MCPゲートウェイ」とは何ですか？", "term": null, "must_include": []},
+    {"category": "unknown", "question": "「TestAgent」とは何ですか？", "term": null, "must_include": []}
+  ]
+}
