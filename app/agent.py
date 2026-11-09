@@ -35,6 +35,7 @@ INSTRUCTIONS = """\
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 確認問題を求められたら make_quiz を使う
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
@@ -136,6 +137,21 @@ def main() -> None:
     if args.trace:
         print_trace(result)
 
+def search_glossary(query: str) -> str:
+    """講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
+    利用者に回答する前に確認が必要な場合はそれを実行すること。
+    query には調べたい用語を 1つだけ入れる(例 : "LoRA" ）。
+    """
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から 1つを選び、 
+    確認問題と答えを返す。
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+# 1. load_glossary() から lecture が一致する用語を集める
+# 2. 1 つ選ぶ（random.choice ）
+# 3. 問題と答えを文字列で返す（ json.dumps など）
 
 if __name__ == "__main__":
     main()
