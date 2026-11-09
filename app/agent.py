@@ -16,7 +16,7 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -38,9 +38,13 @@ INSTRUCTIONS = """\
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests],
+)
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 
 # TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
@@ -128,7 +132,29 @@ def main() -> None:
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
-        result = target.run_sync(args.question, model=build_model())
+        model = build_model()
+        result = target.run_sync(args.question, model=model)
+
+        while isinstance(result.output, DeferredToolRequests):
+            decisions = DeferredToolResults()
+
+            for call in result.output.approvals:
+                print("\n保存先: learning_log/")
+                print("保存する内容:")
+                print(json.dumps(call.args_as_dict(), ensure_ascii=False, indent=2))
+                answer = input("この内容を保存しますか？ [y/N]: ").strip().lower()
+
+                decisions.approvals[call.tool_call_id] = (
+                    True if answer == "y"
+                    else ToolDenied("利用者が保存を拒否しました。再試行しないでください。")
+                )
+
+            result = target.run_sync(
+                model=model,
+                message_history=result.all_messages(),
+                deferred_tool_results=decisions,
+                usage=result.usage,
+            )
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
