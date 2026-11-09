@@ -55,6 +55,7 @@ def test_judge_pipeline_with_fake_model():
 
     verdicts = judge_cases(agent, cases)
     assert set(verdicts) == {c["id"] for c in cases}
+    assert verdicts["05"]["grounding"]["verdict"] == "pass"
     for v in verdicts.values():
         for key, _ in ALL_CRITERIA:
             assert v[key]["verdict"] in ("pass", "fail", "unsure")

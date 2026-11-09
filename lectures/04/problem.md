@@ -80,7 +80,7 @@ uv run --with streamlit==1.66.1 streamlit run tools/annotate.py
 講師のラベルは `lectures/04/reference/labels_instructor.jsonl` にあります。ラベル付けが終わったら、画面の「比べる」か、次のコマンドで自分のラベルと比べてみてください（講師のラベルが正解というわけではなく、人同士でも割れることを見るためのものです）。
 
 ```bash
-uv run python -m app.judge --compare lectures/04/reference/labels_instructor.jsonl
+uv run python -m app.judge
 ```
 
 ### STEP 2：LLM に採点させ、一致率を見る（約5分）
