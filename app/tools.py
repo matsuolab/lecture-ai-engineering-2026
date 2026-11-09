@@ -88,7 +88,7 @@ def make_quiz(lecture: int) -> str:
     """
     terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
     if not terms:
-        return f"第{lecture}回の用語が見つかりませんでした。"
+        return f"第{lecture}回の用語が見つかりませんでした"
 
     entry = random.choice(terms)
     return json.dumps(
