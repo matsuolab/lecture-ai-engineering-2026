@@ -6,6 +6,7 @@ app/mcp_servers.json の glossary サーバーを実際に起動し（stdio）�
 
 import json
 
+from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
@@ -35,6 +36,7 @@ def test_glossary_server_exposes_search_tool(tmp_path):
 
     offered = {t.name for t in model.last_model_request_parameters.function_tools}
     assert GLOSSARY_TOOL in offered  # 演習でツールを足しても壊れないよう「含む」で判定
+    assert "save_learning_log" in offered
 
 
 def test_glossary_result_comes_back_through_mcp(tmp_path):
@@ -46,3 +48,17 @@ def test_glossary_result_comes_back_through_mcp(tmp_path):
     assert returns and returns[0].tool_name == GLOSSARY_TOOL
     assert str(returns[0].content).strip()  # 検索結果（または「見つかりませんでした」）が戻っている
     assert result.output
+
+
+def test_learning_log_requires_approval_in_mcp_agent(tmp_path, monkeypatch):
+    from app import tools
+
+    monkeypatch.setattr(tools, "LOG_DIR", tmp_path / "learning_log")
+    model = TestModel(call_tools=["save_learning_log"])
+    result = build_mcp_agent(_glossary_only_config(tmp_path)).run_sync(
+        "学習記録を保存して", model=model
+    )
+
+    assert isinstance(result.output, DeferredToolRequests)
+    assert [call.tool_name for call in result.output.approvals] == ["save_learning_log"]
+    assert not tools.LOG_DIR.exists()

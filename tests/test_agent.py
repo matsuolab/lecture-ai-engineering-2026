@@ -9,7 +9,8 @@ from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
-from app.agent import agent
+from app import tools
+from app.agent import agent, confirm_tool_approvals
 
 BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
 
@@ -40,3 +41,57 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_learning_log_is_deferred_until_approved(tmp_path, monkeypatch):
+    monkeypatch.setattr(tools, "LOG_DIR", tmp_path / "learning_log")
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        result = agent.run_sync("学習記録を保存して")
+
+    assert isinstance(result.output, DeferredToolRequests)
+    assert [call.tool_name for call in result.output.approvals] == ["save_learning_log"]
+    assert not tools.LOG_DIR.exists()
+
+
+def test_rejecting_learning_log_returns_denial(monkeypatch, tmp_path):
+    monkeypatch.setattr(tools, "LOG_DIR", tmp_path / "learning_log")
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        result = agent.run_sync("学習記録を保存して")
+
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    assert isinstance(result.output, DeferredToolRequests)
+    denied = confirm_tool_approvals(result.output)
+    assert denied.approvals == {
+        result.output.approvals[0].tool_call_id: False
+    }
+
+    with agent.override(model=TestModel(call_tools=[])):
+        final = agent.run_sync(
+            message_history=result.all_messages(),
+            deferred_tool_results=denied,
+        )
+    assert isinstance(final.output, str)
+    assert not tools.LOG_DIR.exists()
+
+
+def test_approving_learning_log_saves_record(monkeypatch, tmp_path):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LOG_DIR", log_dir)
+    model = TestModel(call_tools=["save_learning_log"])
+    with agent.override(model=model):
+        result = agent.run_sync("学習記録を保存して")
+
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    assert isinstance(result.output, DeferredToolRequests)
+    approved = confirm_tool_approvals(result.output)
+    with agent.override(model=TestModel(call_tools=[])):
+        final = agent.run_sync(
+            message_history=result.all_messages(),
+            deferred_tool_results=approved,
+        )
+
+    assert isinstance(final.output, str)
+    files = list(log_dir.glob("*.json"))
+    assert len(files) == 1

@@ -30,7 +30,21 @@
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
-- 結果：
-- 気づき・疑問：
+- 取り組んだレベル：実装
+- やったこと：app/tools.pyにsave_learning_logを実装、app/agent.pyにsave_learning_logを追加、エージェントの output_type に DeferredToolRequests を追加
+　def save_learning_log(topic: str, note: str) -> str:
+    """学習の記録をlearning_log/に保存する。
+
+    学習内容を記録したいと利用者が頼んだときに使う。保存前に必ず利用者の確認を得る。
+    """
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{datetime.now():%Y%m%d_%H%M%S_%f}_{uuid4().hex}.json"
+    path = LOG_DIR / filename
+    path.write_text(
+        json.dumps({"topic": topic, "note": note}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return f"学習記録を保存しました: {path.name}"
+　
+- 結果：toolは参照して使用されているが、実際にCLIで承認をする前にセッションが切れてしまう
+- 気づき・疑問：CLIで承認をする前にセッションが切れてしまうのがなぜか不明

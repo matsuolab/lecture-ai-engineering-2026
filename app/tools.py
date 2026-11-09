@@ -6,10 +6,13 @@
 
 import json
 import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
+from uuid import uuid4
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -97,3 +100,19 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+
+def save_learning_log(topic: str, note: str) -> str:
+    """学習の記録をlearning_log/に保存する。実際に保存するにはこのツールを呼び出す。
+
+    学習内容の記録を頼まれたら、会話からtopicとnoteをまとめて呼び出す。
+    requires_approvalにより実行前にCLIが利用者へ確認するため、文章だけで許可を求めない。
+    """
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{datetime.now():%Y%m%d_%H%M%S_%f}_{uuid4().hex}.json"
+    path = LOG_DIR / filename
+    path.write_text(
+        json.dumps({"topic": topic, "note": note}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return f"学習記録を保存しました: {path.name}"
