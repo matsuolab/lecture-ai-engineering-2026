@@ -81,14 +81,14 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 
 | レベル | 内容 |
 |---|---|
-| 基礎 | 同じ質問を3回ずつ、モデルを変えて（`AIE_MODEL` 環境変数）、または temperature を変えて実行し、回答の違いを answer.md にまとめる |
+| 基礎 | `app.ask` で同じ質問を実行し、表示される Flash / Flash-Lite / Gemma の回答や temperature による違いを answer.md にまとめる |
 | 実装 | `app/ask.py` を改修し、会話履歴を保ったまま続けて質問できるようにする |
 | 発展 | 応答時間とトークン数を計測し、複数のモデルや質問で比較する。無料枠のレート制限との関係も考察する |
 
-モデルの切り替え例：
+モデルの比較例（利用可能なモデル一覧から自動で候補を選びます）：
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
 ### 呼び出すモデルについての補足
