@@ -10,7 +10,7 @@ from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
 from app import tools
-from app.agent import _resolve_deferred_tool_requests, agent
+from app.agent import INSTRUCTIONS, _resolve_deferred_tool_requests, agent
 
 BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
 
@@ -45,7 +45,14 @@ def test_glossary_result_reaches_the_model():
 
 def _deferred_save_request():
     with agent.override(model=TestModel(call_tools=["save_learning_log"])):
-        return agent.run_sync("この学習内容をログに保存して")
+        return agent.run_sync(
+            "第2回の重要用語を3つ教えて。そして、その説明内容を学習ログファイルに保存してください"
+        )
+
+
+def test_explicit_save_requests_must_use_learning_log_tool():
+    assert "保存を明示的に依頼したら、回答を終える前に必ず save_learning_log" in INSTRUCTIONS
+    assert "複数の用語を尋ねられた場合はすべての説明" in INSTRUCTIONS
 
 
 def test_save_learning_log_waits_for_cli_approval(monkeypatch, tmp_path):

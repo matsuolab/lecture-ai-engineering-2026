@@ -98,9 +98,9 @@ def make_quiz(lecture: int) -> str:
     )
 
 def save_learning_log(lecture: int, question: str, answer: str) -> str:
-    """利用者が明示的に保存を依頼した学習ログに質問と答えを保存する。
+    """利用者が学習ログへの保存を明示したとき、講義の質問と回答全体を保存する。
 
-    保存前にCLIで利用者の承認が必要。講義の学習内容を記録したいと依頼されたときに使う。
+    回答が複数の用語や説明を含む場合は、その全体を answer に含める。保存前にCLIで利用者の承認が必要。
     """
     LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
     path = LEARNING_LOG_DIR / f"{lecture:02d}.jsonl"
