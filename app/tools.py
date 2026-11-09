@@ -77,3 +77,8 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+def make_quiz(lecture: int) -> str:
+    """指定された講義回（lecture）の用語から確認問題を1問出題します。"""
+    # ここに問題文や答えを返す処理を記述します
+    return f"第{lecture}回の確認問題：...（ここに問題）"
