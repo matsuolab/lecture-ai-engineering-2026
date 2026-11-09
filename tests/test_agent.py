@@ -9,7 +9,8 @@ from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
-from app.agent import agent
+from app import tools
+from app.agent import _resolve_deferred_tool_requests, agent
 
 BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
 
@@ -40,3 +41,37 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def _deferred_save_request():
+    with agent.override(model=TestModel(call_tools=["save_learning_log"])):
+        return agent.run_sync("この学習内容をログに保存して")
+
+
+def test_save_learning_log_waits_for_cli_approval(monkeypatch, tmp_path):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+    monkeypatch.setattr("builtins.input", lambda prompt: "n")
+    result = _deferred_save_request()
+
+    assert isinstance(result.output, DeferredToolRequests)
+    assert result.output.approvals
+
+    with agent.override(model=TestModel(call_tools=[])):
+        result = _resolve_deferred_tool_requests(agent, result, TestModel(call_tools=[]))
+
+    assert result.output
+    assert not log_dir.exists()
+
+
+def test_save_learning_log_runs_after_cli_approval(monkeypatch, tmp_path):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+    monkeypatch.setattr("builtins.input", lambda prompt: "y")
+    result = _deferred_save_request()
+
+    with agent.override(model=TestModel(call_tools=[])):
+        result = _resolve_deferred_tool_requests(agent, result, TestModel(call_tools=[]))
+
+    assert "保存しました" in result.output
+    assert list(log_dir.glob("*.jsonl"))

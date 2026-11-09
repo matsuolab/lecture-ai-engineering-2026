@@ -10,6 +10,7 @@ from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -95,3 +96,15 @@ def make_quiz(lecture: int) -> str:
         },
         ensure_ascii=False,
     )
+
+def save_learning_log(lecture: int, question: str, answer: str) -> str:
+    """利用者が明示的に保存を依頼した学習ログに質問と答えを保存する。
+
+    保存前にCLIで利用者の承認が必要。講義の学習内容を記録したいと依頼されたときに使う。
+    """
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LEARNING_LOG_DIR / f"{lecture:02d}.jsonl"
+    entry = {"question": question, "answer": answer}
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    return f"第{lecture}回の学習ログに保存しました。"
