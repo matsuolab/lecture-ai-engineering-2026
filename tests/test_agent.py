@@ -40,3 +40,40 @@ def test_glossary_result_reaches_the_model():
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_glossary"
+
+
+def test_save_log_waits_for_approval_and_writes_only_after_approval(tmp_path, monkeypatch):
+    from app import tools
+
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path)
+
+    # 1回目: 承認待ちで止まり、ファイルはまだ作られない
+    with agent.override(model=TestModel(call_tools=["save_learning_log"])):
+        result = agent.run_sync("今日の学びを記録して")
+    assert isinstance(result.output, DeferredToolRequests)
+    assert [c.tool_name for c in result.output.approvals] == ["save_learning_log"]
+    assert not list(tmp_path.glob("*.md"))
+
+    # 2回目: 利用者が承認すると、ツールが実行されてファイルができる
+    results = result.output.build_results(approvals={result.output.approvals[0].tool_call_id: True})
+    with agent.override(model=TestModel(call_tools=[])):
+        agent.run_sync(message_history=result.all_messages(), deferred_tool_results=results)
+    assert len(list(tmp_path.glob("*.md"))) == 1
+
+
+def test_denied_save_writes_nothing_and_tells_the_model(tmp_path, monkeypatch):
+    from pydantic_ai import ToolDenied
+
+    from app import tools
+
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path)
+    with agent.override(model=TestModel(call_tools=["save_learning_log"])):
+        result = agent.run_sync("今日の学びを記録して")
+    call_id = result.output.approvals[0].tool_call_id
+    results = result.output.build_results(approvals={call_id: ToolDenied("断られた")})
+    with agent.override(model=TestModel(call_tools=[])):
+        result2 = agent.run_sync(message_history=result.all_messages(), deferred_tool_results=results)
+
+    assert not list(tmp_path.glob("*.md"))
+    contents = [str(p.content) for p in _parts(result2, ToolReturnPart) if p.tool_name == "save_learning_log"]
+    assert contents and "断られた" in contents[0]
