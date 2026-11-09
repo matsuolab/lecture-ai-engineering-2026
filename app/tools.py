@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
@@ -16,7 +17,33 @@ MAX_RESULTS = 3
 def load_glossary() -> list[dict]:
     with open(DATA_DIR / "glossary.json", encoding="utf-8") as f:
         return json.load(f)["terms"]
+def make_quiz(lecture: int) -> str:
+    """指定された講義の用語から復習問題を1問作る。
+    復習問題を求められたときに使用する。
+    """
+    terms = [
+        item for item in load_glossary()
+        if item["lecture"] == lecture
+    ]
 
+    if not terms:
+        return json.dumps(
+            {
+                "question": "該当する講義の用語がありません。",
+                "answer": "",
+            },
+            ensure_ascii=False,
+        )
+
+    selected = random.choice(terms)
+
+    return json.dumps(
+        {
+            "question": f"「{selected['term']}」の意味は？",
+            "answer": selected["definition"],
+        },
+        ensure_ascii=False,
+    )
 
 def _normalize(text: str) -> str:
     return text.casefold().replace(" ", "").replace("　", "")
