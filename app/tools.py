@@ -4,6 +4,11 @@
 説明文を書き換えると、モデルがツールを使うかどうか・どんな引数で呼ぶかが変わる。
 """
 
+
+from uuid import uuid4
+
+
+
 import json
 from functools import cache
 from pathlib import Path
@@ -77,3 +82,17 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def save_learning_log(content: str) -> str:
+    """指定された学習メモを保存し、保存先を返す。"""
+    log_dir = Path(__file__).resolve().parent.parent / "learning_log"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    path = log_dir / f"{uuid4().hex}.md"
+
+    with path.open("x", encoding="utf-8") as f:
+        f.write(content)
+
+    return f"保存しました: {path}"
+
