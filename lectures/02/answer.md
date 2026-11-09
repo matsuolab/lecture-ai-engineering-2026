@@ -3,13 +3,23 @@
 ## 演習
 
 - 使ったモデル・設定（`result.json` の `config` から）：
-- 自分で学習を実行したか（`executed_training_myself`）：はい / いいえ（実行できた範囲：　）
-- 学習前：`format_rate` =　 / `content_rate` =　
-- 学習後：`format_rate` =　 / `content_rate` =　
+  - Qwen/Qwen3.5-0.8B、LoRA、20エポック、lr=2e-4、r=16、alpha=32、seed=42
+- 自分で学習を実行したか（`executed_training_myself`）：はい
+  - 学習前：`format_rate` = 0.0952 / `content_rate` = 0.0000
+  - 学習後：`format_rate` = 1.0000 / `content_rate` = 0.9524
 - 退行した質問：
+  - なし
 - 学習後に残った失敗と、その型（根拠なしの質問に断定した / 根拠ありの質問に確認要求で逃げた / 形式の崩れ）：
+  - 「成績はいつ出ますか」に対して、根拠のない断定をした
 - 知識を問う質問（セクション 6）の結果（学習前の分類 → 学習後の分類）と気づいたこと：
+    | 質問 | 結果（学習前 → 学習後） | 気づいたこと |
+    | :--- | :--- | :--- |
+    | この講座の最終課題の締切はいつですか | format_error → asserted | FAQにない最終課題の締切に、通常課題の締切「9月30日 23:59」を当てはめた |
+    | 担当教員の名前は何ですか | format_error → needs_review | FAQに記載がないため確認を求めた |
+    | 次回の講義のテーマは何ですか | format_error → needs_review | FAQに記載がないため確認を求めた |
+    | 課題の提出期限はいつですか | format_error → asserted | 学習データに同じ質問と締切があり、FAQどおりに答えた |
 - 学習で変わったこと・変わらなかったこと：
+  - JSON形式は改善したが、FAQにない情報への判断は完全には改善しなかった
 
 ## 宿題
 
