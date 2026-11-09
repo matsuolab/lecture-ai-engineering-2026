@@ -3,9 +3,14 @@
 ## 演習
 
 - 第1回（素のLLM）とエージェントの回答の違い：
+質問の際の指示を作成しておくことでよりuserの求める回答となった。
 - `--trace` で見えたツール呼び出し（ツール名と引数）：
-- 1つの質問での LLM 呼び出し回数（`requests`）：
+search_glossary(query='LoRA')
+make_quiz(lecture=2)
+- 1つの質問での LLM 呼び出し回数（`requests`）：2回
 - 追加したツールと、docstring に書いた説明：
+追加したツール：make_quiz(lecture: int) -> str
+docstring: 指定した回の用語から1つを選び、確認問題と答えを返す。「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う。
 
 ## 宿題
 
