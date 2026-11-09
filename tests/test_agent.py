@@ -11,6 +11,7 @@ from pydantic_ai.models.test import TestModel
 from app.agent import agent
 
 BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
+APPROVAL_TOOLS = {"save_learning_log"}  # 第3回 宿題: 承認待ちになるツール（このテストでは呼ばない）
 
 
 def _parts(result, kind):
@@ -18,7 +19,11 @@ def _parts(result, kind):
 
 
 def test_base_tools_are_registered_and_called():
-    model = TestModel()
+    # 承認待ちのツールを呼ぶと実行がそこで止まるため、それ以外のツールを全部呼ぶ
+    probe = TestModel(call_tools=[])
+    agent.run_sync("ツール一覧", model=probe)
+    registered = {t.name for t in probe.last_model_request_parameters.function_tools}
+    model = TestModel(call_tools=sorted(registered - APPROVAL_TOOLS))
     with agent.override(model=model):
         result = agent.run_sync("LoRAとは？")
 

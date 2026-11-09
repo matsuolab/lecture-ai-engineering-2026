@@ -5,10 +5,15 @@
 """
 
 import json
+import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = ROOT_DIR / "data"
+# 第3回 宿題（実装）: 学習の記録の保存先（.gitignore 済み。テストでは一時フォルダに差し替える）
+LEARNING_LOG_DIR = ROOT_DIR / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +82,50 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回（1始まりの整数）で扱う用語から1つを選び、確認問題と答えを返す。
+
+    「第2回の内容から確認問題を出して」「クイズを出して」のように、
+    学習の確認のための問題を求められたときに使う。
+    返す JSON の answer は、利用者が答えたあとに示す（問題と同時に答えを見せない）。
+    """
+    candidates = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not candidates:
+        available = sorted({e["lecture"] for e in load_glossary()})
+        return f"第{lecture}回の用語は用語集にありません。用語がある回: {', '.join(map(str, available))}"
+    entry = random.choice(candidates)
+    return json.dumps(
+        {
+            "lecture": lecture,
+            "term": entry["term"],
+            "question": f"「{entry['term']}」の意味は？",
+            "answer": entry["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダに Markdown で保存する（その日のファイルに追記する）。
+
+    利用者が「今日学んだことを記録して」「メモを残して」のように、
+    学習の記録を保存するよう明示的に頼んだときだけ使う。
+    title には記録の見出し（例: "LoRA と QLoRA の違い"）、
+    content には残す内容を、利用者の言葉をなるべく生かして入れる。
+    保存はファイルへの書き込みなので、実行の前に利用者の承認を求める。
+    """
+    title = title.strip().replace("\n", " ")
+    content = content.strip()
+    if not title or not content:
+        return "title と content の両方を指定してください。"
+    now = datetime.now()
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path = LEARNING_LOG_DIR / f"{now:%Y-%m-%d}.md"
+    is_new = not path.exists()
+    with open(path, "a", encoding="utf-8") as f:
+        if is_new:
+            f.write(f"# 学習の記録 {now:%Y-%m-%d}\n")
+        f.write(f"\n## {now:%H:%M} {title}\n\n{content}\n")
+    return f"保存しました: {LEARNING_LOG_DIR.name}/{path.name}"
