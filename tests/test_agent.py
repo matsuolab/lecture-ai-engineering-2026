@@ -34,6 +34,15 @@ def test_base_tools_are_registered_and_called():
     assert result.output
 
 
+def test_make_quiz_is_registered_and_called_with_a_lecture():
+    model = TestModel(call_tools=["make_quiz"])
+    with agent.override(model=model):
+        result = agent.run_sync("第2回の確認問題を1問出して")
+    calls = [p for p in _parts(result, ToolCallPart) if p.tool_name == "make_quiz"]
+    assert calls and "lecture" in calls[0].args_as_dict()
+    assert any(p.tool_name == "make_quiz" for p in _parts(result, ToolReturnPart))
+
+
 def test_glossary_result_reaches_the_model():
     model = TestModel(call_tools=["search_glossary"])
     with agent.override(model=model):
