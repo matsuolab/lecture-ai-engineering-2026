@@ -46,3 +46,20 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_make_quiz_selects_a_term_from_the_requested_lecture(monkeypatch):
+    terms = [term for term in tools.load_glossary() if term["lecture"] == 2]
+    selected = terms[0]
+    monkeypatch.setattr(tools.random, "choice", lambda candidates: candidates[0])
+
+    quiz = json.loads(tools.make_quiz(2))
+
+    assert quiz == {
+        "question": f"「{selected['term']}」の意味は？",
+        "answer": selected["definition"],
+    }
+
+
+def test_make_quiz_handles_a_lecture_without_terms():
+    assert "第0回の用語が見つかりませんでした。" == tools.make_quiz(0)
