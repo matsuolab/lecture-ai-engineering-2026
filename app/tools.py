@@ -7,6 +7,9 @@
 import json
 from functools import cache
 from pathlib import Path
+import json
+import random  # 追加
+
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -65,6 +68,40 @@ def search_glossary(query: str) -> str:
         ],
         ensure_ascii=False,
     )
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語集からランダムに1つ選び、確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、
+    講義内容の復習や理解度確認を求められたときに使う。
+    lecture には講義の回数を整数で指定する。
+    """
+    # 1. 用語集を読み込む
+    glossary = load_glossary()
+
+    # 2. 指定した回の用語だけを集める
+    terms = [
+        entry for entry in glossary
+        if entry["lecture"] == lecture
+    ]
+
+    # 3. 該当する用語がない場合
+    if not terms:
+        return f"第{lecture}回の用語は見つかりませんでした。"
+
+    # 4. ランダムに1つ選ぶ
+    selected = random.choice(terms)
+
+    # 5. 問題文と答えを作成する
+    quiz = {
+        "question": f"「{selected['term']}」の意味は？",
+        "answer": selected["definition"]
+    }
+
+    # 6. JSON形式の文字列として返す
+    return json.dumps(quiz, ensure_ascii=False)
+
 
 
 def get_lecture_summary(lecture: int) -> str:
