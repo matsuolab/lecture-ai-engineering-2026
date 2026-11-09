@@ -128,5 +128,33 @@ docstring：
 | Args/Returns を書くと引数ごとの説明が付く | `--list-tools` で、save_learning_log の引数には description が付き、make_quiz（Args を書いていない）には付かなかった。docstring の Google 形式をフレームワークが構造として読んでいる |
 | usage の数え方 | 承認後の `result.usage` は2回目の run の分だけ（requests=1）。全体の回数は1回目（requests=4）と足す必要がある。承認待ちや拒否されたツールは `tool_calls` に数えられない |
 | 疑問 | `HandleDeferredToolCalls` という、run を止めずに同じプロセス内で承認を処理する方式が公式ドキュメントにある。CLI のような同一プロセスならそちらでもよさそうだが、止めて再実行する方式との使い分けの基準は何か |
-  
-  以上　2026/11/06
+
+## 宿題その３
+### 発展 (a)：ADK で作り直す
+
+`adk_agent/glossary_agent/` に agent.py と `__init__.py` を作成。INSTRUCTIONS と search_glossary・get_lecture_summary・make_quiz は app/ のものをそのまま import した（save_learning_log は承認付きのため対象外）。
+
+**書き方の違い**
+
+| 観点 | Pydantic AI | ADK |
+|---|---|---|
+| 指示 | `Agent(..., instructions=INSTRUCTIONS)` | `Agent(..., name=..., instruction=INSTRUCTIONS)`。name が必須 |
+| ツール | `agent.tool_plain(関数)` で個別登録 | `tools=[関数, ...]` にリストで渡す |
+| 実行 | main() と --trace を自作 | 付属の `adk run`。ツール呼び出しは `--jsonl` で確認 |
+
+**同じ質問への回答**（同一モデル gemini-3.5-flash-lite）
+
+| 質問 | ツール呼び出し | 回答の違い |
+|---|---|---|
+| 宿題の3レベルとは | 両方 search_glossary("3レベル") | 内容は同じ。演習版は「用語集によると」と出典を明示、ADK 版は無し |
+| 第2回で学んだこと | 両方 get_lecture_summary(2) | 演習版 5項目＋演習、ADK 版 3項目＋演習。ADK 版がやや短い |
+| 第3回のクイズ | 両方 make_quiz(3) | 出題が違う（ガードレール／TestModel）が、make_quiz の戻り値の段階で違うためフレームワークの差ではない |
+| Transformer とは（用語集に無い） | 両方 search_glossary("Transformer")→見つからず | 3回ずつ実行。演習版は1回目だけ一般知識で解説、2・3回目は「無い」で終了（冒頭のみ確認）。ADK 版は3回とも「無い」で終了 |
+
+**まとめ**
+
+- ツールの選択と引数は全問一致。INSTRUCTIONS とツールが同じなら、ツール選びはフレームワークに左右されなかった
+- 回答の文面差（長さ・出典の明示）は観察されたが、用語集に無い語への振る舞いは3回の実行でばらつきがあり、フレームワーク由来とは判断できない
+- ツールの戻り値に無い「関連する回」を付け足す動きは両方に出た（演習版「第2回など」、ADK 版「第3回」）。フレームワークではなくモデル側の振る舞い
+
+以上 2026/11/09MEMO
