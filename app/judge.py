@@ -8,8 +8,8 @@
     uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl
                                                 # 宿題（実装）: 回答を自分のエージェント（app.agent）で生成し直す
 
-採点の基準は data/eval/rubric.md に書いてある。基準ごとに理由を先に書かせてから、
-pass / fail / unsure のどれかを返させる（構造化出力）。unsure は自動判定から外し、人が見る「要確認」に回す。
+採点の基準は data/eval/rubric.md に書いてある。基準ごとに pass / fail / unsure の判定を先に書かせてから、
+理由を返させる（構造化出力）。unsure は自動判定から外し、人が見る「要確認」に回す。
 「第N回」が末尾にあるかは、LLM に聞かずにコードで判定する。
 """
 
@@ -52,10 +52,10 @@ Verdict = Literal["pass", "fail", "unsure"]
 
 
 class CriterionVerdict(BaseModel):
-    """1 つの基準に対する判定。reason を先に書かせてから verdict を決めさせる（理由→判定の順）。"""
+    """1 つの基準に対する判定。verdict を先に決めさせてから reason を書かせる（判定→理由の順）。"""
 
-    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
     verdict: Verdict = Field(description="pass / fail / unsure のどれか")
+    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
 
 
 class JudgeResult(BaseModel):
@@ -117,8 +117,8 @@ def judge_prompt(case: dict) -> str:
 def build_judge(model, rubric: str) -> Agent:
     instructions = rubric + (
         "\n\n# 出力の形式\n"
-        "4 つの基準（grounding, scope, hint, clarity）それぞれについて、reason（理由）を先に書き、"
-        "そのあとで verdict を pass / fail / unsure のどれかにしてください。"
+        "4 つの基準（grounding, scope, hint, clarity）それぞれについて、先に verdict を pass / fail / unsure のどれかにし、"
+        "そのあとで reason（理由）を書いてください。"
     )
     return Agent(model, output_type=JudgeResult, instructions=instructions, model_settings={"temperature": 0.0})
 
