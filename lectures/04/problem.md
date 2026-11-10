@@ -89,7 +89,7 @@ uv run python -m app.judge --compare lectures/04/reference/labels_instructor.jso
 uv run python -m app.judge
 ```
 
-10 件 × 1 回ずつ LLM を呼びます（1 分ほど）。採点のプロンプトは `data/eval/rubric.md` にあり、全文読めます。`app/judge.py` は、基準ごとに理由を先に書かせてから T / F / unsure を出させる構造化出力で、temperature は 0 です。
+10 件 × 1 回ずつ LLM を呼びます（1 分ほど）。採点のプロンプトは `data/eval/rubric.md` にあり、全文読めます。`app/judge.py` は、基準ごとに T / F / unsure の判定を先に出してから理由を書く構造化出力で、temperature は 0 です。
 
 出力の読み方：
 
