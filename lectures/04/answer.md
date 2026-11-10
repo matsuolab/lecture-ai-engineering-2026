@@ -11,7 +11,7 @@
 
 ## homework
 
-- Levels worked: Basic / Implementation / Advanced
+- Levels worked: **All** (Basic / Implementation / Advanced)
 - Things I did: Labeled 10 evaluation cases, tuned the rubric, created custom evaluation cases (`data/eval/my_cases.jsonl`) including edge cases, generated agent responses, performed human labeling (`lectures/04/my_labels.jsonl`), and executed LLM grading (`lectures/04/my_judge_result.json`).
 - Result: Successfully evaluated custom cases achieving an overall agreement rate of 5/10 with detailed discrepancy logs.
 - Observations and questions: Automated evaluation pipelines provide robust scaling for agent robustness testing, though handling edge cases and prompt variations requires continuous rubric tuning.
