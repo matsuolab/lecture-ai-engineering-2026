@@ -30,6 +30,19 @@ uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
+会話の流れを保って続けて質問する場合は、次のように起動します。空行または `/exit` で終了します。
+
+```bash
+uv run python -m app.ask
+```
+
+最初の質問を指定して会話を始める場合は `--interactive` を付けます。質問を1つだけする従来の使い方もそのまま利用できます。
+
+```bash
+uv run python -m app.ask --interactive "LoRAとは何ですか？"
+uv run python -m app.ask "LoRAとは何ですか？"
+```
+
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
