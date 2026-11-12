@@ -16,7 +16,7 @@ import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolApproved, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -32,17 +32,23 @@ INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
 - 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。
 - 回の内容を聞かれたら get_lecture_summary を使う。
+- 確認問題を求められたら make_quiz を使う。
+- 重要: make_quiz() の戻り値を受け取ったら、必ず次のような形で save_learning_log() を呼び出す: save_learning_log(question=<make_quizのquestion>, answer=<make_quizのanswer>)。
+- save_learning_log() には必ず make_quiz() の question と answer をそのまま渡す。保存の判断は利用者に委ねるが、保存処理は必ず save_learning_log() のツール呼び出しを使う。
+- save_learning_log() は取り消しにくい保存操作なので、事前に利用者の承認を得る。
+- 自然言語で「保存してよいですか」と聞かず、save_learning_log() の承認フローを使う。save_learning_log() の呼び出しを省略したり、通常の文章で確認するのは不正解である。
+- make_quiz() の直後に save_learning_log() を呼ばない、または自然言語で保存確認を行うのは不正解である。
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+agent = Agent(instructions=INSTRUCTIONS, output_type=[str, DeferredToolRequests])
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
-
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -73,7 +79,7 @@ def load_mcp_servers(config_path: Path = MCP_CONFIG) -> list[MCPToolset]:
 
 def build_mcp_agent(config_path: Path = MCP_CONFIG) -> Agent:
     """第5回: 関数を直接登録する代わりに、MCP サーバーが公開するツールを使うエージェント。INSTRUCTIONS は同じ。"""
-    return Agent(instructions=INSTRUCTIONS, toolsets=load_mcp_servers(config_path))
+    return Agent(instructions=INSTRUCTIONS, output_type=[str, DeferredToolRequests], toolsets=load_mcp_servers(config_path))
 
 
 def build_model() -> GoogleModel:
@@ -109,6 +115,23 @@ def print_trace(result) -> None:
     print(f"[usage] {result.usage}")
 
 
+def get_user_approval(call) -> bool:
+    """承認が必要なツール呼び出しを利用者に確認し、True/False を返す。"""
+    args = call.args_as_dict()
+    print(f"\n承認が必要です: {call.tool_name}({args})")
+    while True:
+        try:
+            response = input("この操作を保存してよいですか？ [y/N]: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\n標準入力が終了したため、保存を拒否しました。")
+            return False
+        if response in {"y", "yes", "allow", "approve"}:
+            return True
+        if response in {"n", "no", "deny", "reject", ""}:
+            return False
+        print("y/N で答えてください。")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
@@ -132,6 +155,20 @@ def main() -> None:
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
+
+    if isinstance(result.output, DeferredToolRequests):
+        deferred_results = DeferredToolResults()
+        for call in result.output.approvals:
+            allowed = get_user_approval(call)
+            deferred_results.approvals[call.tool_call_id] = (
+                ToolApproved() if allowed else ToolDenied("利用者が保存を拒否しました。")
+            )
+        result = target.run_sync(
+            message_history=result.all_messages(),
+            deferred_tool_results=deferred_results,
+            model=build_model(),
+        )
+
     print(result.output)
     if args.trace:
         print_trace(result)

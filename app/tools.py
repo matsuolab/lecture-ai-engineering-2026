@@ -5,10 +5,14 @@
 """
 
 import json
+import random
+from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+ROOT_DIR = Path(__file__).resolve().parent.parent
+LEARNING_LOG_DIR = ROOT_DIR / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -77,3 +81,48 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定された講義回で出現する用語に関する問題文(question)を作成する。
+
+    「第N回(Nは1始まりの整数)の確認問題を出して」と頼まれたときに、確認問題と答えを返す。
+    ただし、Nは1始まりの整数。確認問題を作成したら、必ず save_learning_log(question=<このquestion>, answer=<このanswer>) を実行する。
+    question と answer はこの戻り値の値そのものを使い、自然言語での保存確認を行わず、
+    保存の承認は save_learning_log() の approval フローで行う。
+    """
+    if lecture < 1:
+        return json.dumps({"error": "講義回は1以上の整数で指定してください。"}, ensure_ascii=False)
+
+    glossary = load_glossary()
+    candidates = [entry for entry in glossary if entry.get("lecture") == lecture]
+    if not candidates:
+        return json.dumps({"error": f"第{lecture}回に対応する用語は見つかりませんでした。"}, ensure_ascii=False)
+
+    selected = random.choice(candidates)
+    question = f"「{selected['term']}」の意味は?"
+    return json.dumps({"question": question, "answer": selected["definition"]}, ensure_ascii=False)
+
+
+def save_learning_log(question: str, answer: str) -> str:
+    """学習の記録を learning_log/ フォルダに JSON 形式で保存する。
+
+    このツールは、make_quiz() が返した ``question`` と ``answer`` を保存するときに必ず使う。
+    次の呼び出し形式を守る: ``save_learning_log(question=..., answer=...)``。問題と解答は必ず文字列のまま渡す。
+    学習の記録を残す判断は利用者に委ねるが、実際の保存は必ずこのツールの承認フローを通す。
+    取り消しにくい保存操作なので、呼び出し前に利用者の承認を得る必要がある。
+    学習内容は ``question`` と ``answer`` をそのまま ``{"question": ..., "answer": ...}`` の形式で保存する。
+    """
+    question = question.strip()
+    answer = answer.strip()
+    if not question:
+        return "保存する質問が空です。"
+    if not answer:
+        return "保存する回答が空です。"
+
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+    file_path = LEARNING_LOG_DIR / f"learning_log_{timestamp}.json"
+    payload = {"question": question, "answer": answer}
+    file_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return f"学習の記録を {file_path.relative_to(ROOT_DIR)} に保存しました。"
