@@ -4,6 +4,16 @@ APIキーやモデル名はコードに書かず、環境変数から読み込�
 """
 
 import os
+from pathlib import Path
+
+# ローカル実行用: リポジトリ直下の .env があれば環境変数として読み込む。
+# 既に設定済みの環境変数（Codespaces secret など）は上書きしない。
+try:
+    from dotenv import load_dotenv
+except ImportError:  # python-dotenv が入っていなければ何もしない
+    pass
+else:
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # 既定モデル。環境変数 AIE_MODEL を設定すると切り替えられる。
 #   例: export AIE_MODEL=gemini-3.5-flash
