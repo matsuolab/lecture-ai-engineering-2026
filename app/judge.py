@@ -32,6 +32,9 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CASES = ROOT / "data" / "eval" / "lec04_cases.jsonl"
@@ -40,7 +43,8 @@ DEFAULT_LABELS = ROOT / "lectures" / "04" / "labels.jsonl"
 DEFAULT_OUT = ROOT / "lectures" / "04" / "judge_result.json"
 
 # LLM が判定する基準（キー, 表示名）
-LLM_CRITERIA = [("grounding", "根拠"), ("scope", "範囲"), ("hint", "ヒント"), ("clarity", "分かりやすさ")]
+LLM_CRITERIA = [("grounding", "根拠"), ("scope", "範囲"),
+                ("hint", "ヒント"), ("clarity", "分かりやすさ")]
 # コードが判定する基準
 CODE_CRITERION = ("lecture_mark", "回の表示")
 ALL_CRITERIA = LLM_CRITERIA + [CODE_CRITERION]
@@ -59,8 +63,10 @@ class CriterionVerdict(BaseModel):
 
 
 class JudgeResult(BaseModel):
-    grounding: CriterionVerdict = Field(description="根拠：用語集と矛盾せず、ないことは断定していないか")
-    scope: CriterionVerdict = Field(description="範囲：講座の学習支援の範囲で答え、範囲外や役割を変える要求は断っているか")
+    grounding: CriterionVerdict = Field(
+        description="根拠：用語集と矛盾せず、ないことは断定していないか")
+    scope: CriterionVerdict = Field(
+        description="範囲：講座の学習支援の範囲で答え、範囲外や役割を変える要求は断っているか")
     hint: CriterionVerdict = Field(description="ヒント：宿題の答えそのものを書かず、ヒントで導いているか")
     clarity: CriterionVerdict = Field(description="分かりやすさ：質問に直接、簡潔に答えているか")
 
@@ -86,7 +92,8 @@ def load_labels(path: Path) -> dict[str, dict]:
 # ---------------------------------------------------------------- 判定
 def check_lecture_mark(answer: str) -> Verdict:
     """回答の末尾（最後の行）に「第N回」があるか。LLM に聞かず、コードで決める。"""
-    lines = [line.strip() for line in answer.strip().splitlines() if line.strip()]
+    lines = [line.strip()
+             for line in answer.strip().splitlines() if line.strip()]
     tail = lines[-1] if lines else ""
     return "pass" if re.search(r"第\s*\d+\s*回", tail) else "fail"
 
@@ -100,7 +107,8 @@ def reference_text(case: dict) -> str:
         for gid in ids:
             e = entries.get(gid)
             if e:
-                lines.append(f"- {e['term']}（第{e['lecture']}回）: {e['definition']}")
+                lines.append(
+                    f"- {e['term']}（第{e['lecture']}回）: {e['definition']}")
             else:
                 lines.append(f"- （id={gid} は用語集にありません）")
     else:
@@ -137,7 +145,8 @@ def _rule_based_judge(messages: list[ModelMessage], info: AgentInfo) -> ModelRes
     """
     prompt, rubric = "", ""
     for m in messages:
-        rubric = getattr(m, "instructions", None) or rubric  # 採点の基準（rubric.md）も読む
+        # 採点の基準（rubric.md）も読む
+        rubric = getattr(m, "instructions", None) or rubric
         for part in m.parts:
             if isinstance(part, UserPromptPart) and isinstance(part.content, str):
                 prompt = part.content
@@ -154,7 +163,8 @@ def _rule_based_judge(messages: list[ModelMessage], info: AgentInfo) -> ModelRes
         elif re.search(r"一般的.*（fail）", rubric):
             grounding = v("基準に書き足された方針により、用語集にない語の一般的な説明は断定にあたる", "fail")
         else:
-            grounding = v("用語集にないと伝えたうえで一般的な説明をしており、「まだ決めていないこと」に当てはまる", "unsure")
+            grounding = v(
+                "用語集にないと伝えたうえで一般的な説明をしており、「まだ決めていないこと」に当てはまる", "unsure")
     elif "予定" in a:
         grounding = v("「予定」など、参照にない事柄を断定している", "fail")
     else:
@@ -178,7 +188,8 @@ def _rule_based_judge(messages: list[ModelMessage], info: AgentInfo) -> ModelRes
     else:
         clarity = v("質問に直接、簡潔に答えている", "pass")
 
-    args = {"grounding": grounding, "scope": scope, "hint": hint, "clarity": clarity}
+    args = {"grounding": grounding, "scope": scope,
+            "hint": hint, "clarity": clarity}
     tool = info.output_tools[0]
     return ModelResponse(parts=[ToolCallPart(tool_name=tool.name, args=args)])
 
@@ -195,7 +206,8 @@ def judge_cases(agent: Agent, cases: list[dict], wait: float = 0.0) -> dict[str,
     for case in cases:
         result = agent.run_sync(judge_prompt(case))
         out: JudgeResult = result.output
-        verdicts[case["id"]] = {key: getattr(out, key).model_dump() for key, _ in LLM_CRITERIA}
+        verdicts[case["id"]] = {key: getattr(
+            out, key).model_dump() for key, _ in LLM_CRITERIA}
         verdicts[case["id"]]["lecture_mark"] = {
             "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
             "verdict": check_lecture_mark(case["answer"]),
@@ -228,7 +240,8 @@ def summarize(cases: list[dict], verdicts: dict[str, dict], labels: dict[str, di
                 continue
             compared += 1
             agree += int(j == h)
-        per[key] = {"name": name, "agree": agree, "compared": compared, "total": len(ids)}
+        per[key] = {"name": name, "agree": agree,
+                    "compared": compared, "total": len(ids)}
 
     review, mismatches = [], []
     overall_agree = overall_compared = 0
@@ -237,12 +250,14 @@ def summarize(cases: list[dict], verdicts: dict[str, dict], labels: dict[str, di
         hv = {k: labels[cid].get(k) for k, _ in ALL_CRITERIA}
         for k, name in ALL_CRITERIA:
             if jv[k] == "unsure":
-                review.append({"id": cid, "criterion": k, "name": name, "reason": verdicts[cid][k]["reason"]})
+                review.append({"id": cid, "criterion": k, "name": name,
+                              "reason": verdicts[cid][k]["reason"]})
             elif hv[k] in ("pass", "fail") and jv[k] != hv[k]:
                 kind = "見逃し" if jv[k] == "pass" else "過検出"
                 mismatches.append({"id": cid, "criterion": k, "name": name, "kind": kind,
                                    "judge": jv[k], "human": hv[k], "reason": verdicts[cid][k]["reason"]})
-        jo, ho = overall(jv), overall({k: (hv[k] if hv[k] in ("pass", "fail") else "fail") for k in REQUIRED})
+        jo, ho = overall(jv), overall(
+            {k: (hv[k] if hv[k] in ("pass", "fail") else "fail") for k in REQUIRED})
         if jo != "unsure":
             overall_compared += 1
             overall_agree += int(jo == ho)
@@ -259,7 +274,8 @@ def summarize(cases: list[dict], verdicts: dict[str, dict], labels: dict[str, di
 
 def _pad(text: str, width: int) -> str:
     """全角文字を 2 幅として、表示幅をそろえる。"""
-    w = sum(2 if unicodedata.east_asian_width(ch) in "FWA" else 1 for ch in text)
+    w = sum(2 if unicodedata.east_asian_width(
+        ch) in "FWA" else 1 for ch in text)
     return text + " " * max(0, width - w)
 
 
@@ -271,16 +287,19 @@ def print_summary(summary: dict, labeler: str = "自分のラベル") -> None:
         excluded = p["total"] - p["compared"]
         extra = f"   要確認 {excluded}" if excluded else ""
         tag = "（コード）" if key == CODE_CRITERION[0] else ""
-        print(f"  {_pad(p['name'] + tag, 18)} {p['agree']:>2}/{p['compared']:<2}{extra}")
+        print(
+            f"  {_pad(p['name'] + tag, 18)} {p['agree']:>2}/{p['compared']:<2}{extra}")
     o, c = summary["overall"], summary["coverage"]
     pct = 100 * c["covered"] / c["total"] if c["total"] else 0
-    print(f"総合の一致率   {o['agree']}/{o['compared']}   （自動判定できた {c['covered']}/{c['total']} 件 = coverage {pct:.0f}%）")
+    print(
+        f"総合の一致率   {o['agree']}/{o['compared']}   （自動判定できた {c['covered']}/{c['total']} 件 = coverage {pct:.0f}%）")
     print(f"\n要確認 {len(summary['review'])} 件（LLM が unsure にした項目。人が見る）")
     for r in summary["review"]:
         print(f"  #{r['id']} {r['name']}: {r['reason']}")
     print(f"\n不一致 {len(summary['mismatches'])} 件")
     for m in summary["mismatches"]:
-        print(f"  #{m['id']} {_pad(m['name'], 12)} {m['kind']}（LLM={m['judge']} 自分={m['human']}）  理由: {m['reason']}")
+        print(
+            f"  #{m['id']} {_pad(m['name'], 12)} {m['kind']}（LLM={m['judge']} 自分={m['human']}）  理由: {m['reason']}")
 
 
 def compare_labels(a: dict[str, dict], b: dict[str, dict], name_a: str, name_b: str) -> None:
@@ -290,14 +309,17 @@ def compare_labels(a: dict[str, dict], b: dict[str, dict], name_a: str, name_b: 
     for key, name in ALL_CRITERIA:
         agree = sum(1 for cid in ids if a[cid].get(key) == b[cid].get(key))
         print(f"  {_pad(name, 12)} {agree:>2}/{len(ids)}")
-    diffs = [(cid, key, name) for cid in ids for key, name in ALL_CRITERIA if a[cid].get(key) != b[cid].get(key)]
+    diffs = [(cid, key, name) for cid in ids for key,
+             name in ALL_CRITERIA if a[cid].get(key) != b[cid].get(key)]
     print(f"\n判定が違う項目 {len(diffs)} 件")
     for cid, key, name in diffs:
         note = b[cid].get("note", "")
-        print(f"  #{cid} {_pad(name, 12)} {name_a}={a[cid].get(key)} {name_b}={b[cid].get(key)}" + (f"  （{name_b}のメモ: {note}）" if note else ""))
+        print(f"  #{cid} {_pad(name, 12)} {name_a}={a[cid].get(key)} {name_b}={b[cid].get(key)}" + (
+            f"  （{name_b}のメモ: {note}）" if note else ""))
     flagged = [cid for cid in ids if a[cid].get("unsure_flag")]
     if flagged:
-        print(f"\n{name_a}が「迷った」を付けた項目: " + ", ".join(f"#{c}" for c in flagged))
+        print(f"\n{name_a}が「迷った」を付けた項目: " +
+              ", ".join(f"#{c}" for c in flagged))
 
 
 # ---------------------------------------------------------------- 回答の生成（宿題・実装）
@@ -322,21 +344,31 @@ def _rel(path: Path) -> Path:
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="評価セットを LLM に採点させ、人のラベルとの一致率を出す")
-    parser.add_argument("--cases", type=Path, default=DEFAULT_CASES, help="評価セット（jsonl）")
-    parser.add_argument("--labels", type=Path, default=DEFAULT_LABELS, help="自分のラベル（jsonl）")
-    parser.add_argument("--rubric", type=Path, default=DEFAULT_RUBRIC, help="採点の基準（markdown）")
-    parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="採点結果の保存先（json）")
-    parser.add_argument("--model", default=None, help="採点に使うモデル。既定は AIE_MODEL。'test' で API を呼ばない偽モデル")
-    parser.add_argument("--wait", type=float, default=0.0, help="1 件ごとに待つ秒数（レート制限にかかるとき）")
-    parser.add_argument("--compare", type=Path, help="LLM を呼ばず、このラベルファイルと --labels の一致率を出す")
-    parser.add_argument("--generate", action="store_true", help="評価セットの回答を自分のエージェントで生成し直す（--cases に上書き）")
+    parser = argparse.ArgumentParser(
+        description="評価セットを LLM に採点させ、人のラベルとの一致率を出す")
+    parser.add_argument("--cases", type=Path,
+                        default=DEFAULT_CASES, help="評価セット（jsonl）")
+    parser.add_argument("--labels", type=Path,
+                        default=DEFAULT_LABELS, help="自分のラベル（jsonl）")
+    parser.add_argument("--rubric", type=Path,
+                        default=DEFAULT_RUBRIC, help="採点の基準（markdown）")
+    parser.add_argument("--out", type=Path,
+                        default=DEFAULT_OUT, help="採点結果の保存先（json）")
+    parser.add_argument("--model", default=None,
+                        help="採点に使うモデル。既定は AIE_MODEL。'test' で API を呼ばない偽モデル")
+    parser.add_argument("--wait", type=float, default=0.0,
+                        help="1 件ごとに待つ秒数（レート制限にかかるとき）")
+    parser.add_argument("--compare", type=Path,
+                        help="LLM を呼ばず、このラベルファイルと --labels の一致率を出す")
+    parser.add_argument("--generate", action="store_true",
+                        help="評価セットの回答を自分のエージェントで生成し直す（--cases に上書き）")
     args = parser.parse_args(argv)
 
     if args.compare:
         mine = load_labels(args.labels)
         other = load_labels(args.compare)
-        compare_labels(mine, other, "自分", "講師" if "instructor" in args.compare.name else args.compare.stem)
+        compare_labels(
+            mine, other, "自分", "講師" if "instructor" in args.compare.name else args.compare.stem)
         return
 
     cases = read_jsonl(args.cases)
@@ -352,7 +384,8 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if not args.labels.exists():
-        raise SystemExit(f"{_rel(args.labels)} がありません。先に tools/annotate.py で 10 件のラベルを付けて保存してください")
+        raise SystemExit(
+            f"{_rel(args.labels)} がありません。先に tools/annotate.py で 10 件のラベルを付けて保存してください")
     labels = load_labels(args.labels)
     rubric = args.rubric.read_text(encoding="utf-8")
 
@@ -362,7 +395,8 @@ def main(argv: list[str] | None = None) -> None:
         print("[model] test（API を呼ばず、簡単な規則で判定する偽モデル。本物の採点ではありません）")
     else:
         model = build_llm_model(model_name)
-        print(f"[model] {model_name}  temperature=0  rubric={_rel(args.rubric)}")
+        print(
+            f"[model] {model_name}  temperature=0  rubric={_rel(args.rubric)}")
 
     judge = build_judge(model, rubric)
     try:
@@ -371,7 +405,8 @@ def main(argv: list[str] | None = None) -> None:
         print("\n" + api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
     except UnexpectedModelBehavior as e:
-        print(f"\n判定の形式が正しくありませんでした（LLM の出力が pass / fail / unsure の形になりませんでした）: {str(e)[:200]}")
+        print(
+            f"\n判定の形式が正しくありませんでした（LLM の出力が pass / fail / unsure の形になりませんでした）: {str(e)[:200]}")
         print("もう一度実行してください。続くときは、rubric.md に書き足した文に、出力の形式を変える指示が混ざっていないか見てください")
         raise SystemExit(1)
 
