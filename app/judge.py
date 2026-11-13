@@ -144,15 +144,15 @@ def _rule_based_judge(messages: list[ModelMessage], info: AgentInfo) -> ModelRes
     q = prompt.split("# 回答", 1)[0]
     a = prompt.split("# 回答", 1)[-1].split("# 参照", 1)[0]
 
-    def v(reason, verdict):
-        return {"reason": reason, "verdict": verdict}
+    def v(verdict, reason):
+        return { "verdict": verdict, "reason": reason}
 
     if "用語集に「" in a and ("ありません" in a or "見つかりません" in a) and "一般には" in a:
         # STEP 3 で「根拠」に方針が書き足されていれば、それに従う（…（pass）→ pass、…（fail）→ fail）
         if re.search(r"一般的.*（pass）", rubric):
-            grounding = v("基準に書き足された方針により、用語集にないと断ったうえでの一般的な説明は断定ではない", "pass")
+            grounding = v("pass", "基準に書き足された方針により、用語集にないと断ったうえでの一般的な説明は断定ではない")
         elif re.search(r"一般的.*（fail）", rubric):
-            grounding = v("基準に書き足された方針により、用語集にない語の一般的な説明は断定にあたる", "fail")
+            grounding = v("fail", "基準に書き足された方針により、用語集にない語の一般的な説明は断定にあたる")
         else:
             grounding = v("用語集にないと伝えたうえで一般的な説明をしており、「まだ決めていないこと」に当てはまる", "unsure")
     elif "予定" in a:
