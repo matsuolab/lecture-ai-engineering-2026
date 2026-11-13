@@ -11,7 +11,7 @@
 モデルは tools.py の関数を「ツール」として呼び出し、その結果を見て回答を作る。
 第5回では、同じツールを MCP サーバー（app/mcp_server.py）経由で受け取る。
 """
-
+import os  # 追加: .env から読み込んだ環境変数を参照するため
 import argparse
 import inspect
 import json
@@ -27,7 +27,8 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
-from app.config import MODEL, api_error_message, get_api_key
+# 変更: get_api_key は使わなくなるので import から外す
+from app.config import MODEL, api_error_message
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -88,8 +89,28 @@ def build_mcp_agent(config_path: Path = MCP_CONFIG) -> Agent:
     return Agent(instructions=INSTRUCTIONS, toolsets=load_mcp_servers(config_path))
 
 
+def build_provider():
+    """Vertex AI 用のプロバイダを作る（API キーではなく ADC で認証する）。"""
+    # 接続先（プロジェクトIDとリージョン）は .env から読む。コードには直書きしない
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    location = os.environ.get("GOOGLE_CLOUD_LOCATION")
+    if not project or not location:
+        # 設定漏れのときは、原因が分かるメッセージを出して終了する
+        raise SystemExit(
+            ".env に GOOGLE_CLOUD_PROJECT と GOOGLE_CLOUD_LOCATION を書いてください")
+
+    try:
+        # 新しい pydantic-ai: Vertex AI 用の専用プロバイダを使う
+        from pydantic_ai.providers.google_cloud import GoogleCloudProvider
+        return GoogleCloudProvider(project=project, location=location)
+    except ImportError:
+        # 古い pydantic-ai（1.x）: GoogleProvider に vertexai=True を渡す
+        return GoogleProvider(vertexai=True, project=project, location=location)
+
+
 def build_model() -> GoogleModel:
-    return GoogleModel(MODEL, provider=GoogleProvider(api_key=get_api_key()))
+    # project / location を明示したプロバイダを渡すと、ADC（gcloud のログイン情報）で認証される
+    return GoogleModel(MODEL, provider=build_provider())
 
 
 def print_tools(target: Agent) -> None:

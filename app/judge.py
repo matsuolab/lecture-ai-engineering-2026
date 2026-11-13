@@ -132,8 +132,10 @@ def build_judge(model, rubric: str) -> Agent:
 
 
 def build_llm_model(model_name: str) -> GoogleModel:
-    """Gemini のモデルを作る。API キーが無ければ手順を表示して終了する（app.agent と同じ）。"""
-    return GoogleModel(model_name, provider=GoogleProvider(api_key=get_api_key()))
+    """Gemini のモデルを作る（Vertex AI 経由。認証は app.agent と共通の ADC）。"""
+    # 関数内で import するのは、--model test や --compare のときに app.agent を読み込まないため
+    from app.agent import build_provider
+    return GoogleModel(model_name, provider=build_provider())
 
 
 # ---------------------------------------------------------------- 偽モデル（--model test）
