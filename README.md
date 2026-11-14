@@ -30,6 +30,13 @@ uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
+会話の文脈を保って続けて質問する場合は、`--interactive` を付けます。最初の質問は省略して、起動後に入力することもできます。`:q` で終了します。
+
+```bash
+uv run python -m app.ask --interactive "LoRAとは何ですか？"
+uv run python -m app.ask --interactive
+```
+
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
 ## 構成
