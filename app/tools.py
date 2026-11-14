@@ -5,10 +5,14 @@
 """
 
 import json
+import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+# 第3回 宿題: 学習ログの保存先（.gitignore 済みなので共有されない）
+LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -74,6 +78,59 @@ def get_lecture_summary(lecture: int) -> str:
     """
     path = DATA_DIR / "lectures" / f"{lecture:02d}.md"
     if not path.exists():
-        available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
+        available = sorted(p.stem for p in (
+            DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """
+    指定した回の用語から1つ選び、確認問題と答えを返す。
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    # 1. load_glossary() から lecture が一致する用語を集める
+    candidates = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not candidates:
+        available = sorted({e["lecture"] for e in load_glossary()})
+        return (
+            f"第{lecture}回の用語は用語集にありません。"
+            f"用語がある回: {', '.join(f'第{n}回' for n in available)}"
+        )
+
+    # 2. 1 つ選ぶ（random.choice ）
+    entry = random.choice(candidates)
+
+    # 3. 問題と答えを文字列で返す（ json.dumps など）
+    return json.dumps(
+        {
+            "lecture": lecture,
+            "question": f"次の説明に当てはまる用語は何でしょう？\n{entry['definition']}",
+            "answer": entry["term"],
+            "aliases": entry["aliases"],
+            "related": entry["related"],
+        },
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(title: str, content: str) -> str:
+    """学習の記録を learning_log/ フォルダに Markdown で保存する。
+
+    ユーザーが「今日学んだことを記録して」「ログに残して」のように
+    保存を頼んだときだけ使う。title には記録の短い見出し（例: "LoRAの復習"）、
+    content には残したい内容（学んだこと・疑問点など）を入れる。
+    同じ日の記録は、その日のファイル（YYYY-MM-DD.md）の末尾に追記される。
+    """
+    title = title.strip()
+    content = content.strip()
+    if not title or not content:
+        return "title と content の両方を指定してください。"
+
+    now = datetime.now()
+    LOG_DIR.mkdir(exist_ok=True)
+    path = LOG_DIR / f"{now:%Y-%m-%d}.md"
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(f"## {now:%H:%M} {title}\n\n{content}\n\n")
+    return f"学習ログを保存しました: {path.relative_to(LOG_DIR.parent)}"

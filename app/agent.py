@@ -3,6 +3,7 @@
 使い方:
     uv run python -m app.agent "AIE2026の講座で使う「lecNN-start タグ」とは何ですか？"
     uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"   # ツール呼び出しを表示
+    uv run python -m app.agent "LoRAについて学んだことを学習ログに保存して"  # 第3回 宿題: 保存前に確認する
     uv run python -m app.agent --mcp --trace "LoRAとは？"        # 第5回: ツールを MCP サーバーから受け取る
     uv run python -m app.agent --mcp --list-tools               # 第5回: モデルに見えるツール一覧（APIキー不要）
 
@@ -10,13 +11,13 @@
 モデルは tools.py の関数を「ツール」として呼び出し、その結果を見て回答を作る。
 第5回では、同じツールを MCP サーバー（app/mcp_server.py）経由で受け取る。
 """
-
+import os  # 追加: .env から読み込んだ環境変数を参照するため
 import argparse
 import inspect
 import json
 from pathlib import Path
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, ToolDenied
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -26,23 +27,32 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
-from app.config import MODEL, api_error_message, get_api_key
+# 変更: get_api_key は使わなくなるので import から外す
+from app.config import MODEL, api_error_message
+from dotenv import load_dotenv
 
+load_dotenv()
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
 - 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。
 - 回の内容を聞かれたら get_lecture_summary を使う。
+- 確認問題・復習問題を求められたら make_quiz を使う。答えはすぐに見せず、ユーザーが回答してから示す。
 - 用語集に見つからないことは、推測で断定せず「用語集にはない」と伝える。
 - 回答の最後に、関係する回（第N回）を示す。
 - 宿題の答えそのものは書かず、考え方のヒントで導く。
+- 学んだことの記録を頼まれたら save_learning_log で保存する。頼まれていないときは保存しない。
 """
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+# 承認待ちのツールがあると、実行は止まり output が DeferredToolRequests になる。
+# そのため output_type に DeferredToolRequests を加えておく（加えないとエラーになる）
+agent = Agent(instructions=INSTRUCTIONS, output_type=[
+              str, DeferredToolRequests])
 agent.tool_plain(tools.search_glossary)
 agent.tool_plain(tools.get_lecture_summary)
-
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)  # 第3回 演習
+# 第3回 宿題: ファイルへの保存は取り消しにくいので、実行前に利用者の承認を求める
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -60,14 +70,17 @@ def load_mcp_servers(config_path: Path = MCP_CONFIG) -> list[MCPToolset]:
     古い SDK で作られたサーバー（fetch など）につなぐとき、接続方式の自動判定（"auto"）が
     警告を大量に出すため。"legacy" に固定すると新旧どちらのサーバーにも静かにつながる。
     """
-    config = json.loads(Path(config_path).read_text(encoding="utf-8"))["mcpServers"]
+    config = json.loads(Path(config_path).read_text(
+        encoding="utf-8"))["mcpServers"]
     toolsets = []
     for name, spec in config.items():
         if "url" in spec:
             transport = spec["url"]
         else:
-            transport = StdioTransport(spec["command"], spec.get("args", []), env=spec.get("env"))
-        toolsets.append(MCPToolset(Client(transport, mode="legacy")).prefixed(name))
+            transport = StdioTransport(
+                spec["command"], spec.get("args", []), env=spec.get("env"))
+        toolsets.append(MCPToolset(
+            Client(transport, mode="legacy")).prefixed(name))
     return toolsets
 
 
@@ -76,8 +89,28 @@ def build_mcp_agent(config_path: Path = MCP_CONFIG) -> Agent:
     return Agent(instructions=INSTRUCTIONS, toolsets=load_mcp_servers(config_path))
 
 
+def build_provider():
+    """Vertex AI 用のプロバイダを作る（API キーではなく ADC で認証する）。"""
+    # 接続先（プロジェクトIDとリージョン）は .env から読む。コードには直書きしない
+    project = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    location = os.environ.get("GOOGLE_CLOUD_LOCATION")
+    if not project or not location:
+        # 設定漏れのときは、原因が分かるメッセージを出して終了する
+        raise SystemExit(
+            ".env に GOOGLE_CLOUD_PROJECT と GOOGLE_CLOUD_LOCATION を書いてください")
+
+    try:
+        # 新しい pydantic-ai: Vertex AI 用の専用プロバイダを使う
+        from pydantic_ai.providers.google_cloud import GoogleCloudProvider
+        return GoogleCloudProvider(project=project, location=location)
+    except ImportError:
+        # 古い pydantic-ai（1.x）: GoogleProvider に vertexai=True を渡す
+        return GoogleProvider(vertexai=True, project=project, location=location)
+
+
 def build_model() -> GoogleModel:
-    return GoogleModel(MODEL, provider=GoogleProvider(api_key=get_api_key()))
+    # project / location を明示したプロバイダを渡すと、ADC（gcloud のログイン情報）で認証される
+    return GoogleModel(MODEL, provider=build_provider())
 
 
 def print_tools(target: Agent) -> None:
@@ -97,6 +130,47 @@ def print_tools(target: Agent) -> None:
         print(f"  引数: {json.dumps(params, ensure_ascii=False)}")
 
 
+def ask_approvals(requests: DeferredToolRequests) -> DeferredToolResults:
+    """承認待ちのツール呼び出しを1つずつ利用者に見せ、実行してよいかを y/n で聞く。"""
+    results = DeferredToolResults()
+
+    # 承認待ちのツール呼び出しを1つずつfor文で処理
+    for call in requests.approvals:
+        args = call.args_as_dict()  # {"title": "...", "content": "..."}
+        print(f"\n[承認待ち] {call.tool_name}")
+
+        # for文で確認内容の表示
+        for key, value in args.items():
+            print(f"  {key}: {value}")
+
+        # ここで入力を待つ
+        answer = input("この内容で実行してよいですか？ [y/N]: ").strip().lower()
+        if answer in ("y", "yes"):
+            # 呼び出したツールのIDに対応する承認配列の要素をTrueにする
+            results.approvals[call.tool_call_id] = True
+        else:
+            # 拒否した理由はモデルに伝わり、モデルはそれを踏まえて回答を続ける
+            results.approvals[call.tool_call_id] = ToolDenied(
+                "利用者が保存を許可しませんでした。")
+    return results
+
+
+def run_with_approvals(target: Agent, question: str, model):
+    """エージェントを実行し、承認待ちで止まったら利用者に聞いて続きを実行する。"""
+    # ここのrun_syncでツールを呼び出す。
+    # save_learning_log()を読んだ場合、result.output = DeferredToolRequestsになる
+    result = target.run_sync(question, model=model)
+
+    # 承認が必要なツールを呼び続ける限り、ループさせる
+    while isinstance(result.output, DeferredToolRequests):
+        result = target.run_sync(
+            model=model,
+            message_history=result.all_messages(),       # それまでの会話
+            deferred_tool_results=ask_approvals(result.output),  # 承認の結果を辞書で管理
+        )
+    return result
+
+
 def print_trace(result) -> None:
     """どのツールが、どの引数で呼ばれ、何を返したかを表示する。"""
     print("\n--- trace ---")
@@ -105,7 +179,8 @@ def print_trace(result) -> None:
             if isinstance(part, ToolCallPart):
                 print(f"[tool call]   {part.tool_name}({part.args})")
             elif isinstance(part, ToolReturnPart):
-                print(f"[tool return] {part.tool_name} -> {str(part.content)[:120]}…")
+                print(
+                    f"[tool return] {part.tool_name} -> {str(part.content)[:120]}…")
     print(f"[usage] {result.usage}")
 
 
@@ -113,8 +188,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
     parser.add_argument("--trace", action="store_true", help="ツール呼び出しを表示する")
-    parser.add_argument("--mcp", action="store_true", help="第5回: ツールを MCP サーバー（app/mcp_servers.json）から受け取る")
-    parser.add_argument("--list-tools", action="store_true", help="モデルに見えるツール一覧を表示して終了する（APIキー不要）")
+    parser.add_argument("--mcp", action="store_true",
+                        help="第5回: ツールを MCP サーバー（app/mcp_servers.json）から受け取る")
+    parser.add_argument("--list-tools", action="store_true",
+                        help="モデルに見えるツール一覧を表示して終了する（APIキー不要）")
     args = parser.parse_args()
 
     target = build_mcp_agent() if args.mcp else agent
@@ -128,7 +205,7 @@ def main() -> None:
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
     try:
-        result = target.run_sync(args.question, model=build_model())
+        result = run_with_approvals(target, args.question, build_model())
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
