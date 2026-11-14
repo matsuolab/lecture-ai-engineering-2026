@@ -68,3 +68,47 @@ def test_judge_pipeline_with_fake_model():
     assert summary["coverage"]["covered"] + len({r["id"] for r in summary["review"]}) == 10
     for m in summary["mismatches"]:
         assert m["kind"] in ("見逃し", "過検出")
+
+
+def test_judge_retries_503_and_resumes_from_saved_progress(tmp_path, monkeypatch):
+    cases = read_jsonl(DEFAULT_CASES)[:1]
+    rubric = DEFAULT_RUBRIC.read_text(encoding="utf-8")
+    fingerprint = judge.progress_fingerprint(cases, rubric, "test")
+    progress_path = tmp_path / "judge.progress.json"
+    test_agent = build_judge(build_test_model(), rubric)
+    calls = 0
+
+    class TemporarilyBusyAgent:
+        def run_sync(self, prompt):
+            nonlocal calls
+            calls += 1
+            if calls < 3:
+                from pydantic_ai.exceptions import ModelHTTPError
+
+                raise ModelHTTPError(status_code=503, model_name="test", body="busy")
+            return test_agent.run_sync(prompt)
+
+    sleeps = []
+    monkeypatch.setattr(judge.time, "sleep", sleeps.append)
+    verdicts = judge_cases(
+        TemporarilyBusyAgent(),
+        cases,
+        progress_path=progress_path,
+        fingerprint=fingerprint,
+    )
+    assert calls == 3
+    assert sleeps == [5, 10]
+    assert judge.load_progress(progress_path, fingerprint, {cases[0]["id"]}) == verdicts
+
+    class MustNotRunAgent:
+        def run_sync(self, prompt):
+            raise AssertionError("saved cases should not be requested again")
+
+    resumed = judge_cases(
+        MustNotRunAgent(),
+        cases,
+        progress_path=progress_path,
+        fingerprint=fingerprint,
+        previous_verdicts=verdicts,
+    )
+    assert resumed == verdicts
