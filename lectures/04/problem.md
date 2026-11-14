@@ -103,7 +103,7 @@ uv run python -m app.judge
 - 「レート制限に達しました」と出たら、1 分待って再実行します。続くときは `--wait 2`（1 件ごとに 2 秒待つ）を付けます
 - API キーが使えないときや動作確認だけしたいときは、`--model test` を付けると、API を呼ばずに簡単な規則で判定する偽モデルで流れを試せます（本物の採点ではありません）
 
-結果は `lectures/04/judge_result.json` に保存されます。
+結果は `lectures/04/judge_result.json` に保存されます。採点結果は 1 件終わるごとに保存されるため、途中で止まっても完了済みの件は残ります。集計結果は全件の採点が終わったあとに追加されます。
 
 ### STEP 3：基準を 1 か所直して、もう一度採点する（約8分）
 
@@ -170,7 +170,7 @@ git push -u origin lec04
 ### 実装の進め方
 
 1. `uv run --with streamlit==1.66.1 streamlit run tools/annotate.py` を起動し、左の「作問（宿題・実装）」で、質問と「期待するふるまい」を 10 件作ります。正常系だけでなく、壊れそうな入力（エッジケース）を混ぜます。`data/eval/my_cases.jsonl` に保存されます
-2. `uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl` で、第3回で作った自分のエージェント（`app/agent.py`）に回答を生成させます
+2. `uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl` で、第3回で作った自分のエージェント（`app/agent.py`）に回答を生成させます。回答は 1 件生成するごとに保存され、次の API 呼び出しまで 30 秒待つため、途中で止まっても生成済みの回答は残ります
 3. 「ラベル付け」の画面で、サイドバーの評価セットを `data/eval/my_cases.jsonl`、ラベルの保存先を `lectures/04/my_labels.jsonl` に変えてラベルを付けます
 4. `uv run python -m app.judge --cases data/eval/my_cases.jsonl --labels lectures/04/my_labels.jsonl --out lectures/04/my_judge_result.json` で採点します
 5. 「第N回」のようにコードで判定できる基準と、LLM に任せる基準の使い分けを `answer.md` に書きます
