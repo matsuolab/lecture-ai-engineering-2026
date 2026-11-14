@@ -4,6 +4,10 @@
 「採点 → 人のラベルとの比較 → 要確認・不一致の集計」が通ることを確かめる。
 """
 
+import json
+import sys
+from types import SimpleNamespace
+
 from app import judge
 from app.judge import (
     ALL_CRITERIA,
@@ -68,3 +72,73 @@ def test_judge_pipeline_with_fake_model():
     assert summary["coverage"]["covered"] + len({r["id"] for r in summary["review"]}) == 10
     for m in summary["mismatches"]:
         assert m["kind"] in ("見逃し", "過検出")
+
+
+def test_main_saves_each_completed_case(tmp_path, monkeypatch):
+    output = tmp_path / "judge_result.json"
+    original_judge_cases = judge.judge_cases
+    saved_counts = []
+
+    def check_progress(agent, cases, wait=0.0, on_case_complete=None):
+        def save_and_check(verdicts):
+            on_case_complete(verdicts)
+            saved = json.loads(output.read_text(encoding="utf-8"))
+            expected_count = len(saved_counts) + 1
+            assert len(saved["verdicts"]) == expected_count
+            assert "summary" not in saved
+            saved_counts.append(expected_count)
+
+        return original_judge_cases(agent, cases, wait, save_and_check)
+
+    monkeypatch.setattr(judge, "judge_cases", check_progress)
+    judge.main([
+        "--model", "test",
+        "--labels", str(INSTRUCTOR_LABELS),
+        "--out", str(output),
+    ])
+
+    saved = json.loads(output.read_text(encoding="utf-8"))
+    assert saved_counts == list(range(1, 11))
+    assert len(saved["verdicts"]) == 10
+    assert saved["summary"]["n"] == 10
+
+
+def test_generate_saves_cases_after_each_answer(tmp_path, monkeypatch):
+    cases_path = tmp_path / "cases.jsonl"
+    cases = [
+        {"id": "01", "question": "first", "answer": ""},
+        {"id": "02", "question": "second", "answer": ""},
+    ]
+    judge.write_jsonl(cases_path, cases)
+
+    writes = []
+    original_write_jsonl = judge.write_jsonl
+
+    def track_write_jsonl(path, rows):
+        original_write_jsonl(path, rows)
+        if path == cases_path:
+            writes.append(judge.read_jsonl(cases_path))
+
+    def run_sync(question, model):
+        return SimpleNamespace(output=f"answer: {question}")
+
+    fake_app_agent = SimpleNamespace(
+        agent=SimpleNamespace(run_sync=run_sync),
+        build_model=lambda: object(),
+    )
+    monkeypatch.setitem(sys.modules, "app.agent", fake_app_agent)
+    monkeypatch.setattr(judge, "write_jsonl", track_write_jsonl)
+    waits = []
+    monkeypatch.setattr(judge.time, "sleep", waits.append)
+
+    judge.main(["--generate", "--cases", str(cases_path)])
+
+    assert waits == [30.0]
+    assert [[case["answer"] for case in snapshot] for snapshot in writes] == [
+        ["answer: first", ""],
+        ["answer: first", "answer: second"],
+    ]
+    assert judge.read_jsonl(cases_path) == [
+        {"id": "01", "question": "first", "answer": "answer: first"},
+        {"id": "02", "question": "second", "answer": "answer: second"},
+    ]

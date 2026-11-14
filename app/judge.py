@@ -6,7 +6,7 @@
     uv run python -m app.judge --compare lectures/04/reference/labels_instructor.jsonl
                                                 # 2 つのラベルファイルの一致率を出す（API キー不要）
     uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl
-                                                # 宿題（実装）: 回答を自分のエージェント（app.agent）で生成し直す
+                                                # 宿題（実装）: 回答を1件ずつ自分のエージェント（app.agent）で生成・保存
 
 採点の基準は data/eval/rubric.md に書いてある。基準ごとに理由を先に書かせてから、
 pass / fail / unsure のどれかを返させる（構造化出力）。unsure は自動判定から外し、人が見る「要確認」に回す。
@@ -20,7 +20,7 @@ import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Callable, Literal
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
@@ -73,9 +73,11 @@ def read_jsonl(path: Path) -> list[dict]:
 
 def write_jsonl(path: Path, rows: list[dict]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
+    temporary_path = path.with_suffix(path.suffix + ".tmp")
+    with open(temporary_path, "w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    temporary_path.replace(path)
 
 
 def load_labels(path: Path) -> dict[str, dict]:
@@ -188,7 +190,12 @@ def build_test_model() -> FunctionModel:
 
 
 # ---------------------------------------------------------------- 採点と集計
-def judge_cases(agent: Agent, cases: list[dict], wait: float = 0.0) -> dict[str, dict]:
+def judge_cases(
+    agent: Agent,
+    cases: list[dict],
+    wait: float = 0.0,
+    on_case_complete: Callable[[dict[str, dict]], None] | None = None,
+) -> dict[str, dict]:
     """評価セットを 1 件ずつ採点する。戻り値は id → {基準: {reason, verdict}}。"""
     verdicts: dict[str, dict] = {}
     print(f"採点中 {len(cases)} 件 ", end="", flush=True)
@@ -200,6 +207,8 @@ def judge_cases(agent: Agent, cases: list[dict], wait: float = 0.0) -> dict[str,
             "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
             "verdict": check_lecture_mark(case["answer"]),
         }
+        if on_case_complete:
+            on_case_complete(verdicts)
         print(".", end="", flush=True)
         if wait:
             time.sleep(wait)
@@ -301,17 +310,24 @@ def compare_labels(a: dict[str, dict], b: dict[str, dict], name_a: str, name_b: 
 
 
 # ---------------------------------------------------------------- 回答の生成（宿題・実装）
-def generate_answers(cases: list[dict], wait: float = 1.0) -> list[dict]:
+def generate_answers(
+    cases: list[dict],
+    wait: float = 30.0,
+    on_case_complete: Callable[[list[dict]], None] | None = None,
+) -> list[dict]:
     """評価セットの各質問を自分のエージェント（app.agent）に投げ、回答を埋める。"""
     from app.agent import agent, build_model
 
     model = build_model()
     print(f"回答を生成中 {len(cases)} 件 ", end="", flush=True)
-    for case in cases:
+    for index, case in enumerate(cases):
         result = agent.run_sync(case["question"], model=model)
         case["answer"] = str(result.output)
+        if on_case_complete:
+            on_case_complete(cases)
         print(".", end="", flush=True)
-        time.sleep(wait)
+        if index + 1 < len(cases):
+            time.sleep(wait)
     print()
     return cases
 
@@ -321,6 +337,24 @@ def _rel(path: Path) -> Path:
     return path.relative_to(ROOT) if path.is_absolute() and path.is_relative_to(ROOT) else path
 
 
+def write_result(path: Path, model_name: str, rubric_path: Path, run_at: str,
+                 verdicts: dict[str, dict], summary: dict | None = None) -> None:
+    """採点途中の結果も含め、JSONを壊さないよう一時ファイル経由で保存する。"""
+    data = {
+        "model": model_name,
+        "rubric": str(_rel(rubric_path)),
+        "run_at": run_at,
+        "verdicts": verdicts,
+    }
+    if summary is not None:
+        data["summary"] = summary
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_suffix(path.suffix + ".tmp")
+    temporary_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    temporary_path.replace(path)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="評価セットを LLM に採点させ、人のラベルとの一致率を出す")
     parser.add_argument("--cases", type=Path, default=DEFAULT_CASES, help="評価セット（jsonl）")
@@ -328,7 +362,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--rubric", type=Path, default=DEFAULT_RUBRIC, help="採点の基準（markdown）")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="採点結果の保存先（json）")
     parser.add_argument("--model", default=None, help="採点に使うモデル。既定は AIE_MODEL。'test' で API を呼ばない偽モデル")
-    parser.add_argument("--wait", type=float, default=0.0, help="1 件ごとに待つ秒数（レート制限にかかるとき）")
+    parser.add_argument("--wait", type=float, default=0.0, help="採点API呼び出し間に待つ秒数（レート制限にかかるとき）")
     parser.add_argument("--compare", type=Path, help="LLM を呼ばず、このラベルファイルと --labels の一致率を出す")
     parser.add_argument("--generate", action="store_true", help="評価セットの回答を自分のエージェントで生成し直す（--cases に上書き）")
     args = parser.parse_args(argv)
@@ -343,11 +377,13 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.generate:
         try:
-            cases = generate_answers(cases)
+            cases = generate_answers(
+                cases,
+                on_case_complete=lambda updated_cases: write_jsonl(args.cases, updated_cases),
+            )
         except ModelHTTPError as e:
             print(api_error_message(e.status_code, str(e.body)[:200]))
             raise SystemExit(1)
-        write_jsonl(args.cases, cases)
         print(f"→ {args.cases} に回答を書き込みました。次に tools/annotate.py でラベルを付けてください")
         return
 
@@ -365,8 +401,13 @@ def main(argv: list[str] | None = None) -> None:
         print(f"[model] {model_name}  temperature=0  rubric={_rel(args.rubric)}")
 
     judge = build_judge(model, rubric)
+    run_at = datetime.now().isoformat(timespec="seconds")
+
+    def save_progress(verdicts: dict[str, dict]) -> None:
+        write_result(args.out, model_name, args.rubric, run_at, verdicts)
+
     try:
-        verdicts = judge_cases(judge, cases, wait=args.wait)
+        verdicts = judge_cases(judge, cases, wait=args.wait, on_case_complete=save_progress)
     except ModelHTTPError as e:
         print("\n" + api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
@@ -378,15 +419,7 @@ def main(argv: list[str] | None = None) -> None:
     summary = summarize(cases, verdicts, labels)
     print_summary(summary)
 
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(
-        json.dumps(
-            {"model": model_name, "rubric": str(_rel(args.rubric)), "run_at": datetime.now().isoformat(timespec="seconds"),
-             "verdicts": verdicts, "summary": summary},
-            ensure_ascii=False, indent=2,
-        ),
-        encoding="utf-8",
-    )
+    write_result(args.out, model_name, args.rubric, run_at, verdicts, summary)
     print(f"\n→ {_rel(args.out)} に保存しました")
 
 
