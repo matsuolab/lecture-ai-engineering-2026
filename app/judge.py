@@ -34,7 +34,8 @@ from app import tools
 from app.config import MODEL, api_error_message, get_api_key
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_CASES = ROOT / "data" / "eval" / "lec04_cases.jsonl"
+DEFAULT_CASES = ROOT / "data" / "eval" / "my_cases.jsonl"
+#DEFAULT_CASES = ROOT / "data" / "eval" / "lec04_cases.jsonl"
 DEFAULT_RUBRIC = ROOT / "data" / "eval" / "rubric.md"
 DEFAULT_LABELS = ROOT / "lectures" / "04" / "labels.jsonl"
 DEFAULT_OUT = ROOT / "lectures" / "04" / "judge_result.json"
