@@ -1,4 +1,4 @@
-"""第5回: MCP サーバーとクライアントの配線テスト（LLM も API キーも使わない）。
+"""第6回: MCP サーバーとクライアントの配線テスト（LLM も API キーも使わない）。
 
 app/mcp_servers.json の glossary サーバーを実際に起動し（stdio）、TestModel で
 「ツールが MCP 経由で公開され、呼ばれ、結果が戻るか」を確かめる。
