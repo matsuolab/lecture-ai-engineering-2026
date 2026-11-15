@@ -9,7 +9,7 @@
 ## 準備するもの
 
 - GitHub の個人アカウント（会社が管理するアカウントは、組織の設定で Codespaces や Copilot が使えないことがあります）
-- OpenAI API を利用できるアカウント（API の利用料がかかります）
+- OpenAI Platform のアカウント（ChatGPT の契約とは別に API の利用設定・支払いが必要です）
 
 ## 演習（45分）
 
@@ -19,7 +19,7 @@
 
 ### 2. OpenAI API キーを発行する
 
-[OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作成し、コピーします。API の利用料がかかるため、料金と利用上限を確認してください。
+[OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作成し、コピーします。ChatGPT の契約（Free/Plus/Pro など）と API の利用料・支払い設定は別です。
 
 > APIキーは秘密情報です。コードやチャット、コミットに貼らないでください。漏れた場合は OpenAI Platform でキーを削除し、作り直してください。
 

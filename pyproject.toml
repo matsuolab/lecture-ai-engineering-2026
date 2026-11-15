@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 # 年度中に壊れないよう、バージョンは固定する
 dependencies = [
-    "openai==3.51.0",
+    "openai==3.35.1",
     "pydantic-ai-slim[openai,mcp]==2.57.0",  # mcp は第5回（MCP サーバー・クライアント）で使う
 ]
 

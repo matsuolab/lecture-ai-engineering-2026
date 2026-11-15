@@ -13,6 +13,8 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 | GitHub Codespaces | 第1・3・5回などの開発環境。`.devcontainer/` の設定で Python 3.12・uv・Node.js が入ったコンテナが自動で用意されます | 個人アカウントの無料枠は月 120 コア時間（2 コアで約 60 時間）。**使い終わったら停止**してください |
 | GitHub Copilot（Free でよい） | コードの補完とチャット。第6回の発展課題では MCP クライアントとしても使います | Free は補完・チャットの回数に月の上限があります |
 | OpenAI API | LLM の呼び出し。OpenAI Platform で API キーを発行し、Codespaces secret `OPENAI_API_KEY` で渡します | API の利用には料金がかかります。利用前に料金と利用上限を確認してください |
+| GitHub Copilot（Free でよい） | コードの補完とチャット。第5回の発展課題では MCP クライアントとしても使います | Free は補完・チャットの回数に月の上限があります |
+| OpenAI API | LLM の呼び出し。OpenAI Platform で API キーを発行し、Codespaces secret `OPENAI_API_KEY` で渡します | ChatGPT の契約と API の利用料・上限は別です |
 | Google Colab（T4 GPU、無料枠） | 第2回の LoRA 学習だけに使います | GPU の利用時間に上限があります。終わったらランタイムを削除してください |
 
 自分の PC で動かす場合は、Python 3.12 と [uv](https://docs.astral.sh/uv/) を入れて `uv sync --frozen` を実行し、環境変数 `OPENAI_API_KEY` を設定してください。
@@ -20,7 +22,7 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 ## はじめに（第1回）
 
 1. このリポジトリを自分のアカウントに **fork** する
-2. [OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作る（API 利用料がかかります）
+2. [OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作る（ChatGPT の契約とは別に API の利用設定・支払いが必要です）
 3. GitHub の **Settings → Codespaces → Secrets** に `OPENAI_API_KEY` を登録し、使う repository に自分の fork を選ぶ
 4. 自分の fork で **Code → Codespaces → Create codespace on main**
 5. ターミナルで動作確認
@@ -71,11 +73,11 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 
 ## 前提と制約
 
-- **依存パッケージの版は固定**しています（`uv.lock`。Python 3.12、pydantic-ai-slim 2.57.0、OpenAI SDK 3.51.0）。講座の期間中は上げません。`uv sync --frozen` でそのまま入れてください。
-- **既定のモデルは `gpt-4o-mini`** です。環境変数 `AIE_MODEL` で切り替えられます（下の「モデルの切り替え」）。ほかのOpenAIモデルも利用できます
-- **OpenAI API は従量課金**です。API 利用料やアカウントの利用上限を確認してください。エージェント（第3回以降）は 1 つの質問で LLM を複数回呼ぶことがあります
-- **API キーは環境変数 `OPENAI_API_KEY`** で渡します。コード・コミット・チャットに貼らないでください。漏れたら OpenAI Platform で削除して作り直します
-- Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第6回の MCP サーバーは Codespaces の中で動かします
+- **依存パッケージの版は固定**しています（`uv.lock`。Python 3.12、pydantic-ai-slim 2.57.0、openai 3.35.1）。講座の期間中は上げません。`uv sync --frozen` でそのまま入れてください。
+- **既定のモデルは `gpt-4o-mini`** です。環境変数 `AIE_MODEL` で切り替えられます（下の「モデルの切り替え」）。利用できるモデルは OpenAI API のアカウント設定を確認してください
+- **API の利用料とレート制限**は ChatGPT の契約とは別に OpenAI Platform 側で管理されます。エージェント（第3回以降）は 1 つの質問で LLM を複数回呼ぶため、利用状況と上限に注意してください
+- **API キーは環境変数 `OPENAI_API_KEY` だけ**で渡します。コード・コミット・チャットに貼らないでください。漏れたら OpenAI Platform で削除して作り直します
+- Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第5回の MCP サーバーは Codespaces の中で動かします
 - テスト（`uv run pytest -q`）は API キーなしで動きます（LLM を呼ばない TestModel を使用）
 
 ## 守ってほしいこと
@@ -92,4 +94,4 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 AIE_MODEL=gpt-4o uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
-利用料金と制限は [OpenAI API の料金ページ](https://openai.com/api/pricing/) とアカウントの利用状況で確認してください。
+利用可能なモデル・料金・レート制限は [OpenAI API のドキュメント](https://platform.openai.com/docs) で確認してください。

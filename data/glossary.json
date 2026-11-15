@@ -98,7 +98,7 @@
       "aliases": ["API key"],
       "lecture": 1,
       "category": "開発基礎",
-      "definition": "APIを呼び出す人を識別するための秘密の文字列。漏れると他人に利用枠を使われるため、コードに直接書かない、コミットしない、チャットに貼らない。本講座ではCodespaces secretに登録し、環境変数 OPENAI_API_KEY として読み込む。",
+      "definition": "APIを呼び出す人を識別するための秘密の文字列。漏れると他人に利用枠を使われるため、コードに直接書かない、コミットしない、チャットに貼らない。本講座ではCodespaces secretに登録し、環境変数 OPENAI_API_KEY として読み込む。ChatGPTの契約とは別にAPIの利用設定が必要。",
       "related": ["codespaces-secret", "environment-variable"]
     },
     {
@@ -458,7 +458,7 @@
       "aliases": ["デフォルトモデル", "gpt-4o-mini"],
       "lecture": 1,
       "category": "講座",
-      "definition": "AIE2026の演習と宿題で標準に使うモデルは gpt-4o-mini。環境変数 AIE_MODEL で他のモデルに切り替えられる。OpenAI APIの利用には料金がかかる。",
+      "definition": "AIE2026の演習と宿題で標準に使うモデルは gpt-4o-mini。環境変数 AIE_MODEL で他の利用可能なモデルに切り替えられる。",
       "related": ["rate-limit", "api-key"]
     },
     {
