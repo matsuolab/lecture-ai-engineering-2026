@@ -1,0 +1,10 @@
+{"id": "01", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "pass", "unsure_flag": false, "note": ""}
+{"id": "02", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "回答としては適切。ツールについて、第3回資料は閲覧していない。"}
+{"id": "03", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "fail", "unsure_flag": false, "note": "回答としては適切。一致率についての言及はなし"}
+{"id": "04", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "回の表示として第6回がないが、文中には記載している"}
+{"id": "05", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "fail", "unsure_flag": false, "note": "参照が異なる。冗長"}
+{"id": "06", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": ""}
+{"id": "07", "grounding": "fail", "scope": "fail", "hint": "pass", "clarity": "fail", "lecture_mark": "fail", "unsure_flag": false, "note": ""}
+{"id": "08", "grounding": "fail", "scope": "fail", "hint": "fail", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": ""}
+{"id": "09", "grounding": "fail", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "fail", "unsure_flag": false, "note": ""}
+{"id": "10", "grounding": "fail", "scope": "fail", "hint": "pass", "clarity": "fail", "lecture_mark": "fail", "unsure_flag": false, "note": ""}
