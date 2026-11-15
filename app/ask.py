@@ -20,6 +20,18 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
+def ask(question: str) -> str:
+    """質問を1回送信し、トークン数を表示して回答テキストを返す。"""
+    client = genai.Client(api_key=get_api_key())
+    response = client.models.generate_content(model=MODEL, contents=question)
+
+    usage = response.usage_metadata
+    input_tokens = usage.prompt_token_count if usage else None
+    output_tokens = usage.candidates_token_count if usage else None
+    print(f"[トークン数] 入力: {input_tokens}, 出力: {output_tokens}")
+    return response.text or "（テキストの回答がありません）"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="会話履歴を保持してGeminiと対話する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)

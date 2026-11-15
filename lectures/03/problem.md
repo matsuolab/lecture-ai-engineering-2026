@@ -143,7 +143,7 @@ git push -u origin lec03
                  output_type=[str, DeferredToolRequests])
    ```
 
-3. CLI では、`result.output.approvals` の呼び出しごとに、保存してよいかを利用者に聞きます。その結果（`DeferredToolResults`）と、それまでの会話（`message_history=result.all_messages()`）を渡して、もう一度 `run_sync` を実行します
+3. CLI では、`result.output.approvals` の呼び出しごとに、保存してよいかを利用者に聞きます。その結果（`DeferredToolResults`）と、それまでの会話（`message_history=result.all_messages()`）を渡して、もう一度 `run_sync` を実行します。`--trace` を付けると、承認待ちになったツール呼び出し、承認後のツール結果、`requests` を確認できます
 
 詳しくは、Pydantic AI の公式ドキュメント「Deferred Tools」の Human-in-the-Loop Tool Approval を参考にしてください：https://pydantic.dev/docs/ai/tools-toolsets/deferred-tools/
 
