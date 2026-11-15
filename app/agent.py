@@ -21,7 +21,7 @@ from pathlib import Path
 from contextlib import nullcontext
 from time import perf_counter
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -78,10 +78,14 @@ FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
 
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
-agent = Agent(instructions=INSTRUCTIONS)
+agent = Agent(
+    instructions=INSTRUCTIONS,
+    output_type=[str, DeferredToolRequests],
+)
 agent.tool_plain(tools.search_materials)
+agent.tool_plain(tools.make_quiz)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -173,6 +177,17 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
     print(f"[cost] 生成APIの推定コスト: {cost}（埋め込み・索引構築分は含まない）")
 
 
+def request_tool_approvals(requests: DeferredToolRequests) -> DeferredToolResults:
+    """各ツール呼び出しの内容を示し、利用者の承認・拒否を集める。"""
+    approvals: dict[str, bool] = {}
+    for call in requests.approvals:
+        args = json.dumps(call.args, ensure_ascii=False)
+        print(f"\n実行承認待ち: {call.tool_name}({args})")
+        answer = input("この処理を許可しますか？ [y/N]: ").strip().casefold()
+        approvals[call.tool_call_id] = answer in {"y", "yes", "はい"}
+    return DeferredToolResults(approvals=approvals)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
@@ -208,16 +223,33 @@ def main() -> None:
 
         started = perf_counter()
         try:
+            model = build_model()
+
             if args.full_context:
                 result = run_full_context(
-                    target, args.question, build_model(),
-                    instructions=FULL_CONTEXT_INSTRUCTIONS, prompt_template=FULL_CONTEXT_PROMPT,
+                    target,
+                    args.question,
+                    model,
+                    instructions=FULL_CONTEXT_INSTRUCTIONS,
+                    prompt_template=FULL_CONTEXT_PROMPT,
                 )
             else:
-                result = target.run_sync(args.question, model=build_model())
+                result = target.run_sync(args.question, model=model)
+
+                while isinstance(result.output, DeferredToolRequests):
+                    deferred_results = request_tool_approvals(result.output)
+                    result = target.run_sync(
+                        None,
+                        model=model,
+                        message_history=result.all_messages(),
+                        deferred_tool_results=deferred_results,
+                        usage=result.usage,
+                    )
+
         except ModelHTTPError as e:
             print(api_error_message(e.status_code, str(e.body)[:200]))
             raise SystemExit(1)
+
         elapsed_seconds = perf_counter() - started
         print(result.output)
         if args.trace:

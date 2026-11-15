@@ -53,9 +53,11 @@ Verdict = Literal["pass", "fail", "unsure"]
 
 class CriterionVerdict(BaseModel):
     """1 つの基準に対する判定。reason を先に書かせてから verdict を決めさせる（理由→判定の順）。"""
+    """verdictとreasonの順序を変更（判定→理由の順）。"""
 
-    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
     verdict: Verdict = Field(description="pass / fail / unsure のどれか")
+    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
+
 
 
 class JudgeResult(BaseModel):
@@ -117,11 +119,16 @@ def judge_prompt(case: dict) -> str:
 def build_judge(model, rubric: str) -> Agent:
     instructions = rubric + (
         "\n\n# 出力の形式\n"
-        "4 つの基準（grounding, scope, hint, clarity）それぞれについて、reason（理由）を先に書き、"
-        "そのあとで verdict を pass / fail / unsure のどれかにしてください。"
+        "4つの基準（grounding, scope, hint, clarity）それぞれについて、"
+        "先に verdict を pass / fail / unsure のどれかで出力し、"
+        "そのあとで reason（理由）を日本語で1〜2文書いてください。"
     )
-    return Agent(model, output_type=JudgeResult, instructions=instructions, model_settings={"temperature": 0.0})
-
+    return Agent(
+        model,
+        output_type=JudgeResult,
+        instructions=instructions,
+        model_settings={"temperature": 0.0},
+    )
 
 def build_llm_model(model_name: str) -> GoogleModel:
     """Gemini のモデルを作る。API キーが無ければ手順を表示して終了する（app.agent と同じ）。"""

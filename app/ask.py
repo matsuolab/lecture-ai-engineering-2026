@@ -1,13 +1,13 @@
-"""第1回: 素のLLMに1回だけ質問するスクリプト。
+"""会話履歴を保持してGeminiと対話するスクリプト。
 
 使い方:
     uv run python -m app.ask "LoRAとは何ですか？"
-    uv run python -m app.ask            # 質問を省略すると、講座に固有の質問をする
+    uv run python -m app.ask
 
-ツールも会話履歴も持たない「素の」呼び出し。
-講座に固有のことを聞くと、「分からない」と答えるか、一般論でもっともらしく答える
-（講座の実際とは違う）ことを確かめよう。
-（第3回で、用語集を検索できるエージェントにして改善する）
+終了:
+    exit または quit を入力するか、Ctrl+Cを押す。
+
+会話履歴は実行中のみ保持する。
 """
 
 import argparse
@@ -17,33 +17,66 @@ from google.genai import errors
 
 from app.config import MODEL, api_error_message, get_api_key
 
-# 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
 def ask(question: str) -> str:
+    """質問を1回送信し、トークン数を表示して回答テキストを返す。"""
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
-    return response.text
+    usage = response.usage_metadata
+    input_tokens = usage.prompt_token_count if usage else None
+    output_tokens = usage.candidates_token_count if usage else None
+    print(f"[トークン数] 入力: {input_tokens}, 出力: {output_tokens}")
+    return response.text or "（テキストの回答がありません）"
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    parser = argparse.ArgumentParser(description="会話履歴を保持してGeminiと対話する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
-    try:
-        print(ask(args.question))
-    except errors.APIError as e:
-        print(api_error_message(e.code, e.message))
-        raise SystemExit(1)
+    print("追加の質問を入力できます。終了するには exit / quit または Ctrl+C。\n")
+
+    # クライアントとチャットは最初に1回だけ作る。
+    with genai.Client(api_key=get_api_key()) as client:
+        chat = client.chats.create(model=MODEL)
+        question = args.question
+
+        while True:
+            print(f"[質問] {question}\n")
+
+            try:
+                # 同じchatを使うことで、それまでの会話が引き継がれる。
+                response = chat.send_message(message=question)
+
+                usage = response.usage_metadata
+                input_tokens = usage.prompt_token_count if usage else None
+                output_tokens = usage.candidates_token_count if usage else None
+
+                print(f"[トークン数] 入力: {input_tokens}, 出力: {output_tokens}")
+                print(f"[回答]\n{response.text or '（テキストの回答がありません）'}\n")
+
+            except errors.APIError as e:
+                print(api_error_message(e.code, e.message))
+                print("質問を入力し直してください。\n")
+
+            # 空の入力は送信せず、再入力を待つ。
+            while True:
+                question = input("あなた > ").strip()
+
+                if question.lower() in {"exit", "quit"}:
+                    print("会話を終了します。")
+                    return
+
+                if question:
+                    break
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyboardInterrupt, EOFError):
+        print("\n会話を終了します。")
