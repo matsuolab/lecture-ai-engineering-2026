@@ -2,6 +2,7 @@
 
 使い方:
     uv run --with streamlit==1.66.1 streamlit run tools/annotate.py
+    uv run --with streamlit==1.66.1 streamlit run tools/annotate.py -- --cases data/eval/my_cases.jsonl --labels lectures/04/my_labels.jsonl
 
 `uv run --with` で講座の環境に Streamlit を一時的に足して動かす（pyproject.toml は変えない）。
 
@@ -12,6 +13,7 @@
   回答は `uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl` で自分のエージェントに生成させる
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -118,7 +120,10 @@ def page_label(cases_path: Path, labels_path: Path) -> None:
             st.rerun()
 
     if len(labels) >= len(cases):
-        st.success(f"{len(cases)} 件すべて保存しました → {rel(labels_path)}。次は `uv run python -m app.judge` で LLM に採点させます")
+        st.success(
+            f"{len(cases)} 件すべて保存しました → {rel(labels_path)}。"
+            "次は app.judge の --cases と --labels に、この評価セットと保存先を指定して LLM に採点させます"
+        )
         st.dataframe(
             [{"id": c["id"], **{name: labels[c["id"]][key] for key, name in ALL_CRITERIA},
               "迷った": labels[c["id"]].get("unsure_flag", False)} for c in cases if c["id"] in labels],
@@ -188,12 +193,16 @@ def page_author(cases_path: Path) -> None:
 
 # ---------------------------------------------------------------- 画面の切り替え
 def main() -> None:
+    parser = argparse.ArgumentParser(description="評価セットに本人のラベルを付ける")
+    parser.add_argument("--cases", type=Path, default=DEFAULT_CASES)
+    parser.add_argument("--labels", type=Path, default=DEFAULT_LABELS)
+    args = parser.parse_args()
     st.markdown("## 第4回 評価セットにラベルを付ける")
     with st.sidebar:
         mode = st.radio("画面", ["ラベル付け", "比べる（講師のラベルと）", "作問（宿題・実装）"])
         st.divider()
-        cases_path = Path(st.text_input("評価セット", value=rel(DEFAULT_CASES)))
-        labels_path = Path(st.text_input("ラベルの保存先", value=rel(DEFAULT_LABELS)))
+        cases_path = Path(st.text_input("評価セット", value=rel(args.cases)))
+        labels_path = Path(st.text_input("ラベルの保存先", value=rel(args.labels)))
         my_cases_path = Path(st.text_input("作問の保存先", value=rel(MY_CASES)))
     cases_path = cases_path if cases_path.is_absolute() else ROOT / cases_path
     labels_path = labels_path if labels_path.is_absolute() else ROOT / labels_path

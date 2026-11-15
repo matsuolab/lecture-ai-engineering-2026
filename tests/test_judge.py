@@ -4,6 +4,11 @@
 「採点 → 人のラベルとの比較 → 要確認・不一致の集計」が通ることを確かめる。
 """
 
+from types import SimpleNamespace
+
+import pytest
+
+from app import agent as agent_module
 from app import judge
 from app.judge import (
     ALL_CRITERIA,
@@ -68,3 +73,56 @@ def test_judge_pipeline_with_fake_model():
     assert summary["coverage"]["covered"] + len({r["id"] for r in summary["review"]}) == 10
     for m in summary["mismatches"]:
         assert m["kind"] in ("見逃し", "過検出")
+
+
+def test_generate_saves_completed_answers_before_an_error(tmp_path, monkeypatch):
+    cases = [
+        {"id": "01", "question": "質問1", "answer": ""},
+        {"id": "02", "question": "質問2", "answer": ""},
+    ]
+    path = tmp_path / "cases.jsonl"
+
+    def run(question, **kwargs):
+        if question == "質問2":
+            raise RuntimeError("途中で停止")
+        return SimpleNamespace(output="回答1")
+
+    monkeypatch.setattr(agent_module, "build_model", lambda: None)
+    monkeypatch.setattr(agent_module, "agent", SimpleNamespace(run_sync=run))
+    with pytest.raises(RuntimeError, match="途中で停止"):
+        judge.generate_answers(cases, wait=0, save_path=path)
+
+    saved = read_jsonl(path)
+    assert saved[0]["answer"] == "回答1"
+    assert saved[1]["answer"] == ""
+
+
+def test_generate_resume_only_calls_unanswered_cases(tmp_path, monkeypatch):
+    cases = [
+        {"id": "01", "question": "質問1", "answer": "保存済みの回答"},
+        {"id": "02", "question": "質問2", "answer": ""},
+    ]
+    calls = []
+
+    def run(question, **kwargs):
+        calls.append(question)
+        return SimpleNamespace(output="新しい回答")
+
+    monkeypatch.setattr(agent_module, "build_model", lambda: None)
+    monkeypatch.setattr(agent_module, "agent", SimpleNamespace(run_sync=run))
+    path = tmp_path / "cases.jsonl"
+    result = judge.generate_answers(cases, wait=0, save_path=path, resume=True)
+
+    assert calls == ["質問2"]
+    assert result[0]["answer"] == "保存済みの回答"
+    assert read_jsonl(path)[1]["answer"] == "新しい回答"
+
+
+def test_generate_without_resume_regenerates_existing_answers(monkeypatch):
+    cases = [{"id": "01", "question": "質問1", "answer": "古い回答"}]
+    monkeypatch.setattr(agent_module, "build_model", lambda: None)
+    monkeypatch.setattr(
+        agent_module, "agent", SimpleNamespace(run_sync=lambda *a, **kw: SimpleNamespace(output="新しい回答")),
+    )
+
+    assert judge.generate_answers(cases, wait=0)[0]["answer"] == "新しい回答"

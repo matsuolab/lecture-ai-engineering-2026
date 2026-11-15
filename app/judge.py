@@ -7,6 +7,8 @@
                                                 # 2 つのラベルファイルの一致率を出す（API キー不要）
     uv run python -m app.judge --generate --cases data/eval/my_cases.jsonl
                                                 # 宿題（実装）: 回答を自分のエージェント（app.agent）で生成し直す
+    uv run python -m app.judge --generate --resume --wait 10 --cases data/eval/my_cases.jsonl
+                                                # 保存済みの回答を残し、未回答の件から間隔を空けて再開する
 
 採点の基準は data/eval/rubric.md に書いてある。基準ごとに理由を先に書かせてから、
 pass / fail / unsure のどれかを返させる（構造化出力）。unsure は自動判定から外し、人が見る「要確認」に回す。
@@ -301,15 +303,22 @@ def compare_labels(a: dict[str, dict], b: dict[str, dict], name_a: str, name_b: 
 
 
 # ---------------------------------------------------------------- 回答の生成（宿題・実装）
-def generate_answers(cases: list[dict], wait: float = 1.0) -> list[dict]:
-    """評価セットの各質問を自分のエージェント（app.agent）に投げ、回答を埋める。"""
+def generate_answers(
+    cases: list[dict], wait: float = 1.0, *, save_path: Path | None = None, resume: bool = False,
+) -> list[dict]:
+    """回答を生成する。保存先があれば1件ずつ保存し、resumeなら回答済みの件を飛ばす。"""
     from app.agent import agent, build_model
 
     model = build_model()
-    print(f"回答を生成中 {len(cases)} 件 ", end="", flush=True)
+    pending = sum(not (resume and case.get("answer")) for case in cases)
+    print(f"回答を生成中 {pending} 件 ", end="", flush=True)
     for case in cases:
+        if resume and case.get("answer"):
+            continue
         result = agent.run_sync(case["question"], model=model)
         case["answer"] = str(result.output)
+        if save_path is not None:
+            write_jsonl(save_path, cases)
         print(".", end="", flush=True)
         time.sleep(wait)
     print()
@@ -328,10 +337,15 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--rubric", type=Path, default=DEFAULT_RUBRIC, help="採点の基準（markdown）")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="採点結果の保存先（json）")
     parser.add_argument("--model", default=None, help="採点に使うモデル。既定は AIE_MODEL。'test' で API を呼ばない偽モデル")
-    parser.add_argument("--wait", type=float, default=0.0, help="1 件ごとに待つ秒数（レート制限にかかるとき）")
+    parser.add_argument("--wait", type=float, default=None, help="1 件ごとに待つ秒数（既定：回答生成は1秒、採点は0秒）")
     parser.add_argument("--compare", type=Path, help="LLM を呼ばず、このラベルファイルと --labels の一致率を出す")
     parser.add_argument("--generate", action="store_true", help="評価セットの回答を自分のエージェントで生成し直す（--cases に上書き）")
+    parser.add_argument("--resume", action="store_true", help="--generate で回答済みの件を飛ばし、未回答の件から再開する")
     args = parser.parse_args(argv)
+    if args.resume and not args.generate:
+        parser.error("--resume は --generate と一緒に指定してください")
+    if args.wait is not None and args.wait < 0:
+        parser.error("--wait は0以上で指定してください")
 
     if args.compare:
         mine = load_labels(args.labels)
@@ -343,7 +357,9 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.generate:
         try:
-            cases = generate_answers(cases)
+            cases = generate_answers(
+                cases, wait=1.0 if args.wait is None else args.wait, save_path=args.cases, resume=args.resume,
+            )
         except ModelHTTPError as e:
             print(api_error_message(e.status_code, str(e.body)[:200]))
             raise SystemExit(1)
@@ -366,7 +382,7 @@ def main(argv: list[str] | None = None) -> None:
 
     judge = build_judge(model, rubric)
     try:
-        verdicts = judge_cases(judge, cases, wait=args.wait)
+        verdicts = judge_cases(judge, cases, wait=0.0 if args.wait is None else args.wait)
     except ModelHTTPError as e:
         print("\n" + api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
