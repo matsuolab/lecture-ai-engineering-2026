@@ -153,8 +153,6 @@ def _rule_based_judge(messages: list[ModelMessage], info: AgentInfo) -> ModelRes
             grounding = v("基準に書き足された方針により、用語集にないと断ったうえでの一般的な説明は断定ではない", "pass")
         elif re.search(r"一般的.*（fail）", rubric):
             grounding = v("基準に書き足された方針により、用語集にない語の一般的な説明は断定にあたる", "fail")
-        else:
-            grounding = v("用語集にないと伝えたうえで一般的な説明をしており、「まだ決めていないこと」に当てはまる", "unsure")
     elif "予定" in a:
         grounding = v("「予定」など、参照にない事柄を断定している", "fail")
     else:
