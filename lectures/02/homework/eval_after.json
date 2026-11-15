@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.8095238095238095,
+    "both_rate": 0.8095238095238095,
+    "seconds": 33.2
+  },
+  "rows": [
+    {
+      "question": "移動の操作は？",
+      "raw": "{\"answer\": \"WASDキーでプレイヤーを移動します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "プレイヤーの移動に使うキーを教えてください",
+      "raw": "{\"answer\": \"WASDキーでプレイヤーを移動します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "迷路の中を移動するには何を押しますか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": false
+    },
+    {
+      "question": "視点を動かす操作は？",
+      "raw": "{\"answer\": \"マウスを動かして視点を操作します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "見ている方向を変えるには何を操作しますか",
+      "raw": "{\"answer\": \"マウスを動かして視点を操作します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "周りを見るための入力方法を教えてください",
+      "raw": "{\"answer\": \"マウスを動かして視点を操作します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ドアの開け方は？",
+      "raw": "{\"answer\": \"扉の近くでEキーを押すと扉が開きます。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "扉を開けるときの位置とキーを教えてください",
+      "raw": "{\"answer\": \"扉の近くでEキーを押すと扉が開きます。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ドアの近くでは何キーで開けられますか",
+      "raw": "{\"answer\": \"扉の近くでEキーを押すと扉が開きます。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "どうなったらクリア？",
+      "raw": "{\"answer\": \"迷路のゴールに到達するとクリアです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "迷路のどこに到達すればクリアできますか",
+      "raw": "{\"answer\": \"迷路のゴールに到達するとクリアです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "クリアするために到達する場所を教えてください",
+      "raw": "{\"answer\": \"迷路のゴールに到達するとクリアです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "カーソルの固定を外す操作は？",
+      "raw": "{\"answer\": \"Escキーを押すとマウスカーソルの固定を解除します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Escキーを押すとマウスカーソルはどうなりますか",
+      "raw": "{\"answer\": \"Escキーを押すとマウスカーソルの固定を解除します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "カーソルの固定を解除するキーを教えてください",
+      "raw": "{\"answer\": \"Escキーを押すとマウスカーソルの固定を解除します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "扉を開けるには鍵が必要ですか",
+      "raw": "{\"answer\": \"扉の近くでEキーを押すと扉が開きます。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "ゴールまでの制限時間はありますか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "移動に使うキーの割り当ては変更できますか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "マウスの感度は調整できますか",
+      "raw": "{\"answer\": \"マウスを動かして視点を操作します。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "開いた扉を閉めることはできますか",
+      "raw": "{\"answer\": \"扉の近くでEキーを押すと扉が開きます。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "クリアすると報酬はもらえますか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    }
+  ]
+}
