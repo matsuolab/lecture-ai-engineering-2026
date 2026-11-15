@@ -18,7 +18,7 @@ from google.genai import errors
 from app.config import MODEL, api_error_message, get_api_key
 
 # 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
-DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
+DEFAULT_QUESTION = "AIE2026の講座の宿題にある『3レベル』とは何ですか？"
 
 
 def ask(question: str) -> str:
@@ -27,6 +27,15 @@ def ask(question: str) -> str:
 
     # TODO(第1回 演習): response.usage_metadata から
     #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+
+    usage = response.usage_metadata
+    if usage is None:
+        print("[トークン] 使用量情報を取得できませんでした")
+    else:
+        print(
+            f"[トークン] 入力: {usage.prompt_token_count}, "
+            f"出力: {usage.candidates_token_count}"
+        )
 
     return response.text
 

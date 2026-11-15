@@ -5,6 +5,8 @@
 """
 
 import json
+import random
+from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 
@@ -36,6 +38,15 @@ def search_glossary(query: str) -> str:
     AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
     答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
     """
+    #"""
+    #講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
+
+    #AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
+
+    #答える前に使うこと。query には、調べたい用語を複数まとめて入れて検索してよい
+    #（例：「LoRA QLoRA」）。
+    #"""
+
     q = _normalize(query)
     if not q:
         return "検索語が空です。調べたい用語を1つ指定してください。"
@@ -45,7 +56,7 @@ def search_glossary(query: str) -> str:
     # 「r」のような短い別名が何にでも当たらないよう、名前側が短いものは除く
     partial = [
         e for e in glossary
-        if e not in exact and any(q in n or (len(n) >= 3 and n in q) for n in _names(e))
+        if e not in exact and any((len(q) >= 2 and q in n) or (len(n) >= 3 and n in q)for n in _names(e))
     ]
     in_definition = [
         e for e in glossary
@@ -80,6 +91,63 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
+def make_quiz(lecture: int) -> str:
+    """
+    指定した回の用語から1つを選び、確認問題と答えを返す。
+    
+    「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う
+    """
+    terms = [
+        entry for entry in load_glossary()
+        if entry["lecture"] == lecture
+    ]
+
+    if not terms:
+        return f"第{lecture}回の用語が見つかりません。"
+
+    entry = random.choice(terms)
+
+    return json.dumps(
+        {
+            "question": f"「{entry['term']}」とは何ですか？",
+            "answer": entry["definition"],
+            "lecture": lecture,
+        },
+        ensure_ascii=False,
+    )
+
+def save_learning_log(
+    lecture: int,
+    learned: str,
+    difficulty: str = "",
+    note: str = "",
+) -> str:
+    """学習ログを保存する。
+
+    lecture は講義回、learned は学んだ内容、
+    difficulty は難しかった点、note は補足メモ。
+    """
+    if lecture < 1:
+        return "講義回は1以上で指定してください。"
+
+    if not learned.strip():
+        return "学んだ内容を入力してください。"
+
+    log = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "lecture": lecture,
+        "learned": learned.strip(),
+        "difficulty": difficulty.strip(),
+        "note": note.strip(),
+    }
+
+    path = DATA_DIR / "learning_logs.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(log, ensure_ascii=False) + "\n")
+
+    return f"第{lecture}回の学習ログを保存しました。"
 
 def search_materials(query: str) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
