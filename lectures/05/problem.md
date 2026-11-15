@@ -1,143 +1,198 @@
-# 第5回 演習・宿題：ツールを MCP サーバーにして使う
+# 第5回 演習・宿題：講義資料を検索して回答する
 
 ## この回のゴール
 
-- 第3回で作ったツールを **MCP サーバー**として切り出し、同じエージェントから **MCP 経由**で使える
-- モデルに見えている「ツールの名前・説明文・引数」を読める
-- **設定ファイルを書き換えるだけ**で、既製の外部ツールを足せる
+- 全文投入と検索を使った回答を動かし、答え・根拠・時間・トークン数を比べられる
+- 1ページを1チャンクとして持つデータと、ベクトル検索・Tree・Graphの取得方法の違いを説明できる
+- 自分の用途に合わせて取得方法を改良し、同じ質問で変更前後を確かめられる
 
-## 準備
+第3回の「モデル＋ループ＋ツール」という形を使い、講義資料を取得する方法を変えます。第4回の評価を踏まえ、回答の正しさと引用したページの根拠を、自分で確認します。
 
-前の回までの作業が終わっている場合は、`main` から `lec05` ブランチを作ります。
-この回から依存パッケージが増えているので、`uv sync --frozen` を一度実行してください。
+## 使う資料とコード
+
+| ファイル | 内容 |
+|---|---|
+| [data/rag_data/lectures.json](../../data/rag_data/lectures.json) | 講義・章・ページごとのタイトルと本文。1ページを1チャンクとして使う |
+| [data/rag_data/tree.json](../../data/rag_data/tree.json) | 資料・章・ページの階層 |
+| [data/rag_data/graph.json](../../data/rag_data/graph.json) | ページ・用語などのノードと、それらを結ぶ関係 |
+| [data/rag_data/index.sqlite3](../../data/rag_data/index.sqlite3) | 第1〜3回の本講義214ページを収めた検索DB |
+| [scripts/build_rag_index.py](../../scripts/build_rag_index.py) | 資料を埋め込み、検索用SQLite DBを作成する |
+| [app/retrieval.py](../../app/retrieval.py) | ベクトル検索・Tree探索・Graph探索・全文投入の処理 |
+| [app/tools.py](../../app/tools.py) | モデルが使うツールの説明と入出力 |
+| [app/agent.py](../../app/agent.py) | 指示文、ツールの登録、実行モードの切り替え |
+| [app/config.py](../../app/config.py) | 対象資料、検索件数、Graphの探索範囲などの設定 |
+
+**現在の対象範囲**：ベクトル検索・Tree・Graphは第1〜3回の本講義214ページを使います。全文投入は教材JSONにある全9資料・438ページを使います。この演習では取得経路の違いを観察します。方式の優劣を同じ条件で比較するときは、先に対象資料をそろえてください。
+
+## 事前準備
+
+### 1. 第5回の更新を取り込み、lec05ブランチを作る
+
+講座リポジトリの第5回の更新が公開された後、自分のforkで **Sync fork → Update branch** を押し、Codespacesのターミナルで実行します。
 
 ```bash
-git switch main && git switch -c lec05
+git switch main
+git pull --no-rebase
+git switch -c lec05
 uv sync --frozen
 ```
 
-終わっていない場合は、講座 repo の開始時点のコード（`lec05-start` タグ）からブランチを作れます。
+- すでに`lec05`がある場合は、`git switch lec05`で切り替えます
+- 前の回の変更が残っていて切り替えられない場合は、そのブランチでcommitしてから再実行します
+- 更新時に衝突が出た場合は、自分の変更を捨てずに講師へ確認してください
+
+APIキーは第1回と同じ環境変数`GEMINI_API_KEY`を使います。Codespacesのsecretを後から登録した場合は、Codespacesを再起動してください。設定方法は[README](../../README.md)を参照してください。
+
+### 2. 同梱の検索DBを確認する
+
+ベクトル検索とGraphは、同梱の`data/rag_data/index.sqlite3`をそのまま使います。第5回の更新を取り込んだら、演習に進んでください。質問の埋め込みと回答生成には`GEMINI_API_KEY`を使います。Treeと全文投入には検索DBは不要です。
+
+## 演習
+
+### STEP 1：資料を一度に渡して回答させる
+
+まず、同じターミナルで比較用の質問を変数に入れます。以下の各方式では、この質問をそのまま使います。
 
 ```bash
-git remote -v                     # upstream がなければ次の行で登録する
-git remote add upstream https://github.com/matsuolab/lecture-ai-engineering-2026.git
-git fetch upstream --tags
-git switch -c lec05 lec05-start
-uv sync --frozen
+AIE_QUESTION='第2回の説明では、LoRAは何を固定し何を学習しますか？ QLoRAは何を加えますか？'
+uv run python -m app.agent --full-context --trace "$AIE_QUESTION"
 ```
 
-## 演習（30分）
+回答と引用ページ、末尾の`[time]`・`[usage]`・`[cost]`を[answer.md](answer.md)に記録します。
 
-### 1. モデルに見えているツールを一覧する
+全文投入でも正しく答えられることがあります。失敗することを前提にせず、実際の結果を見てください。入力上限を超えるエラーと、入力できたが必要な根拠を使えない現象は分けて記録します。
+
+### STEP 2：検索結果だけを確認する
 
 ```bash
-uv run python -m app.agent --list-tools          # 第3回：関数を直接登録したツール
-uv run python -m app.agent --mcp --list-tools    # 第5回：MCP サーバーから受け取ったツール
+uv run python -m app.retrieval "LoRA QLoRA 違い"
 ```
 
-どちらも LLM は呼ばないので、API キーなしで動きます。
-2つ目は `app/mcp_servers.json` に書かれたサーバー（`app/mcp_server.py`）をサブプロセスとして起動し、公開されているツールの名前・説明文・引数を表示します。
+エージェントを使わず、質問に近いページを最大5件取得します。講義名・章・ページタイトル・PDFページ番号・本文が表示されます。
 
-- 名前が `glossary_search_glossary` のように **「サーバー名_」付き**になっていることを確認しましょう。複数のサーバーに同じ名前のツールがあっても区別できるようにするためです
-- 説明文は `app/tools.py` の docstring そのものです。**モデルから見れば、関数ツールも MCP のツールも同じ形**をしています
+- 第2回・PDF p.52など、質問への答えを支えるページが含まれていますか
+- 単に似た用語が出ているページと、答えの根拠になるページを区別できますか
 
-### 2. エージェントから MCP 経由で使う
+教材JSONをエディタで開き、たとえば`lec02-main-p052`を探すと、該当ページの本文を確認できます。
+
+### STEP 3：検索結果を使って回答させる
 
 ```bash
-uv run python -m app.agent --mcp --trace "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
+uv run python -m app.agent --trace "$AIE_QUESTION"
 ```
 
-第3回（`--mcp` なし）と比べて、回答・ツール名・`requests` の回数がどう違うかを見ます。
-内部では、`app/agent.py` の `build_mcp_agent()` が設定ファイルを読み、サーバーを起動して、ツールをエージェントに渡しています。
+通常の起動では、`search_materials(query)`を持つエージェントが回答します。モデルが検索語を決め、返された本文を使って答えます。
 
-### 3. ツールを1つ公開する
+- `[tool call]`で、検索語とツールの呼び出し回数を確認します
+- 回答に付いた「第N回・PDF p.N」が、説明の根拠になっているか確認します
+- 根拠が取れていなかったのか、取れた根拠を正しく使えなかったのかを分けて考えます
 
-`app/mcp_server.py` の `TODO(第5回 演習)` の場所で、`get_lecture_summary` も MCP で公開します（`search_glossary` と同じ書き方で 1 行）。
+必要な根拠がp.52だけでそろう質問もあります。参照ページ数を増やすこと自体を目標にしないでください。
+
+### STEP 4：TreeとGraphで同じ質問に答えさせる
+
+Treeは目次をたどってページを選びます。
 
 ```bash
-uv run python -m app.agent --mcp --list-tools
-uv run python -m app.agent --mcp --trace "第2回では何を学びますか？"
-uv run pytest -q
+uv run python -m app.agent --tree --trace "$AIE_QUESTION"
 ```
 
-`--list-tools` に `glossary_get_lecture_summary` が増え、`--trace` でそれが呼ばれることを確認します。
-第3回で `make_quiz` を作った人は、それも同じ方法で公開できます。
+`browse_tree(node_id)`だけを使います。最初は講義一覧を取得し、返されたIDで講義・章・ページへ進みます。`children`のページには本文の先頭文だけが入り、ページIDを指定すると`node.content`に全文が入ります。句点のないページの候補文は先頭行です。traceで、選んだ目次と全文を取得したページを確認します。
 
-### 4. 既製の外部ツールを、設定だけで足す
-
-`app/mcp_servers.json` に、公開されている **fetch サーバー**（URL のページを取得して Markdown で返す）を足します。コードは書きません。
-
-```json
-{
-  "mcpServers": {
-    "glossary": {
-      "command": "uv",
-      "args": ["run", "python", "-m", "app.mcp_server"]
-    },
-    "fetch": {
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    }
-  }
-}
-```
+Graphはベクトル検索で入口を見つけ、その周囲へ候補を広げます。
 
 ```bash
-uv run python -m app.agent --mcp --list-tools
-uv run python -m app.agent --mcp --trace "https://modelcontextprotocol.io/ の冒頭を日本語で3行に要約して"
+uv run python -m app.agent --graph --trace "$AIE_QUESTION"
 ```
 
-- 初回は `uvx` がサーバーをダウンロードするので、起動に 10 秒ほどかかります
-- `--trace` に `fetch_fetch({'url': ...})` が出れば、**モデルが選んだ URL に Codespace から実際にアクセス**しています。どこへ何を送るツールかを把握したうえで足すのが、外部ツールを使うときの基本です
-- `INSTRUCTIONS` は用語集を前提に書いてあります。URL の質問で fetch が呼ばれないときは、「URL を渡されたら fetch で内容を読む」のような 1 行を `INSTRUCTIONS` に足してみましょう
+`search_graph(query)`を使います。検索上位3ページを入口に、前後ページ・共通用語の関係を最大2 hopたどり、入口を含め最大10ページの本文を返します。ページから隣のページなら1 hop、ページから用語を経由して別のページへ進むと2 hopです。共通用語があっても、答えがあるとは限らない点に注意してください。
 
-### 5. 提出
+TreeとGraphで、回答・引用根拠・時間・入力トークン数がどう変わるかを記録します。
 
-`lectures/05/answer.md` を書き、`lec05` → 自分の fork の `main` へ PR を出します。
+### STEP 5：結果を比べて記録する
+
+`answer.md`の表に各方式の結果をまとめます。
+
+| 表示 | 意味 |
+|---|---|
+| `[time]` | 検索・埋め込みを含む、回答完了までの秒数 |
+| `[usage]` | 1つの質問で使った入力・出力トークン数と、モデル応答回数の合計 |
+| `[cost]` | 生成APIの推定費用。クエリの埋め込みと索引構築分は含まない |
+
+費用が「算定不可」の場合はそのまま記録し、0として扱わないでください。
+
+余裕があれば、質問を変えて同じ比較を試します。複数の質問をまとめる場合は、質問ごとに結果を残してください。
+
+| 種類 | 質問の例 | 確認する根拠 |
+|---|---|---|
+| 複数ページ | 第3回の例では、コンパクションとセッションをまたぐメモリはどう違いますか。日々のメモはすべて長期メモリに入りますか | 第3回・PDF p.13、39、40 |
+| 資料にない | 今回作ったRAGの実測平均応答時間と正答率を教えてください | 講義資料には今回のシステムの実測ログがない |
+
+### STEP 6：提出して、Codespacesを停止する
+
+演習の結果を`lectures/05/answer.md`に書き、作業ブランチから自分のforkの`main`へPRを出します。**base repositoryが自分のforkになっていることを確認してください。**
+
+```bash
+git add lectures/05/answer.md
+# コードを変更した場合は、そのファイルも git add する
+git commit -m "第5回 演習・宿題"
+git push -u origin lec05
+```
+
+APIキーや実験用の検索DBはcommitの対象から外してください。最後に、左下の「Codespaces」から **Stop Current Codespace** を選んで停止します。
 
 ## 宿題（どれか1つで完了）
 
+基礎・実装・発展から1つ選びます。**どれか1つに取り組めば完了です。** 演習と同じ`answer.md`の「宿題」欄に、レベル・やったこと・結果・気づきや疑問を書いてください。
+
 | レベル | 内容 |
 |---|---|
-| 基礎 | サーバーを `uv run python -m app.mcp_server --http` で起動し、設定ファイルの `glossary` を `{"url": "http://127.0.0.1:8000/mcp"}` に替えて同じ質問をする。stdio と Streamable HTTP で、起動の仕方・プロセス・ポートがどう違うかを記録する。あわせて、ツールの docstring を書き換えると `--list-tools` と呼ばれ方がどう変わるかを比べる |
-| 実装 | 第3回の `make_quiz`（なければ新しいツール）を MCP サーバーに追加し、TestModel を使ったテストを `tests/test_mcp_server.py` に足す。引数の範囲チェック（例：存在しない回なら分かりやすいメッセージを返す）を入れ、MCP 越しのエラーがモデルにどう見えるかを `--trace` で確かめる |
-| 発展 | 同じ用語集サーバーを **Copilot Chat**（VS Code の MCP クライアント）から使う（下の手順）。「サーバーを1つ作れば、クライアントを選ばずに使える」ことを確かめ、エージェント（`app/agent.py`）からの使い方と比べる。ツールが呼ばれるまでの流れ（誰がサーバーを起動するか、呼び出し前に人の承認があるか、結果がどう見えるか）の違いを記録する |
+| 基礎 | 指示文・ツールの説明・検索件数のどれか1つを変更し、同じ質問を`--trace`付きで実行して変更前後を比べる |
+| 実装 | 検索結果に前後ページの本文も付けるなど、取得処理を1つ改良し、通常の検索と比べる |
+| 発展 | Tree・Graphやそれらの組合せを自分で改良する。解きたい質問を決め、基本RAGと同じ質問で比べる |
+
+### 基礎の進め方
+
+次のどれかを一度に1か所だけ変更します。
+
+- `app/agent.py`の`INSTRUCTIONS`。Tree・Graphを使う場合は、それぞれ`TREE_INSTRUCTIONS`・`GRAPH_INSTRUCTIONS`
+- `app/tools.py`のツールのdocstring
+- `app/config.py`の`RAG_TOP_K`（通常のベクトル検索で返す件数）
+
+同じ質問・モデル・資料を使い、ツールの呼ばれ方・引数・回数、回答と引用根拠の変化を確認します。時間・トークン数・生成API推定費用も記録してください。これらの変更だけなら索引の再作成は不要です。
+
+### 実装の進め方
+
+たとえば`app/retrieval.py`で、検索したページの前後1ページの本文も返すように改良します。
+
+1. `load_pages()`のページ情報を使い、検索結果と同じ`document_id`の中から前後のページを探します
+2. 同じページを重複して返さないようにし、本文と引用情報を一緒に返します
+3. 変更前と同じ質問で実行し、必要な根拠を追加できた例と、不要な情報が増えた例を確認します
+4. 実装した内容、比較結果、残る失敗を記録します
+
+自分の用途に合わせた別の取得処理の改良でもかまいません。本文や埋め込みの設定を変えず、取得する範囲だけを変える場合は、索引の再作成は不要です。
+
+教材本文や埋め込み設定を変える場合は、[READMEの手順](../../README.md#第5回講義資料を検索する)に沿って、`AIE_RAG_DB`で実験用のDBを指定してから索引を作ります。
 
 ### 発展の進め方
 
-Copilot Chat は VS Code の MCP クライアントです。リポジトリに `.vscode/mcp.json` を置くと、Chat の **Agent** モードでサーバーのツールが使えます（形式は `app/mcp_servers.json` の `mcpServers` ではなく `servers`。コマンドは作業フォルダ＝リポジトリのルートで実行されます）。
+1. 解けるようにしたい質問を決めます。章をまたぐ説明や関連用語の比較など、答えを支えるページを先に確認します
+2. 取得方法を設計します。例として、Treeの目次・候補文の返し方、Graphの関係の種類・hop数・候補の選び方、複数の取得方法の組合せがあります
+3. データの形・持ち方・検索方法を、選んだ理由と一緒に説明します
+4. 基本RAGと同じ質問・モデル・対象資料で比べます。回答と引用根拠、時間・トークン数・生成API推定費用を記録します
+5. 改善した例と失敗した例を挙げ、自分の用途に採用するかを考察します
 
-```json
-{
-  "servers": {
-    "aie-glossary": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["run", "python", "-m", "app.mcp_server"]
-    }
-  }
-}
-```
+AIツールは使ってかまいません。自分で実行して確かめたことを書いてください。締切は講座の案内に従ってください。
 
-1. Codespaces の VS Code で上のファイルを作る。`servers` の上に **Start** が出たら押す（出ないときはコマンドパレットで **MCP: List Servers** → `aie-glossary` → Start）。サーバーは Codespace の中で起動します
-2. Copilot Chat を開き、モードを **Agent** にする。ツール（🔧）の一覧に `aie-glossary` の `search_glossary`（演習 3 を終えていれば `get_lecture_summary` も）が出るか確認する
-3. 「AIE2026 の宿題の 3 レベルとは？」と聞く。ツールの実行前に確認（**Continue**）を求められたら許可し、用語集のツールが呼ばれて回答に使われるかを見る
-4. `answer.md` に、Chat に表示されたツール呼び出しと、`uv run python -m app.agent --mcp --trace` の表示を並べて書く
-5. `.vscode/mcp.json` は PR に含めてよい（API キーのような秘密は書かないこと）
+## うまくいかないとき
 
-- Copilot Free でも Agent モードと MCP は使えます。ただしチャットの回数には月の上限があるので、試す回数は数回にとどめましょう
-- 会社や学校の組織が管理する Copilot（Business / Enterprise）では、組織のポリシーで MCP が無効になっていることがあります。個人アカウントで試してください
+| 症状 | 確認すること |
+|---|---|
+| `GEMINI_API_KEY`が見つからない | Codespacesのsecretを登録したか。後から登録した場合はCodespacesを再起動したか |
+| 「検索DBがありません」 | 第5回の更新を取り込み、`data/rag_data/index.sqlite3`があるか確認する。`AIE_RAG_DB`を設定した場合は指定先を確認する |
+| APIのレート制限に達した | 表示メッセージに従って待ってから再実行する |
+| 質問が空だと言われる | 別のターミナルを開いた場合は`AIE_QUESTION`をもう一度設定する |
+| 検索結果が質問に答えていない | `app.retrieval`で検索だけを試し、検索語・対象資料・返す件数を確認する |
+| 全文投入で入力上限のエラーになる | エラーと実行条件を記録し、他の方式を試す。未実行の欄はその旨を書く |
 
-## 注意
-
-- MCP サーバーは**コードを実行するプログラム**です。出所の分からないサーバーを設定ファイルに書かないでください
-- fetch サーバーは、モデルが決めた URL にアクセスします。社内の URL や個人情報を含む URL を渡さないでください
-- ツールが増えると、モデルに渡す説明文が増え、1回あたりのトークン数と呼び分けの難しさが増します。`--list-tools` で何個のツールを渡しているかを意識しましょう
-
-## 参考
-
-- MCP の公式サイト: https://modelcontextprotocol.io/
-- Pydantic AI の MCP クライアント: https://pydantic.dev/docs/ai/mcp/client/
-- MCP の Python SDK（サーバーの書き方）: https://github.com/modelcontextprotocol/python-sdk
-- 公開されている MCP サーバー: https://github.com/modelcontextprotocol/servers
-- VS Code で MCP サーバーを使う: https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+同じ質問でも結果は変わることがあります。1回の成功・失敗だけで方式全体の優劣を決めず、どの根拠を取得して使ったかを確認しましょう。
