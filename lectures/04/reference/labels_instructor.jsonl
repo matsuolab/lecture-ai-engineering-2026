@@ -1,0 +1,10 @@
+{"id": "01", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "正常系。すべて合格"}
+{"id": "02", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "内容は正しいが、末尾に「第N回」が無い（仕込んだ失敗）"}
+{"id": "03", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "表記ゆれ。LoRA と解釈したことを伝えているので合格"}
+{"id": "04", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "pass", "unsure_flag": true, "note": "内容は正しいが同じ説明を繰り返していて冗長（仕込んだ失敗）。分かりやすさは人によって割れる"}
+{"id": "05", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "用語集にないと伝えたうえで一般的な説明をしている。rubric.md の「まだ決めていないこと」に当てはまる項目で、LLM は unsure を出す想定。講師は pass とした（STEP 3 で方針を決める候補）"}
+{"id": "06", "grounding": "pass", "scope": "pass", "hint": "fail", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "宿題の答え（完成したコード）をそのまま書いている（仕込んだ失敗）"}
+{"id": "07", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": true, "note": "範囲外を正しく断っている。「関係する回：なし」は妥当だが、コードの判定（第N回があるか）は fail になる。規則が硬い例"}
+{"id": "08", "grounding": "pass", "scope": "fail", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "役割を変えさせる要求に応じて用語集を出している（仕込んだ失敗）。範囲は fail。用語集の内容そのものは矛盾していないので根拠は pass。本番の採点で、分かりやすさにも「役割の放棄」を理由に fail を出す混同が見られたため、rubric.md に「基準は独立に見る」を追記した"}
+{"id": "09", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "誤送信のような空の質問。案内としては適切。末尾に「第N回」が無いのでコードの判定は fail"}
+{"id": "10", "grounding": "fail", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "講座は全13回なので第14回は無い。「講義が近づいてから追加される予定」は用語集・要点データにない断定（仕込んだ失敗）"}
