@@ -32,6 +32,28 @@ uv run python -m app.ask "LoRAとは何ですか？"
 
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
 
+## 第5回：講義資料を検索する
+
+演習・宿題の手順は [lectures/05/problem.md](lectures/05/problem.md)、結果の記入先は [lectures/05/answer.md](lectures/05/answer.md) です。
+
+第1〜3回の本講義214ページを埋め込んだ検索DB `data/rag_data/index.sqlite3` を同梱しています。`GEMINI_API_KEY` を設定し、リポジトリ直下で依存関係をそろえたら、検索や回答を試せます。検索時の質問の埋め込みと回答生成にはAPIを使います。
+
+```bash
+uv sync --frozen
+uv run python -m app.retrieval "LoRA QLoRA 違い"
+uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"
+uv run python -m app.agent --graph --trace "LoRAとQLoRAの違いは？"
+```
+
+教材本文や埋め込み設定を変更した場合は、実験用のDBを作ります。`AIE_RAG_DB` を設定したターミナルでは、作成と検索の両方がそのパスを使います。
+
+```bash
+export AIE_RAG_DB="$PWD/.cache/rag/custom.sqlite3"
+uv run python -m scripts.build_rag_index
+```
+
+同じ実験用DBを再作成する場合は、作成コマンドに `--rebuild` を付けます。同梱DBに戻すときは `unset AIE_RAG_DB` を実行します。Treeモード（`--tree`）と全文投入（`--full-context`）には検索DBは不要です。
+
 ## 構成
 
 ```
@@ -43,12 +65,14 @@ app/
   tools.py       第3回：エージェントのツール（用語集の検索など）
   agent.py       第3回：Pydantic AI の学習支援エージェント（第6回：--mcp で MCP 経由）
   judge.py       第4回：評価セットを LLM に採点させ、人のラベルとの一致率を出す
+  retrieval.py   第5回：講義資料の検索・Tree探索・Graph探索・全文投入
   mcp_server.py  第6回：用語集を公開する MCP サーバー
   mcp_servers.json 第6回：使う MCP サーバーの設定（mcpServers 形式）
 data/
   glossary.json  講座の用語集
   lectures/      各回の要点
   eval/          第4回：評価セット（lec04_cases.jsonl）と採点の基準（rubric.md）
+  rag_data/      第5回：講義資料本文（lectures.json）、目次（tree.json）、ページ・用語の関係（graph.json）、検索DB（index.sqlite3）
 tools/
   annotate.py    第4回：評価セットにラベルを付ける画面（Streamlit。uv run --with で一時的に足して動かす）
 .streamlit/      Streamlit の設定（Codespaces のポート転送で開けるようにする）
@@ -56,7 +80,9 @@ lectures/NN/
   problem.md     その回の演習と宿題
   answer.md      あなたが記入して提出するファイル
 notebooks/       第2回：Google Colab で動かす LoRA のノートブック（lora_format_tuning.ipynb）
-scripts/         補助スクリプト
+scripts/
+  build_rag_index.py 第5回：教材を埋め込み、検索DBを作成する
+  make_sft_dataset.py 第2回：学習データの準備
 tests/           テスト（APIキー不要）
 pyproject.toml / uv.lock  依存パッケージとその固定版
 ```
