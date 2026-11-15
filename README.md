@@ -12,16 +12,16 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 | GitHub の **個人** アカウント | このリポジトリを fork し、作業ブランチと PR で提出する | 会社や学校が管理するアカウントでは Codespaces・Copilot が制限されることがあります |
 | GitHub Codespaces | 第1・3・5回などの開発環境。`.devcontainer/` の設定で Python 3.12・uv・Node.js が入ったコンテナが自動で用意されます | 個人アカウントの無料枠は月 120 コア時間（2 コアで約 60 時間）。**使い終わったら停止**してください |
 | GitHub Copilot（Free でよい） | コードの補完とチャット。第6回の発展課題では MCP クライアントとしても使います | Free は補完・チャットの回数に月の上限があります |
-| Gemini API（Google AI Studio の無料枠） | LLM の呼び出し。**個人**の Google アカウントでキーを発行し、Codespaces secret `GEMINI_API_KEY` で渡します | 無料枠には 1 分あたり・1 日あたりの上限があります（下の「前提と制約」） |
+| OpenAI API | LLM の呼び出し。OpenAI Platform で API キーを発行し、Codespaces secret `OPENAI_API_KEY` で渡します | API の利用には料金がかかります。利用前に料金と利用上限を確認してください |
 | Google Colab（T4 GPU、無料枠） | 第2回の LoRA 学習だけに使います | GPU の利用時間に上限があります。終わったらランタイムを削除してください |
 
-自分の PC で動かす場合は、Python 3.12 と [uv](https://docs.astral.sh/uv/) を入れて `uv sync --frozen` を実行し、環境変数 `GEMINI_API_KEY` を設定してください。
+自分の PC で動かす場合は、Python 3.12 と [uv](https://docs.astral.sh/uv/) を入れて `uv sync --frozen` を実行し、環境変数 `OPENAI_API_KEY` を設定してください。
 
 ## はじめに（第1回）
 
 1. このリポジトリを自分のアカウントに **fork** する
-2. [Google AI Studio](https://aistudio.google.com/apikey) で Gemini API キーを作る
-3. GitHub の **Settings → Codespaces → Secrets** に `GEMINI_API_KEY` を登録し、使う repository に自分の fork を選ぶ
+2. [OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作る（API 利用料がかかります）
+3. GitHub の **Settings → Codespaces → Secrets** に `OPENAI_API_KEY` を登録し、使う repository に自分の fork を選ぶ
 4. 自分の fork で **Code → Codespaces → Create codespace on main**
 5. ターミナルで動作確認
 
@@ -71,10 +71,10 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 
 ## 前提と制約
 
-- **依存パッケージの版は固定**しています（`uv.lock`。Python 3.12、pydantic-ai-slim 2.57.0、google-genai 2.31.0）。講座の期間中は上げません。`uv sync --frozen` でそのまま入れてください。
-- **既定のモデルは `gemini-3.5-flash-lite`** です。環境変数 `AIE_MODEL` で切り替えられます（下の「モデルの切り替え」）。ほかのモデルや自前契約の API を使ってもかまいません
-- **Gemini API の無料枠にはレート制限**があります。エージェント（第3回以降）は 1 つの質問で LLM を複数回呼ぶので、第1回より早く上限に達します。`レート制限に達しました` と出たら 1 分ほど待ってください。`モデルが混み合っています（503）` が続くときは `AIE_MODEL=gemini-3.1-flash-lite` を試してください
-- **API キーは環境変数 `GEMINI_API_KEY` だけ**で渡します。コード・コミット・チャットに貼らないでください。漏れたら AI Studio で削除して作り直します
+- **依存パッケージの版は固定**しています（`uv.lock`。Python 3.12、pydantic-ai-slim 2.57.0、OpenAI SDK 3.51.0）。講座の期間中は上げません。`uv sync --frozen` でそのまま入れてください。
+- **既定のモデルは `gpt-4o-mini`** です。環境変数 `AIE_MODEL` で切り替えられます（下の「モデルの切り替え」）。ほかのOpenAIモデルも利用できます
+- **OpenAI API は従量課金**です。API 利用料やアカウントの利用上限を確認してください。エージェント（第3回以降）は 1 つの質問で LLM を複数回呼ぶことがあります
+- **API キーは環境変数 `OPENAI_API_KEY`** で渡します。コード・コミット・チャットに貼らないでください。漏れたら OpenAI Platform で削除して作り直します
 - Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第6回の MCP サーバーは Codespaces の中で動かします
 - テスト（`uv run pytest -q`）は API キーなしで動きます（LLM を呼ばない TestModel を使用）
 
@@ -86,10 +86,10 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 
 ## モデルの切り替え
 
-既定モデルは `gemini-3.5-flash-lite` です。環境変数 `AIE_MODEL` で切り替えられます。
+既定モデルは `gpt-4o-mini` です。環境変数 `AIE_MODEL` で切り替えられます。
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gpt-4o uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
-無料枠には1分あたり・1日あたりのリクエスト上限があります。上限は [Gemini API のレート制限のページ](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。
+利用料金と制限は [OpenAI API の料金ページ](https://openai.com/api/pricing/) とアカウントの利用状況で確認してください。

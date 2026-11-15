@@ -1,7 +1,7 @@
 """第4回: LLM-as-a-Judge で評価セットを採点し、人のラベルとの一致率を出す。
 
 使い方:
-    uv run python -m app.judge                  # 評価セットを LLM に採点させ、自分のラベルと比べる（要 GEMINI_API_KEY）
+    uv run python -m app.judge                  # 評価セットを LLM に採点させ、自分のラベルと比べる（要 OPENAI_API_KEY）
     uv run python -m app.judge --model test     # API を呼ばず、簡単な規則で判定する偽モデルで動かす（動作確認用）
     uv run python -m app.judge --compare lectures/04/reference/labels_instructor.jsonl
                                                 # 2 つのラベルファイルの一致率を出す（API キー不要）
@@ -27,8 +27,8 @@ from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior
 from pydantic_ai.messages import ModelMessage, ModelResponse, ToolCallPart, UserPromptPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
-from pydantic_ai.models.google import GoogleModel
-from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
@@ -123,9 +123,9 @@ def build_judge(model, rubric: str) -> Agent:
     return Agent(model, output_type=JudgeResult, instructions=instructions, model_settings={"temperature": 0.0})
 
 
-def build_llm_model(model_name: str) -> GoogleModel:
-    """Gemini のモデルを作る。API キーが無ければ手順を表示して終了する（app.agent と同じ）。"""
-    return GoogleModel(model_name, provider=GoogleProvider(api_key=get_api_key()))
+def build_llm_model(model_name: str) -> OpenAIChatModel:
+    """OpenAI のモデルを作る。API キーが無ければ手順を表示して終了する（app.agent と同じ）。"""
+    return OpenAIChatModel(model_name, provider=OpenAIProvider(api_key=get_api_key()))
 
 
 # ---------------------------------------------------------------- 偽モデル（--model test）

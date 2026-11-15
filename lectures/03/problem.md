@@ -182,7 +182,7 @@ PYTHONPATH=. uv run --with google-adk adk run adk_agent/glossary_agent
 - `adk run` はターミナルで対話する方法です。質問を入力して Enter を押すと回答が返ります。終わるときは `exit` と入力します
 - `uv run --with google-adk` は、講座の環境に ADK を一時的に足して実行する方法です。`pyproject.toml` や `uv.lock` は変わりません
 - `PYTHONPATH=.` は、リポジトリ直下の `app` フォルダを読み込むために必要です
-- API キーは、Codespaces secret の `GEMINI_API_KEY` がそのまま使われます
+- Google ADK の実行には Gemini API キーが別途必要です。Google AI Studio で作成し、Codespaces secret `GEMINI_API_KEY` に登録してください（標準の演習は `OPENAI_API_KEY` を使います）
 - 初回は ADK の取得に1分ほどかかります
 
 演習と同じ質問を投げ、Pydantic AI 版との書き方の違いと、回答の違いを記録しましょう。
@@ -202,7 +202,7 @@ Pi は、ファイルの書き換えやコマンドの実行を、確認を求�
    ```
 
 2. **起動する**：ターミナルで `pi` と入力します
-3. **モデルを設定する**：Pi の中で `/model` と入力し、Gemini のモデルを選びます。API キーは、Codespaces secret の `GEMINI_API_KEY` がそのまま使われます
+3. **モデルを設定する**：Pi の中で `/model` と入力し、OpenAI のモデルを選びます。API キーは、Codespaces secret の `OPENAI_API_KEY` が使われます
 4. **比べる**：Pi のシステムプロンプトは、公開リポジトリ https://github.com/earendil-works/pi の `packages/coding-agent/src/core/system-prompt.ts` にあります。自分の `INSTRUCTIONS` と比べ、何が書かれていて、何が書かれていないかを見てみましょう
 
 - Pi の公式ドキュメント：https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs

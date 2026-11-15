@@ -21,9 +21,9 @@ from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
-from pydantic_ai.models.google import GoogleModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.models.test import TestModel
-from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.providers.openai import OpenAIProvider
 
 from app import tools
 from app.config import MODEL, api_error_message, get_api_key
@@ -76,8 +76,8 @@ def build_mcp_agent(config_path: Path = MCP_CONFIG) -> Agent:
     return Agent(instructions=INSTRUCTIONS, toolsets=load_mcp_servers(config_path))
 
 
-def build_model() -> GoogleModel:
-    return GoogleModel(MODEL, provider=GoogleProvider(api_key=get_api_key()))
+def build_model() -> OpenAIChatModel:
+    return OpenAIChatModel(MODEL, provider=OpenAIProvider(api_key=get_api_key()))
 
 
 def print_tools(target: Agent) -> None:

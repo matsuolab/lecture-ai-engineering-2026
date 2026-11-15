@@ -2,14 +2,14 @@
 
 ## この回のゴール
 
-- 自分の fork を Codespaces で開き、Gemini API を呼び出せる
+- 自分の fork を Codespaces で開き、OpenAI API を呼び出せる
 - GitHub Copilot でコードを少し直せる
 - 作業ブランチから PR を出して提出できる（以降の回もこの流れで提出する）
 
 ## 準備するもの
 
 - GitHub の個人アカウント（会社が管理するアカウントは、組織の設定で Codespaces や Copilot が使えないことがあります）
-- Google の個人アカウント（会社の Google Workspace アカウントは、管理者の設定で AI Studio が使えないことがあります）
+- OpenAI API を利用できるアカウント（API の利用料がかかります）
 
 ## 演習（45分）
 
@@ -17,17 +17,17 @@
 
 講座 repo の右上の **Fork** から、自分のアカウントに fork を作ります。以降の作業はすべて自分の fork で行います。
 
-### 2. Gemini API キーを発行する
+### 2. OpenAI API キーを発行する
 
-[Google AI Studio](https://aistudio.google.com/apikey) で API キーを作成し、コピーします。
+[OpenAI Platform](https://platform.openai.com/api-keys) で API キーを作成し、コピーします。API の利用料がかかるため、料金と利用上限を確認してください。
 
-> APIキーは秘密情報です。コードやチャット、コミットに貼らないでください。漏れた場合は AI Studio でキーを削除し、作り直してください。
+> APIキーは秘密情報です。コードやチャット、コミットに貼らないでください。漏れた場合は OpenAI Platform でキーを削除し、作り直してください。
 
 ### 3. Codespaces secret に登録する
 
 GitHub の **Settings → Codespaces → Secrets → New secret** で次のように登録します。
 
-- Name: `GEMINI_API_KEY`
+- Name: `OPENAI_API_KEY`
 - Value: 手順2のキー
 - Repository access: **自分の fork** を選ぶ
 
@@ -83,23 +83,14 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 |---|---|
 | 基礎 | 同じ質問を3回ずつ、モデルを変えて（`AIE_MODEL` 環境変数）、または temperature を変えて実行し、回答の違いを answer.md にまとめる |
 | 実装 | `app/ask.py` を改修し、会話履歴を保ったまま続けて質問できるようにする |
-| 発展 | 応答時間とトークン数を計測し、複数のモデルや質問で比較する。無料枠のレート制限との関係も考察する |
+| 発展 | 応答時間とトークン数を計測し、複数のモデルや質問で比較する。利用料金やレート制限との関係も考察する |
 
 モデルの切り替え例：
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gpt-4o uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
-### 呼び出すモデルについての補足
-モデルの仕様は更新されることがあります。  
-gemini 3.5 flashにおいては、Gemini APIのドキュメントが更新され、非推奨となりgemini 3.6 flashへ転送されるようになりました。
+モデルの仕様や利用可能なモデルは変わることがあります。最新情報は [OpenAI のモデル一覧](https://platform.openai.com/docs/models) で確認してください。
 
-- 参考：Gemini 3.5 Flashのドキュメント
-https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash?hl=ja
-
-このように、サービスとして提供されているLLMは頻繁に仕様が変わるため、サービス仕様のドキュメントを確認するなどの習慣を付けておき仕様変更に対応しましょう。
-
-第1回の宿題においては、任意にモデルを変えて実施していただければ問題ありません。
-
-temperature を変えるには、`generate_content` の `config` 引数を調べてみましょう。
+temperature を変えるには、`app/ask.py` の `chat.completions.create` に渡す引数を調べてみましょう。

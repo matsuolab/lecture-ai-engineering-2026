@@ -89,7 +89,7 @@
       "aliases": ["Application Programming Interface", "Web API"],
       "lecture": 1,
       "category": "開発基礎",
-      "definition": "プログラムから別のサービスの機能を呼び出すための窓口。本講座ではGemini APIをPythonから呼び出してLLMを使う。",
+      "definition": "プログラムから別のサービスの機能を呼び出すための窓口。本講座ではOpenAI APIをPythonから呼び出してLLMを使う。",
       "related": ["api-key", "rate-limit"]
     },
     {
@@ -98,7 +98,7 @@
       "aliases": ["API key"],
       "lecture": 1,
       "category": "開発基礎",
-      "definition": "APIを呼び出す人を識別するための秘密の文字列。漏れると他人に利用枠を使われるため、コードに直接書かない、コミットしない、チャットに貼らない。本講座ではCodespaces secretに登録し、環境変数 GEMINI_API_KEY として読み込む。",
+      "definition": "APIを呼び出す人を識別するための秘密の文字列。漏れると他人に利用枠を使われるため、コードに直接書かない、コミットしない、チャットに貼らない。本講座ではCodespaces secretに登録し、環境変数 OPENAI_API_KEY として読み込む。",
       "related": ["codespaces-secret", "environment-variable"]
     },
     {
@@ -116,7 +116,7 @@
       "aliases": ["rate limit", "429エラー"],
       "lecture": 1,
       "category": "開発基礎",
-      "definition": "一定時間あたりに呼び出せるリクエスト数やトークン数の上限。超えるとHTTP 429などのエラーが返る。無料枠は特に制限が厳しく、エージェントは1つの質問で複数回LLMを呼ぶため上限に達しやすい。",
+      "definition": "一定時間あたりに呼び出せるリクエスト数やトークン数の上限。超えるとHTTP 429などのエラーが返る。エージェントは1つの質問で複数回LLMを呼ぶため、上限に達しやすい。",
       "related": ["api", "agent-loop", "default-model"]
     },
     {
@@ -455,10 +455,10 @@
     {
       "id": "default-model",
       "term": "既定モデル",
-      "aliases": ["デフォルトモデル", "gemini-3.5-flash-lite"],
+      "aliases": ["デフォルトモデル", "gpt-4o-mini"],
       "lecture": 1,
       "category": "講座",
-      "definition": "AIE2026の演習と宿題で標準に使うモデルは gemini-3.5-flash-lite。無料枠のレート制限と講座運営の安定性を考えて選んでいる。環境変数 AIE_MODEL で他のモデルに切り替えてよく、自分で契約したAPIを使ってもよい。",
+      "definition": "AIE2026の演習と宿題で標準に使うモデルは gpt-4o-mini。環境変数 AIE_MODEL で他のモデルに切り替えられる。OpenAI APIの利用には料金がかかる。",
       "related": ["rate-limit", "api-key"]
     },
     {

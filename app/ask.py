@@ -12,8 +12,7 @@
 
 import argparse
 
-from google import genai
-from google.genai import errors
+from openai import APIStatusError, OpenAI
 
 from app.config import MODEL, api_error_message, get_api_key
 
@@ -22,13 +21,19 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 
 def ask(question: str) -> str:
-    client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
+    client = OpenAI(api_key=get_api_key())
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=[{"role": "user", "content": question}],
+    )
 
-    # TODO(第1回 演習): response.usage_metadata から
+    # TODO(第1回 演習): response.usage から
     #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
 
-    return response.text
+    content = response.choices[0].message.content
+    if content is None:
+        raise RuntimeError("モデルからテキストの回答が返りませんでした")
+    return content
 
 
 def main() -> None:
@@ -40,8 +45,8 @@ def main() -> None:
     print(f"[質問] {args.question}\n")
     try:
         print(ask(args.question))
-    except errors.APIError as e:
-        print(api_error_message(e.code, e.message))
+    except APIStatusError as e:
+        print(api_error_message(e.status_code, e.message))
         raise SystemExit(1)
 
 

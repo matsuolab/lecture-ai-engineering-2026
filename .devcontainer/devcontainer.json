@@ -11,8 +11,12 @@
   },
   // Codespaces 作成時に登録を促すシークレット
   "secrets": {
+    "OPENAI_API_KEY": {
+      "description": "OpenAI Platform で発行した API キー",
+      "documentationUrl": "https://platform.openai.com/api-keys"
+    },
     "GEMINI_API_KEY": {
-      "description": "Google AI Studio で発行した Gemini API キー",
+      "description": "第3回の発展課題で Google ADK を使う場合のみ必要な Gemini API キー",
       "documentationUrl": "https://aistudio.google.com/apikey"
     }
   },
