@@ -7,6 +7,8 @@ requires-python = ">=3.12"
 # 年度中に壊れないよう、バージョンは固定する
 dependencies = [
     "google-genai==2.31.0",
+    "numpy>=2.5.5",
+    "pandas>=3.1.1",
     "pydantic-ai-slim[google,mcp]==2.57.0",  # mcp は第5回（MCP サーバー・クライアント）で使う
 ]
 
