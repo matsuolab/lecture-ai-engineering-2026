@@ -32,6 +32,32 @@ uv run python -m app.ask "What is LoRA?"
 
 See [lectures/01/problem.md](lectures/01/problem.md) for detailed instructions.
 
+<a id="lecture-05-retrieval"></a>
+
+## Lecture 05: Search the Lecture Materials
+
+**Release status:** The translated instructions and answer template are available. The localized lecture materials, search index, and Lecture 05 runtime activation are pending. Run the commands in this section after the data and code update is released.
+
+See [lectures/05/problem.md](lectures/05/problem.md) for the exercises and homework, and record results in [lectures/05/answer.md](lectures/05/answer.md).
+
+The exercise requires `data/rag_data/index.sqlite3`, a search database with embeddings for 214 pages from the main materials for Lectures 01–03. After the data and runtime update is available, set `GEMINI_API_KEY` and install the dependencies from the repository root, then try retrieval and answering. Query embedding and answer generation use the API.
+
+```bash
+uv sync --frozen
+uv run python -m app.retrieval "LoRA QLoRA difference"
+uv run python -m app.agent --trace "What is the difference between LoRA and QLoRA?"
+uv run python -m app.agent --graph --trace "What is the difference between LoRA and QLoRA?"
+```
+
+If you change the materials' text or embedding settings, create an experimental database. In a terminal where `AIE_RAG_DB` is set, both index creation and retrieval use that path.
+
+```bash
+export AIE_RAG_DB="$PWD/.cache/rag/custom.sqlite3"
+uv run python -m scripts.build_rag_index
+```
+
+To recreate the same experimental database, add `--rebuild` to the build command. Run `unset AIE_RAG_DB` to return to the default database supplied with the data update. Tree mode (`--tree`) and full context (`--full-context`) do not need the search database, but still require the materials and runtime update.
+
 ## Structure
 
 ```
@@ -56,7 +82,8 @@ lectures/NN/
   problem.md     Exercises and homework for that session
   answer.md      File for you to fill in and submit
 notebooks/       Lecture 02: LoRA notebook for Google Colab (lora_format_tuning.ipynb)
-scripts/         Helper scripts
+scripts/
+  make_sft_dataset.py Lecture 02: prepare training data
 tests/           Tests (no API key required)
 pyproject.toml / uv.lock  Dependencies and their pinned versions
 ```
