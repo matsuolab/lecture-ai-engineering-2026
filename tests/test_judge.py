@@ -24,6 +24,7 @@ INSTRUCTOR_LABELS = judge.ROOT / "lectures" / "04" / "reference" / "labels_instr
 
 def test_lecture_mark_is_checked_by_code():
     assert check_lecture_mark("LoRA は…\n\n関係する回：第2回") == "pass"
+    assert check_lecture_mark("この講座に第14回はありません。\n\n関係する回：なし") == "pass"
     assert check_lecture_mark("第2回で扱う LoRA は…\n\n以上です。") == "fail"  # 末尾に無ければ fail
     assert check_lecture_mark("") == "fail"
 
