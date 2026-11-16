@@ -12,3 +12,6 @@ learning_log/
 
 # macOS
 .DS_Store
+
+# 第5回: 資料から再生成する検索DB
+.cache/rag/
