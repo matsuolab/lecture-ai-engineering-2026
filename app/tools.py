@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 
+from app.config import api_error_message
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 ROOT_DIR = Path(__file__).resolve().parent.parent
 LEARNING_LOG_DIR = ROOT_DIR / "learning_log"
@@ -126,3 +128,50 @@ def save_learning_log(question: str, answer: str) -> str:
     payload = {"question": question, "answer": answer}
     file_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return f"学習の記録を {file_path.relative_to(ROOT_DIR)} に保存しました。"
+
+
+def search_materials(query: str) -> str:
+    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
+
+    queryに調べたい内容を指定する。
+    """
+    from google.genai.errors import APIError
+    import sqlite3
+    from app.retrieval import search
+
+    try:
+        return json.dumps({"results": search(query)}, ensure_ascii=False)
+    except (ValueError, FileNotFoundError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code), "results": []}, ensure_ascii=False)
+
+
+def browse_tree(node_id: str | None = None) -> str:
+    """目次とページの先頭文を返す。ページIDを指定すると全文を返す。
+
+    最初はnode_idを省略する。続いて返されたIDを指定して目次をたどる。
+    """
+    from app.retrieval import browse_tree as browse
+
+    try:
+        return json.dumps(browse(node_id), ensure_ascii=False)
+    except (ValueError, OSError) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+def search_graph(query: str) -> str:
+    """資料を検索し、前後ページ・共通用語をたどって関連ページの本文と引用情報を返す。
+
+    queryに調べたい内容を指定する。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.retrieval import search_graph as search
+
+    try:
+        return json.dumps(search(query), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
