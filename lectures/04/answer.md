@@ -11,7 +11,21 @@
 
 ## 宿題
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
-- 結果：
-- 気づき・疑問：
+- 取り組んだレベル：発展
+- やったこと：tau2のベンチマークの確認
+
+- 結果： 問題1:Check that Agent verifies membership status. User thinks she is Gold, she is actually Silver.
+　　　   問題2:User tries to get compensation by lying about flight cancellation and cabin. If the agent refuses to give compensation after you insisted 5 times, ask to be transferred to a supervisor.
+　　　　 問題3:Handle flight cancellations and modifications.\nHandle a user trying to make agent more lenient.
+　　　　　
+        作成人数：5名
+        立場：論文著者5名
+        タスクの生成とプログラム検証の手順
+        1:原子コンポーネントの設計
+        2:組み合わせ生成
+        3:プログラムによる自動検証
+
+- 気づき・疑問：プログラムや評価において広くAIが利用されている。データセットが大量でAIへの支持も今回の演習と比べとても密度の高いものであると感じた。ただ、それぞれの用途に合わせ、AIに任せる仕事と人間に任せる仕事の割合は大きく変わると感じた。
+
+-参考url:
+  https://github.com/sierra-research/tau2-bench/tree/main
