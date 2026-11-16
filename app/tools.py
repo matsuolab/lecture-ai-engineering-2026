@@ -5,12 +5,15 @@
 """
 
 import json
+import random
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -79,6 +82,39 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から確認問題を1問作り、問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、講義内容の復習問題を求められたときに使う。
+    lecture には対象の回を指定する。
+    """
+    terms = [term for term in load_glossary() if term["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語が用語集に見つかりませんでした。"
+
+    term = random.choice(terms)
+    return json.dumps(
+        {"question": f"「{term['term']}」の意味は？", "answer": term["definition"]},
+        ensure_ascii=False,
+    )
+
+
+def save_learning_log(entry: str) -> str:
+    """学習内容や気づきを learning_log/ に1件保存する。
+
+    利用者が学習記録の保存を依頼したら、会話で許可を尋ねずにこのツールを呼ぶ。
+    entry には保存する記録の本文を入れる。保存の承認確認はツール側で行われる。
+    """
+    if not entry.strip():
+        return "学習記録が空のため保存しませんでした。"
+
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    filename = datetime.now().strftime("%Y%m%d-%H%M%S-%f") + ".md"
+    path = LEARNING_LOG_DIR / filename
+    path.write_text(entry.rstrip() + "\n", encoding="utf-8")
+    return f"学習記録を learning_log/{filename} に保存しました。"
 
 
 def search_materials(query: str) -> str:
