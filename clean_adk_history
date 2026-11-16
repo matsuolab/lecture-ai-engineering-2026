@@ -1,0 +1,65 @@
+# clean_adk_history
+# Description: Remove .adk directory from git history and force push changes to remote origin.
+# Version: 1.0.0
+# Date: 2026/11/09
+
+# [ADDED START] v1.0.0: Initial script creation for purging session.db history
+# section: 1
+# description: Display script header information
+# version: 1.0.0
+# date: 2026/11/09
+SCRIPT_NAME=$(basename "$0")
+VERSION="1.0.0"
+
+echo "=========================================="
+echo "Executing Script: ${SCRIPT_NAME}"
+echo "Global Version : ${VERSION}"
+echo "=========================================="
+
+# section: 2
+# description: Update .gitignore safely
+# version: 1.0.0
+# date: 2026/11/09
+echo "[1/4] Updating .gitignore..."
+if [ -f .gitignore ]; then
+    grep -qxF '.adk/' .gitignore || echo ".adk/" >> .gitignore
+    grep -qxF '*.db' .gitignore || echo "*.db" >> .gitignore
+else
+    echo ".adk/" > .gitignore
+    echo "*.db" >> .gitignore
+fi
+
+git add .gitignore >/dev/null 2>&1
+git commit -m "fix: ignore .adk directory and .db files" >/dev/null 2>&1 || true
+echo "[Progress: 25.0%] .gitignore updated."
+
+# section: 3
+# description: Check and install git-filter-repo
+# version: 1.0.0
+# date: 2026/11/09
+echo "[2/4] Checking git-filter-repo..."
+if ! command -v git-filter-repo &> /dev/null; then
+    echo "Installing git-filter-repo via pip..."
+    pip install git-filter-repo >/dev/null 2>&1
+fi
+echo "[Progress: 50.0%] Tool checked."
+
+# section: 4
+# description: Purge .adk directory from Git history
+# version: 1.0.0
+# date: 2026/11/09
+echo "[3/4] Purging .adk directory from Git history..."
+git filter-repo --path adk_agent/glossary_agent/.adk --invert-paths --force
+echo "[Progress: 75.0%] History purged."
+
+# section: 5
+# description: Re-register remote origin and force push to GitHub
+# version: 1.0.0
+# date: 2026/11/09
+echo "[4/4] Re-registering origin and force pushing..."
+git remote add origin https://github.com/Luminous-world/lecture-ai-engineering-2026.git 2>/dev/null || git remote set-url origin https://github.com/Luminous-world/lecture-ai-engineering-2026.git
+
+git push origin --force --all
+git push origin --force --tags
+echo "[Progress: 100.0%] Completed successfully."
+# [ADDED END]
