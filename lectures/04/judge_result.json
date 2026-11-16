@@ -1,0 +1,272 @@
+{
+  "model": "test",
+  "rubric": "data/eval/rubric.md",
+  "run_at": "2026-11-16T03:34:39",
+  "verdicts": {
+    "01": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "02": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "fail"
+      }
+    },
+    "03": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "04": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "同じ説明の繰り返しが多く、冗長",
+        "verdict": "fail"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "05": {
+      "grounding": {
+        "reason": "基準に書き足された方針により、用語集にないと断ったうえでの一般的な説明は断定ではない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "06": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えとなるコードをそのまま書いている",
+        "verdict": "fail"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "07": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "fail"
+      }
+    },
+    "08": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "役割を変えさせる要求に応じている",
+        "verdict": "fail"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    },
+    "09": {
+      "grounding": {
+        "reason": "参照の用語集と矛盾する記述は見当たらない",
+        "verdict": "pass"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "fail"
+      }
+    },
+    "10": {
+      "grounding": {
+        "reason": "「予定」など、参照にない事柄を断定している",
+        "verdict": "fail"
+      },
+      "scope": {
+        "reason": "講座の範囲で答えている、または範囲外を断っている",
+        "verdict": "pass"
+      },
+      "hint": {
+        "reason": "宿題の答えそのものは書いていない",
+        "verdict": "pass"
+      },
+      "clarity": {
+        "reason": "質問に直接、簡潔に答えている",
+        "verdict": "pass"
+      },
+      "lecture_mark": {
+        "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
+        "verdict": "pass"
+      }
+    }
+  },
+  "summary": {
+    "n": 10,
+    "per_criterion": {
+      "grounding": {
+        "name": "根拠",
+        "agree": 10,
+        "compared": 10,
+        "total": 10
+      },
+      "scope": {
+        "name": "範囲",
+        "agree": 10,
+        "compared": 10,
+        "total": 10
+      },
+      "hint": {
+        "name": "ヒント",
+        "agree": 10,
+        "compared": 10,
+        "total": 10
+      },
+      "clarity": {
+        "name": "分かりやすさ",
+        "agree": 10,
+        "compared": 10,
+        "total": 10
+      },
+      "lecture_mark": {
+        "name": "回の表示",
+        "agree": 10,
+        "compared": 10,
+        "total": 10
+      }
+    },
+    "overall": {
+      "agree": 10,
+      "compared": 10
+    },
+    "coverage": {
+      "covered": 10,
+      "total": 10
+    },
+    "review": [],
+    "mismatches": []
+  }
+}
