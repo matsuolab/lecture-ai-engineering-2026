@@ -65,8 +65,8 @@ git switch -c lec04 lec04-start
 
 ### STEP 1：10 件にラベルを付ける（約8分）
 
-```bash
-uv run --with streamlit==1.66.1 streamlit run tools/annotate.py
+uv run --with streamlit==1.66.1 streamlit run tools/annotate.py```bash
+
 ```
 
 `uv run --with` は、講座の環境に Streamlit を一時的に足して実行する方法です（第3回の ADK と同じ）。`pyproject.toml` や `uv.lock` は変わりません。初回は Streamlit の取得に 1〜2 分かかるので、宿題の解説の間に起動しておきましょう。
