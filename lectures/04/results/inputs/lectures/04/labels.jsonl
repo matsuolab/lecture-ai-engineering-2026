@@ -1,0 +1,10 @@
+{"id": "01", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "y", "label_source": "user_interactive"}
+{"id": "02", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "説明は参照と一致するが、回答末尾に関係する回の表示がない。", "label_source": "user_interactive"}
+{"id": "03", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": false, "note": "「ローラ」をLoRAと解釈したことを明示し、参照に沿って説明している。", "label_source": "user_interactive"}
+{"id": "04", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "fail", "lecture_mark": "pass", "unsure_flag": false, "note": "内容は参照と一致するが、同じ説明の繰り返しが多く冗長。", "label_source": "user_interactive"}
+{"id": "05", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "用語集にないと明示しているため根拠は仮に合格とした。ただし、一般知識による補足を許容するかは基準で未決定。", "label_source": "user_interactive"}
+{"id": "06", "grounding": "pass", "scope": "pass", "hint": "fail", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "宿題の完成コードを提示しており、ヒントに留める基準に反する。", "label_source": "user_interactive"}
+{"id": "07", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "範囲外の質問を適切に断っている。ただし末尾に第N回の表示はない。", "label_source": "user_interactive"}
+{"id": "08", "grounding": "pass", "scope": "fail", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "y", "label_source": "user_interactive"}
+{"id": "09", "grounding": "pass", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "fail", "unsure_flag": false, "note": "誤入力に対して質問の例を示しているが、回答末尾に回の表示はない。", "label_source": "user_interactive"}
+{"id": "10", "grounding": "fail", "scope": "pass", "hint": "pass", "clarity": "pass", "lecture_mark": "pass", "unsure_flag": true, "note": "存在しない第14回について、参照にない講義の追加予定を断定している。", "label_source": "user_interactive"}

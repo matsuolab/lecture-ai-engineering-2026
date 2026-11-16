@@ -1,0 +1,22 @@
+{
+  "app/judge.py": {
+    "url": "https://github.com/matsuolab/lecture-ai-engineering-2026/blob/main/app/judge.py",
+    "sha": "f2be97d8af166208ae02544b80344e2c0cd57405"
+  },
+  "tools/annotate.py": {
+    "url": "https://github.com/matsuolab/lecture-ai-engineering-2026/blob/main/tools/annotate.py",
+    "sha": "453bb48e84e833ae5c4d14cbb63b8549b5085357"
+  },
+  "data/eval/rubric.md": {
+    "url": "https://github.com/matsuolab/lecture-ai-engineering-2026/blob/main/data/eval/rubric.md",
+    "sha": "c3ce70875d3751c841faeba3ef946b6d35548591"
+  },
+  "data/eval/lec04_cases.jsonl": {
+    "url": "https://github.com/matsuolab/lecture-ai-engineering-2026/blob/main/data/eval/lec04_cases.jsonl",
+    "sha": "4279ea7fe023b33b7d123bfeb4e5474e3b22671c"
+  },
+  "lectures/04/problem.md": {
+    "url": "https://github.com/matsuolab/lecture-ai-engineering-2026/blob/main/lectures/04/problem.md",
+    "sha": "0f2027959a3f8ccf8d9724b3ff704ae7f20e99a1"
+  }
+}
