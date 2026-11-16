@@ -21,12 +21,33 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
+def format_usage_summary(usage_metadata: object | None) -> str:
+    if usage_metadata is None:
+        return "入力トークン数: 不明, 出力トークン数: 不明"
+
+    input_tokens = getattr(usage_metadata, "prompt_token_count", None)
+    output_tokens = getattr(usage_metadata, "candidates_token_count", None)
+
+    # SDK のバージョンによっては、別名のプロパティを持つ場合があるため揃える
+    if input_tokens is None:
+        input_tokens = getattr(usage_metadata, "input_token_count", None)
+    if output_tokens is None:
+        output_tokens = getattr(usage_metadata, "output_token_count", None)
+
+    if input_tokens is None:
+        input_tokens = "不明"
+    if output_tokens is None:
+        output_tokens = "不明"
+
+    return f"入力トークン数: {input_tokens}, 出力トークン数: {output_tokens}"
+
+
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
     response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    usage_metadata = getattr(response, "usage_metadata", None)
+    print(f"[token] {format_usage_summary(usage_metadata)}")
 
     return response.text
 
