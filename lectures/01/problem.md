@@ -88,7 +88,7 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 モデルの切り替え例：
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.8-flash uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
 ### 呼び出すモデルについての補足
