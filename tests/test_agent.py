@@ -46,3 +46,11 @@ def test_material_result_reaches_the_model(monkeypatch):
     returns = _parts(result, ToolReturnPart)
     assert returns and returns[0].tool_name == "search_materials"
     assert json.loads(returns[0].content)["results"] == [hit]
+
+
+def test_learning_log_save_is_default_for_quiz_generation():
+    model = TestModel(call_tools=["make_quiz", "save_learning_log"])
+    with agent.override(model=model):
+        result = agent.run_sync("第2回の内容から確認問題を1問出して")
+    called = {p.tool_name for p in _parts(result, ToolCallPart)}
+    assert {"make_quiz", "save_learning_log"} <= called

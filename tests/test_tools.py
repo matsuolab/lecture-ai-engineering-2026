@@ -39,6 +39,15 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_make_quiz_returns_question_and_answer_for_selected_lecture(monkeypatch):
+    target = next(t for t in tools.load_glossary() if t["lecture"] == 2)
+    monkeypatch.setattr("random.choice", lambda seq: target)
+
+    result = json.loads(tools.make_quiz(2))
+    assert result["question"] == f"「{target['term']}」の意味は?"
+    assert result["answer"] == target["definition"]
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
