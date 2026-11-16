@@ -13,7 +13,7 @@
 import argparse
 
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 
 from app.config import MODEL, api_error_message, get_api_key
 
@@ -21,12 +21,24 @@ from app.config import MODEL, api_error_message, get_api_key
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
+def ask(question: str, temperature: float = 0.2) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
 
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=question,
+        config=types.GenerateContentConfig(
+            temperature=temperature,
+        ),
+    )
+
+    if response.usage_metadata:
+        print(
+            "[tokens] input="
+            f"{response.usage_metadata.prompt_token_count} / "
+            "output="
+            f"{response.usage_metadata.candidates_token_count}"
+        )
 
     return response.text
 
@@ -34,12 +46,17 @@ def ask(question: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="素のLLMに質問する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    parser.add_argument("--temperature", type=float, default=0.2)
     args = parser.parse_args()
 
+    if not 0.0 <= args.temperature <= 2.0:
+        parser.error("--temperature は 0.0 から 2.0 の範囲で指定してください")
+
     print(f"[model] {MODEL}")
+    print(f"[temperature] {args.temperature}")
     print(f"[質問] {args.question}\n")
     try:
-        print(ask(args.question))
+        print(ask(args.question, args.temperature))
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
