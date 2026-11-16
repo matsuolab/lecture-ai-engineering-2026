@@ -1,6 +1,6 @@
 {
   "version": "2026-draft-1",
-  "note": "AIE2026 第1〜3回・第5回の用語集（たたき台）。講義スライド確定後に内容を差し替える。",
+  "note": "AIE2026 第1〜4回・第6回の用語集（たたき台）。講義スライド確定後に内容を差し替える。",
   "terms": [
     {
       "id": "ai-engineering",
@@ -386,7 +386,7 @@
       "aliases": ["ADK", "Agent Development Kit", "google-adk"],
       "lecture": 3,
       "category": "エージェント",
-      "definition": "Googleが公開しているオープンソースのエージェント開発フレームワーク。Geminiとの統合が深く、adk web でツール呼び出しの流れを画面で確認できる。2.0で1.x系から破壊的変更が入っている。本講座では宿題の発展レベルで扱う。",
+      "definition": "Googleが公開しているオープンソースのエージェント開発フレームワーク。Geminiとの統合が深い。2.0で1.x系から大きな変更が入っている。本講座では第3回の宿題の発展レベルで扱う。",
       "related": ["pydantic-ai", "ai-agent"]
     },
     {
@@ -395,7 +395,7 @@
       "aliases": ["MCP", "Model Context Protocol"],
       "lecture": 3,
       "category": "エージェント",
-      "definition": "AIアプリと外部のツールやデータソースをつなぐためのオープンな標準プロトコル。MCPサーバーとして公開したツールは、対応する様々なエージェントやエディタ（MCPクライアント）から共通の方法で使える。第5回で、用語集の検索をMCPサーバーにして体験する。",
+      "definition": "AIアプリと外部のツールやデータソースをつなぐためのオープンな標準プロトコル。MCPサーバーとして公開したツールは、対応する様々なエージェントやエディタ（MCPクライアント）から共通の方法で使える。第6回で、用語集の検索をMCPサーバーにして体験する。",
       "related": ["tool", "ai-agent", "mcp-server", "mcp-client"]
     },
     {
@@ -465,7 +465,7 @@
       "id": "external-tool",
       "term": "外部ツール",
       "aliases": ["external tool", "外部サービス"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "Webページの取得、ファイル操作、データベース、他社のAPIなど、エージェントのプログラムの外にある機能をツールとして使うこと。第3回の関数ツールは同じプロセスの中で動くが、外部ツールはプロセスや機械をまたいで呼び出す。MCPはそのための共通の規約。",
       "related": ["tool", "mcp", "mcp-server"]
@@ -474,7 +474,7 @@
       "id": "mcp-server",
       "term": "MCPサーバー",
       "aliases": ["MCP server"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "MCPでツール（やリソース、プロンプト）を公開する側のプログラム。公開するのはツールの名前・説明文・引数のスキーマで、クライアントの要求に応じてツールを実行し結果を返す。本講座では用語集の検索をMCPサーバーにする（app/mcp_server.py）。公開されている既製のサーバー（fetch、filesystem、GitHubなど）も多い。",
       "related": ["mcp", "mcp-client", "mcp-transport", "fetch-server"]
@@ -483,7 +483,7 @@
       "id": "mcp-client",
       "term": "MCPクライアント",
       "aliases": ["MCP client", "MCPホスト"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "MCPサーバーに接続し、公開されたツールをモデルに渡して、モデルの指示でツールを呼び出す側。エージェントのプログラム（Pydantic AIの MCPToolset）や、Copilot Chat・Claude Desktop・Cursorなどのエディタやアプリがクライアントになる。同じサーバーをどのクライアントからも使えるのがMCPの利点。",
       "related": ["mcp", "mcp-server", "mcp-config"]
@@ -492,7 +492,7 @@
       "id": "mcp-transport",
       "term": "トランスポート（stdio・Streamable HTTP）",
       "aliases": ["stdio", "Streamable HTTP", "transport", "MCPのトランスポート"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "MCPのクライアントとサーバーがやりとりする経路。stdioでは、クライアントがサーバーをサブプロセスとして起動し、標準入出力でメッセージを交換する（手軽で、同じ機械の中で使う）。Streamable HTTPでは、サーバーがURLで待ち受け、別のプロセスや別の機械から接続できる（公開範囲と認証を考える必要がある）。",
       "related": ["mcp-server", "mcp-client"]
@@ -501,7 +501,7 @@
       "id": "mcp-config",
       "term": "mcpServers設定",
       "aliases": ["mcpServers", "MCPの設定ファイル", "mcp_servers.json", "mcp.json"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "使うMCPサーバーを列挙する設定ファイル。サーバーごとに名前と、起動コマンド（stdio）または接続先URL（HTTP）を書く。Claude Desktop、Cursor、Pydantic AIなどが同じ mcpServers 形式を読む（VS Code / Copilot Chatは servers 形式）。本講座では app/mcp_servers.json。設定を数行足すだけでツールが増えるのがMCPの体験の核心。",
       "related": ["mcp-client", "tool-namespace"]
@@ -510,7 +510,7 @@
       "id": "tool-namespace",
       "term": "ツールの名前空間",
       "aliases": ["ツール名のプレフィックス", "prefix", "名前の衝突"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "複数のMCPサーバーを使うとき、同じ名前のツールを区別するために「サーバー名_ツール名」のように接頭辞を付けること。本講座の app/agent.py は設定ファイルのサーバー名を自動で付ける（例: glossary_search_glossary。Pydantic AIの load_mcp_toolsets も同じ）。ツールが増えるほどモデルに渡す説明文も増え、呼び分けの精度とトークン数に影響する。",
       "related": ["mcp-config", "tool-description", "rate-limit"]
@@ -519,10 +519,73 @@
       "id": "fetch-server",
       "term": "fetchサーバー",
       "aliases": ["mcp-server-fetch", "fetch", "Web取得ツール"],
-      "lecture": 5,
+      "lecture": 6,
       "category": "MCP",
       "definition": "指定したURLのページを取得し、本文をMarkdownにして返す既製のMCPサーバー（Python製、uvx mcp-server-fetch で起動）。本講座では「設定ファイルに書くだけで外部ツールが増える」例として使う。モデルが選んだURLに実際にアクセスするので、どこへ何を送るかは利用者が把握しておく。",
       "related": ["mcp-server", "external-tool", "guardrail"]
+    },
+    {
+      "id": "evaluation-dataset",
+      "term": "評価セット",
+      "aliases": ["評価データセット", "eval set", "テストセット"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "評価のために用意した「入力と、期待する出力または合格の条件」の集まり。正常系だけでなく、壊れやすい入力（エッジケース）を意図的に含めて、どこで失敗するかを見る。本講座の第4回演習では、講師が用意した10件に受講生がラベルを付ける。",
+      "related": ["edge-case", "rubric", "llm-as-a-judge"]
+    },
+    {
+      "id": "edge-case",
+      "term": "エッジケース",
+      "aliases": ["edge case", "境界ケース"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "入力の境界や想定外の形。空の入力、極端に長い入力、表記ゆれ、範囲外の質問、指示を上書きしようとする要求など。評価セットに意図的に含め、採点器やエージェントがそこでどうふるまうかを確かめる。",
+      "related": ["evaluation-dataset"]
+    },
+    {
+      "id": "rubric",
+      "term": "ルーブリック",
+      "aliases": ["rubric", "評価基準", "採点基準"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "合格・不合格を判定するための基準を、項目ごとに文章で定めたもの。人にもLLMにも同じ基準を渡して採点させる。基準に書いていないことは人もLLMも決められないので、判断が分かれた項目は方針を決めて基準に書き足す。本講座では data/eval/rubric.md がこれにあたる。",
+      "related": ["evaluation-dataset", "llm-as-a-judge", "needs-review"]
+    },
+    {
+      "id": "llm-as-a-judge",
+      "term": "LLM-as-a-Judge",
+      "aliases": ["LLM採点", "LLM judge", "自動採点"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "採点の基準（ルーブリック）を与えたLLMに、別のモデルの出力を判定させる方法。大量の出力を安く速く採点できるが、採点役の癖（冗長な回答を好む、順序に影響されるなど）が結果に混ざる。人の判定との一致率で確かめてから使う。",
+      "related": ["rubric", "agreement-rate", "position-bias", "structured-output"]
+    },
+    {
+      "id": "agreement-rate",
+      "term": "一致率",
+      "aliases": ["agreement rate", "人との一致", "inter-rater agreement"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "2つの判定（人とLLM、人と人）が同じ結果になった件数の割合。採点器を信じてよいかの根拠になる。主観的な基準は人同士でも割れるので、一致率の天井は100%ではない。",
+      "related": ["llm-as-a-judge", "rubric"]
+    },
+    {
+      "id": "needs-review",
+      "term": "要確認",
+      "aliases": ["unsure", "人手確認", "要レビュー"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "自動判定では決められない項目（LLMが unsure と答えた項目）を、人が見る列に回すこと。一致率の計算からは外す。要確認が出た項目は、基準に書いていなかったことの印なので、方針を決めて基準に書き足す。",
+      "related": ["rubric", "llm-as-a-judge"]
+    },
+    {
+      "id": "position-bias",
+      "term": "位置バイアス",
+      "aliases": ["position bias", "順序バイアス"],
+      "lecture": 4,
+      "category": "評価",
+      "definition": "2つの回答を並べて「どちらが良いか」を判定させるとき、内容ではなく提示された順序に判定が引きずられる採点器の癖。順序を入れ替えて同じ結果になるかで確かめる。長い回答を好む冗長性バイアスと並ぶ代表的な癖。",
+      "related": ["llm-as-a-judge"]
     }
   ]
 }
