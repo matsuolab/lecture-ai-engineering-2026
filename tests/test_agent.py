@@ -5,6 +5,7 @@ without calling a real LLM. Check that tools are registered, called, and return 
 to the model, without using an API key or consuming usage allowances.
 """
 
+from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
@@ -27,7 +28,9 @@ def test_base_tools_are_registered_and_called():
 
     called = {p.tool_name for p in _parts(result, ToolCallPart)}
     assert BASE_TOOLS <= called
-    assert len(_parts(result, ToolReturnPart)) == len(_parts(result, ToolCallPart))
+    # Tools requiring approval (requires_approval=True) wait without executing and therefore have no return value
+    waiting = len(result.output.approvals) if isinstance(result.output, DeferredToolRequests) else 0
+    assert len(_parts(result, ToolReturnPart)) + waiting == len(_parts(result, ToolCallPart))
     assert result.output
 
 

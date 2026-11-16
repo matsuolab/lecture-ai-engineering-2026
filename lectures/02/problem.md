@@ -47,7 +47,7 @@ Even with a fixed seed, GPU training is not perfectly reproducible. It is normal
 |---|---|
 | Basic | Change one of `lora_r`, `lr`, or `num_train_epochs` in `CONFIG`, retrain, and record `format_rate`, `content_rate`, final loss, and training time alongside the original settings. After changing a setting, select **Runtime → Restart session** and run from the top (because the trained model remains in memory). Compare the two `result.json` files |
 | Implementation | Replace `FAQ`, `GROUNDED`, and `UNGROUNDED` with your own topic (about 5 items), train, and compare before and after. Keep the JSON format and `needs_review` design. Describe how you prepared questions "without evidence" |
-| Advanced | Use `scripts/make_sft_dataset.py` to make Q&A data (JSONL in `messages` format) from the course glossary, and train on it instead of the FAQ. Prepare your own evaluation questions (terms in the glossary, paraphrased questions, and terms absent from the glossary) and expected answers, then compare before and after training. Discuss which approach is more suitable by comparing it with the "glossary search agent" you will build in Lecture 03 |
+| Advanced | Use `scripts/make_sft_dataset.py` to make Q&A data (JSONL in `messages` format) from the course glossary, and train on it instead of the FAQ. Prepare your own evaluation questions (terms in the glossary, paraphrased questions, and terms absent from the glossary) and expected answers, then compare before and after training. Compare with a mechanism that searches the glossary, and discuss the advantages and disadvantages of training the model |
 
 Creating data for the advanced homework (run in Codespaces and upload the resulting file to Colab):
 

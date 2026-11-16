@@ -1,143 +1,202 @@
-# Lecture 05 Exercises and Homework: Expose and Use Tools Through an MCP Server
+# Lecture 05 Exercises and Homework: Answer Questions by Searching Lecture Materials
+
+**Release status:** These translated instructions and the answer template are available for review. The localized lecture materials, search index, and Lecture 05 runtime activation are pending. The exercise commands below are for use after the data and code update is released.
 
 ## Goals for This Session
 
-- Extract the tools built in Lecture 03 into an **MCP server** and use them **through MCP** from the same agent
-- Read the "tool names, descriptions, and arguments" visible to the model
-- Add ready-made external tools **just by editing a configuration file**
+- Run full-context and retrieval-based answering, and compare answers, evidence, time, and token counts
+- Explain the data representation with one page per chunk and the differences between vector search, Tree, and Graph retrieval
+- Improve retrieval for your own use case and compare before and after using the same question
+
+Use Lecture 03's "model + loop + tools" structure while changing how lecture materials are retrieved. Building on Lecture 04's evaluation work, check answer correctness and the evidence in cited pages yourself.
+
+## Materials and Code
+
+The four data links below point to the original Japanese reference data at a fixed revision; localized files are pending. The code links point to prepared English code on the preparation branch, pending activation in `main`.
+
+| File | Contents |
+|---|---|
+| [data/rag_data/lectures.json](https://github.com/matsuolab/lecture-ai-engineering-2026/blob/1ce722c2816b70ef62891a6378b2478af555e3fd/data/rag_data/lectures.json) | Titles and text organized by lecture, section, and page. One page is used as one chunk |
+| [data/rag_data/tree.json](https://github.com/matsuolab/lecture-ai-engineering-2026/blob/1ce722c2816b70ef62891a6378b2478af555e3fd/data/rag_data/tree.json) | Document, section, and page hierarchy |
+| [data/rag_data/graph.json](https://github.com/matsuolab/lecture-ai-engineering-2026/blob/1ce722c2816b70ef62891a6378b2478af555e3fd/data/rag_data/graph.json) | Nodes such as pages and terms, and the relationships connecting them |
+| [data/rag_data/index.sqlite3](https://github.com/matsuolab/lecture-ai-engineering-2026/blob/1ce722c2816b70ef62891a6378b2478af555e3fd/data/rag_data/index.sqlite3) | Search database containing 214 pages from the main materials for Lectures 01–03 |
+| [scripts/build_rag_index.py](https://github.com/matsuolab/lecture-ai-engineering-2026-en/blob/feat/lecture05-rag-update-20261115/scripts/build_rag_index.py) | Embeds materials and creates a SQLite search database |
+| [app/retrieval.py](https://github.com/matsuolab/lecture-ai-engineering-2026-en/blob/feat/lecture05-rag-update-20261115/app/retrieval.py) | Vector search, Tree traversal, Graph traversal, and full-context processing |
+| [app/tools.py](https://github.com/matsuolab/lecture-ai-engineering-2026-en/blob/feat/lecture05-rag-update-20261115/app/tools.py) | Descriptions, inputs, and outputs of the tools available to the model |
+| [app/agent.py](https://github.com/matsuolab/lecture-ai-engineering-2026-en/blob/feat/lecture05-rag-update-20261115/app/agent.py) | Instructions, tool registration, and mode selection |
+| [app/config.py](https://github.com/matsuolab/lecture-ai-engineering-2026-en/blob/feat/lecture05-rag-update-20261115/app/config.py) | Settings such as target materials, result counts, and Graph traversal limits |
+
+**Scope of the prepared exercise**: Vector search, Tree, and Graph are designed to use 214 pages from the main materials for Lectures 01–03. Full context uses all 9 documents and 438 pages in the materials JSON. This exercise explores different retrieval paths. To compare the methods under the same conditions, first align their target materials.
 
 ## Preparation
 
-If you have completed the work from previous sessions, create branch `lec05` from `main`.
-This session adds dependencies, so run `uv sync --frozen` once.
+### 1. Get the Lecture 05 Update and Create the lec05 Branch
+
+After the Lecture 05 data and runtime update is published in the course repository, select **Sync fork → Update branch** in your fork, then run these commands in the Codespaces terminal:
 
 ```bash
-git switch main && git switch -c lec05
+git switch main
+git pull --no-rebase
+git switch -c lec05
 uv sync --frozen
 ```
 
-Otherwise, you can create a branch from the course repository's starting code (the `lec05-start` tag).
+- If `lec05` already exists, switch to it with `git switch lec05`
+- If changes from the previous session prevent switching branches, commit them on that branch and retry
+- If conflicts occur during the update, consult the instructor without discarding your changes
+
+Use the same `GEMINI_API_KEY` environment variable as in Lecture 01. If you added the Codespaces secret after startup, restart Codespaces. See the [README](../../README.md) for setup instructions.
+
+### 2. Check the Search Database After the Data and Runtime Update
+
+Before starting, confirm that the data and runtime update supplies the lecture materials and `data/rag_data/index.sqlite3`. Vector search and Graph use that database as provided. These prerequisites are pending in the current release. Query embedding and answer generation use `GEMINI_API_KEY`. Tree and full context do not need the search database, but still require the materials and updated code.
+
+## Exercises
+
+### STEP 1: Pass All Materials at Once and Generate an Answer
+
+First, store the comparison question in a variable in the same terminal. Use this question unchanged for each method below.
 
 ```bash
-git remote -v                     # If upstream is missing, add it with the next line
-git remote add upstream https://github.com/matsuolab/lecture-ai-engineering-2026.git
-git fetch upstream --tags
-git switch -c lec05 lec05-start
-uv sync --frozen
+AIE_QUESTION='In Lecture 02, what does LoRA freeze and what does it train? What does QLoRA add?'
+uv run python -m app.agent --full-context --trace "$AIE_QUESTION"
 ```
 
-## Exercises (30 Minutes)
+Record the answer, cited pages, and the final `[time]`, `[usage]`, and `[cost]` values in [answer.md](answer.md).
 
-### 1. List the Tools Visible to the Model
+Full context can also answer correctly. Examine the actual result without assuming failure. Record input-limit errors separately from cases where the input is accepted but the necessary evidence is not used.
+
+### STEP 2: Inspect the Search Results Alone
 
 ```bash
-uv run python -m app.agent --list-tools          # Lecture 03: tools registered directly as functions
-uv run python -m app.agent --mcp --list-tools    # Lecture 05: tools received from MCP servers
+uv run python -m app.retrieval "LoRA QLoRA difference"
 ```
 
-Neither command calls an LLM, so both work without an API key.
-The second starts the server (`app/mcp_server.py`) configured in `app/mcp_servers.json` as a subprocess and displays the names, descriptions, and arguments of its exposed tools.
+This retrieves up to 5 pages similar to the question without using an agent. It displays the lecture name, section, page title, PDF page number, and text.
 
-- Check that names have a **"server_name_" prefix**, as in `glossary_search_glossary`. This distinguishes tools with the same name on different servers
-- The descriptions come directly from the docstrings in `app/tools.py`. **Function tools and MCP tools look the same to the model**
+- Do the results include pages supporting an answer, such as Lecture 02 / PDF p.52?
+- Can you distinguish pages that merely contain similar terms from pages that provide evidence for the answer?
 
-### 2. Use Them Through MCP from the Agent
+Open the materials JSON in the editor and search for a page ID, such as `lec02-main-p052`, to inspect that page's text.
+
+### STEP 3: Generate an Answer Using Search Results
 
 ```bash
-uv run python -m app.agent --mcp --trace "What are the 3 homework levels in the AIE2026 course?"
+uv run python -m app.agent --trace "$AIE_QUESTION"
 ```
 
-Compare the answer, tool names, and number of `requests` with Lecture 03 (without `--mcp`).
-Internally, `build_mcp_agent()` in `app/agent.py` reads the configuration file, starts the servers, and passes their tools to the agent.
+By default, the agent answers using its `search_materials(query)` tool. The model chooses the search terms and answers from the returned text.
 
-### 3. Expose One More Tool
+- Check the search terms and number of tool calls in `[tool call]`
+- Check whether each "Lecture N / PDF p.N" citation supports the explanation
+- Distinguish failure to retrieve the evidence from failure to use retrieved evidence correctly
 
-At `TODO(Lecture 05 exercise)` in `app/mcp_server.py`, expose `get_lecture_summary` through MCP too (one line, written the same way as for `search_glossary`).
+For some questions, p.52 alone provides all the evidence needed. Increasing the number of cited pages is not a goal in itself.
+
+### STEP 4: Answer the Same Question with Tree and Graph
+
+Tree selects pages by following the table of contents.
 
 ```bash
-uv run python -m app.agent --mcp --list-tools
-uv run python -m app.agent --mcp --trace "What will we learn in Lecture 02?"
-uv run pytest -q
+uv run python -m app.agent --tree --trace "$AIE_QUESTION"
 ```
 
-Check that `glossary_get_lecture_summary` appears in `--list-tools` and is called in `--trace`.
-If you created `make_quiz` in Lecture 03, you can expose it in the same way.
+It uses only `browse_tree(node_id)`. The first call retrieves a lecture list; subsequent calls use the returned IDs to navigate to lectures, sections, and pages. Page entries in `children` contain only the first sentence; specifying a page ID returns its full text in `node.content`. For a page without sentence-ending punctuation, the preview is its first line. Use the trace to inspect the table-of-contents choices and the pages whose full text was retrieved.
 
-### 4. Add a Ready-Made External Tool Through Configuration Alone
-
-Add the publicly available **fetch server** (retrieves a URL's page and returns it as Markdown) to `app/mcp_servers.json`. No code is needed.
-
-```json
-{
-  "mcpServers": {
-    "glossary": {
-      "command": "uv",
-      "args": ["run", "python", "-m", "app.mcp_server"]
-    },
-    "fetch": {
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    }
-  }
-}
-```
+Graph finds starting points through vector search and expands to nearby candidates.
 
 ```bash
-uv run python -m app.agent --mcp --list-tools
-uv run python -m app.agent --mcp --trace "Summarize the opening of https://modelcontextprotocol.io/ in 3 lines of English"
+uv run python -m app.agent --graph --trace "$AIE_QUESTION"
 ```
 
-- The first startup takes about 10 seconds because `uvx` downloads the server
-- If `fetch_fetch({'url': ...})` appears in `--trace`, your **Codespace is actually accessing the URL chosen by the model**. Before adding an external tool, understand where it sends data and what it sends
-- `INSTRUCTIONS` assumes glossary use. If fetch is not called for a URL question, try adding a line such as "When given a URL, use fetch to read its contents" to `INSTRUCTIONS`
+It uses `search_graph(query)`. Starting from the top 3 search results, it follows relationships through adjacent pages and shared terms for up to 2 hops, returning text from up to 10 pages including the starting points. Moving from a page to an adjacent page is 1 hop; moving from a page through a term to another page is 2 hops. Shared terms do not guarantee that a page contains the answer.
 
-### 5. Submit
+Record how Tree and Graph affect the answer, cited evidence, time, and input token count.
 
-Fill in `lectures/05/answer.md` and open a PR from `lec05` to `main` in your own fork.
+### STEP 5: Compare and Record Results
+
+Summarize each method's results in the table in `answer.md`.
+
+| Output | Meaning |
+|---|---|
+| `[time]` | Seconds until the answer is complete, including retrieval and embedding |
+| `[usage]` | Total input and output tokens and model responses for one question |
+| `[cost]` | Estimated generation API cost. Excludes query embedding and index construction |
+
+If the cost is "Unavailable", record that as shown; do not treat it as zero.
+
+If you have time, repeat the comparison with a different question. Keep separate results for each question when reporting several.
+
+| Type | Example question | Evidence to check |
+|---|---|---|
+| Multiple pages | In the Lecture 03 examples, how does compaction differ from memory across sessions? Do all daily notes go into long-term memory? | Lecture 03 / PDF p.13, 39, 40 |
+| Absent from the materials | What are the measured average response time and accuracy of the RAG system we just built? | The lecture materials contain no measurement logs for this system |
+
+### STEP 6: Submit and Stop Codespaces
+
+Write the exercise results in `lectures/05/answer.md` and open a PR from your working branch to `main` in your own fork. **Check that the base repository is your own fork.**
+
+```bash
+git add lectures/05/answer.md
+# If you changed code, git add those files too
+git commit -m "Lecture 05 exercises and homework"
+git push -u origin lec05
+```
+
+Keep API keys and experimental search databases out of commits. Finally, select "Codespaces" at the bottom left → **Stop Current Codespace**.
 
 ## Homework (Complete Any One Level)
 
+Choose Basic, Implementation, or Advanced. **Completing any one level is sufficient.** In the "Homework" section of the same `answer.md`, record your level, what you did, results, and observations or questions.
+
 | Level | Task |
 |---|---|
-| Basic | Start the server with `uv run python -m app.mcp_server --http`, replace `glossary` in the configuration file with `{"url": "http://127.0.0.1:8000/mcp"}`, and ask the same question. Record how startup, processes, and ports differ between stdio and Streamable HTTP. Also rewrite a tool docstring and compare changes in `--list-tools` and tool calls |
-| Implementation | Add Lecture 03's `make_quiz` (or a new tool if you did not create it) to the MCP server and add tests using TestModel in `tests/test_mcp_server.py`. Validate argument ranges (for example, return a clear message for a nonexistent session), and use `--trace` to check how errors through MCP appear to the model |
-| Advanced | Use the same glossary server from **Copilot Chat** (VS Code's MCP client; instructions below). Verify that "one server can be used across clients" and compare with use from the agent (`app/agent.py`). Record differences in the steps leading to tool calls (who starts the server, whether a person approves calls beforehand, and how results appear) |
+| Basic | Change one instruction, tool description, or search result count. Run the same question with `--trace` and compare before and after |
+| Implementation | Improve one part of retrieval, such as including the text of adjacent pages with search results, and compare it with normal retrieval |
+| Advanced | Improve Tree, Graph, or a combination of methods. Choose a question to solve and compare with basic RAG using the same question |
 
-### How to Approach the Advanced Homework
+### How to Approach the Basic Level
 
-Copilot Chat is an MCP client in VS Code. Place `.vscode/mcp.json` in the repository to use the server's tools in Chat's **Agent** mode (the format uses `servers`, rather than `mcpServers` as in `app/mcp_servers.json`. Commands run in the working folder, which is the repository root).
+Change only one of the following at a time:
 
-```json
-{
-  "servers": {
-    "aie-glossary": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["run", "python", "-m", "app.mcp_server"]
-    }
-  }
-}
-```
+- `INSTRUCTIONS` in `app/agent.py`, or `TREE_INSTRUCTIONS` / `GRAPH_INSTRUCTIONS` when using Tree / Graph
+- A tool's docstring in `app/tools.py`
+- `RAG_TOP_K` in `app/config.py` (the number of results returned by normal vector search)
 
-1. Create the file above in VS Code in Codespaces. Click **Start** if it appears above `servers` (otherwise use the command palette: **MCP: List Servers** → `aie-glossary` → Start). The server starts inside your Codespace
-2. Open Copilot Chat and switch to **Agent** mode. Check that `search_glossary` from `aie-glossary` appears in the tools (🔧) list (also `get_lecture_summary` if you completed exercise 3)
-3. Ask "What are the 3 homework levels in AIE2026?". If asked for confirmation (**Continue**) before tool execution, allow it, and check whether the glossary tool is called and used in the answer
-4. In `answer.md`, record the tool call shown in Chat alongside the output from `uv run python -m app.agent --mcp --trace`
-5. You may include `.vscode/mcp.json` in the PR (do not put secrets such as API keys in it)
+Use the same question, model, and materials to check changes in tool selection, arguments, and call counts, as well as the answer and cited evidence. Record time, token counts, and estimated generation API cost too. These changes alone do not require rebuilding the index.
 
-- Copilot Free supports Agent mode and MCP. However, chat has a monthly limit, so keep your trials to a few attempts
-- Copilot managed by a company or school (Business / Enterprise) may have MCP disabled by organization policy. Try with a personal account
+### How to Approach the Implementation Level
 
-## Notes
+For example, modify `app/retrieval.py` to return the text of the page immediately before and after each retrieved page.
 
-- An MCP server is a **program that executes code**. Do not add servers from unknown sources to your configuration file
-- The fetch server accesses URLs chosen by the model. Do not pass internal company URLs or URLs containing personal information
-- More tools mean more descriptions sent to the model, increasing tokens per call and making tool selection harder. Use `--list-tools` to keep track of how many tools you provide
+1. Use the page metadata from `load_pages()` to find adjacent pages within the same `document_id` as the search result
+2. Avoid returning duplicate pages, and include both text and citation metadata
+3. Run the same question as before the change. Identify examples where necessary evidence was added and examples where unnecessary information increased
+4. Record your implementation, comparison results, and remaining failures
 
-## References
+You may instead improve retrieval in another way suited to your use case. Changing only the retrieval range, without changing the text or embedding settings, does not require rebuilding the index.
 
-- Official MCP site: https://modelcontextprotocol.io/
-- Pydantic AI MCP client: https://pydantic.dev/docs/ai/mcp/client/
-- MCP Python SDK (how to write servers): https://github.com/modelcontextprotocol/python-sdk
-- Public MCP servers: https://github.com/modelcontextprotocol/servers
-- Using MCP servers in VS Code: https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+If you change the materials' text or embedding settings, follow the [README instructions](../../README.md#lecture-05-retrieval): use `AIE_RAG_DB` to select an experimental database before building the index.
+
+### How to Approach the Advanced Level
+
+1. Choose a question you want the system to answer. First identify pages supporting the answer, such as an explanation spanning sections or a comparison of related terms
+2. Design the retrieval method. Options include how Tree returns the table of contents and preview text; Graph relationship types, hop counts, and candidate selection; or combining retrieval methods
+3. Explain your data structure, storage, and retrieval method, along with your reasons for choosing them
+4. Compare with basic RAG using the same question, model, and target materials. Record answers, cited evidence, time, token counts, and estimated generation API cost
+5. Give examples of improvements and failures, and discuss whether you would adopt the method for your use case
+
+You may use AI tools. Describe what you ran and verified yourself. Follow the course announcements for the deadline.
+
+## Troubleshooting
+
+| Symptom | What to check |
+|---|---|
+| `GEMINI_API_KEY` is missing | Did you register the Codespaces secret? If added after startup, did you restart Codespaces? |
+| "Search database not found" | The localized materials, index, and runtime update are pending in this release. After that update is available, get it and check that `data/rag_data/index.sqlite3` exists. If `AIE_RAG_DB` is set, check that destination |
+| API rate limit reached | Wait as directed by the message, then retry |
+| The question is empty | If you opened another terminal, set `AIE_QUESTION` again |
+| Search results do not answer the question | Try search alone with `app.retrieval` and check the search terms, target materials, and result count |
+| Full context exceeds the input limit | Record the error and execution settings, then try another method. Mark any unrun entries accordingly |
+
+Results can vary for the same question. Avoid judging an entire method from one success or failure; check which evidence was retrieved and used.

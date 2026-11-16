@@ -1,5 +1,7 @@
 # Lecture 02 Reference Results (Run by the Instructor on a T4)
 
+These reference results come from the original Japanese notebook. Results for the translated exercise have not been remeasured.
+
 If you cannot get a GPU or cannot finish training in time, follow **4b** of the notebook (`notebooks/lora_format_tuning.ipynb`) and use these results for comparison and discussion.
 When submitting, set `executed_training_myself` in section 7 to `False` and describe in `lectures/02/answer.md` how far you ran the notebook yourself.
 
