@@ -23,27 +23,60 @@ DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何�
 
 def ask(question: str) -> str:
     client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
+    response = client.models.generate_content(model=MODEL, contents=question, config={"temperature": 0.8})
 
     # TODO(第1回 演習): response.usage_metadata から
     #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
+    usage = response.usage_metadata
+    if usage is not None:
+        print(f"[usage] 入力トークン数: {usage.prompt_token_count}, 出力トークン数: {usage.candidates_token_count}")
 
     return response.text
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    # parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    # parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
+    # args = parser.parse_args()
+
+    # print(f"[model] {MODEL}")
+    # print(f"[質問] {args.question}\n")
+    # try:
+    #     print(ask(args.question))
+    # except errors.APIError as e:
+    #     print(api_error_message(e.code, e.message))
+    #     raise SystemExit(1)
+    parser = argparse.ArgumentParser(description="会話しながらLLMに質問する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
     args = parser.parse_args()
 
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
+    client = genai.Client(api_key=get_api_key())
+    chat = client.chats.create(
+        model=MODEL,
+        config={"temperature": 0.8, "seed": 12345},
+    )
+
+    question = args.question
     try:
-        print(ask(args.question))
+        while True:
+            print(f"\n[質問]{question}")
+            response = chat.send_message(question)
+            print(response.text)
+
+            usage = response.usage_metadata
+            if usage is not None:
+                print(f"[usage] 入力トークン数: {usage.prompt_token_count}, 出力トークン数: {usage.candidates_token_count}")
+
+            question = input("\n次の質問（終了するにはq）: ").strip()
+            if question.lower() in {"q", "quit", "exit"}:
+                break
+            if not question:
+                continue
+
     except errors.APIError as e:
         print(api_error_message(e.code, e.message))
         raise SystemExit(1)
-
 
 if __name__ == "__main__":
     main()
