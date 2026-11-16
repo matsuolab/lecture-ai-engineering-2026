@@ -89,7 +89,11 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 
 ```bash
 AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.5-flash-lite uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.8-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.1-pro-preview uv run python -m app.ask "LoRAとは何ですか？"
 ```
+AIE_MODEL=gemini-3.5-pro uv run python -m app.ask "LoRAとは何ですか？"
 
 ### 呼び出すモデルについての補足
 モデルの仕様は更新されることがあります。  
