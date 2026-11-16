@@ -6,6 +6,7 @@ __pycache__/
 # 秘密情報はコミットしない（APIキーは Codespaces secret で渡す）
 .env
 .env.*
+.ask_history.json
 
 # 個人の学習ログ（第3回の宿題で作成）は共有しない
 learning_log/
