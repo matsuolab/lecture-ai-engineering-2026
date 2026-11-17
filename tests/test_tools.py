@@ -46,3 +46,15 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_make_quiz_returns_question_and_answer_for_existing_lecture():
+    quiz = json.loads(tools.make_quiz(1))
+    assert "question" in quiz
+    assert "answer" in quiz
+    assert quiz["answer"]
+
+
+def test_make_quiz_reports_no_terms_for_missing_lecture():
+    result = tools.make_quiz(99)
+    assert "第99回の用語はまだありません" in result
