@@ -1,0 +1,28 @@
+{
+  "name": "AIE2026",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    // 第3回の Pi デモ・発展課題用
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" }
+  },
+  "containerEnv": {
+    "PYDANTIC_AI_NO_BANNER": "1",
+    "UV_LINK_MODE": "copy"
+  },
+  // Codespaces 作成時に登録を促すシークレット
+  "secrets": {
+    "GEMINI_API_KEY": {
+      "description": "Google AI Studio で発行した Gemini API キー",
+      "documentationUrl": "https://aistudio.google.com/apikey"
+    }
+  },
+  "postCreateCommand": "pipx install uv && uv sync --frozen",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "GitHub.copilot-chat"],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
+      }
+    }
+  }
+}

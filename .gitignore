@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# 秘密情報はコミットしない（APIキーは Codespaces secret で渡す）
+.env
+.env.*
+
+# 個人の学習ログ（第3回の宿題で作成）は共有しない
+learning_log/
+
+# macOS
+.DS_Store
+
+# 第5回: 資料から再生成する検索DB
+.cache/rag/
