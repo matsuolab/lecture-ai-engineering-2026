@@ -88,7 +88,14 @@ GitHub の自分の fork で、`lec01` → `main` の PR を作成します。**
 モデルの切り替え例：
 
 ```bash
-AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
+AIE_MODEL=gemini-3.5-flash uv run python -m app.ask --repeat 3 "LoRAとは何ですか？"
 ```
 
-temperature を変えるには、`generate_content` の `config` 引数を調べてみましょう。
+既定で同じ質問を3回実行します。temperature を変えて比較する場合：
+
+```bash
+uv run python -m app.ask --temperature 0.2 "LoRAとは何ですか？"
+uv run python -m app.ask --temperature 0.8 "LoRAとは何ですか？"
+```
+
+必要なら `--repeat` で実行回数を変更できます。
