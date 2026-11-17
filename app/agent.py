@@ -25,7 +25,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
-from app import agent
+from app import tools
 from app.config import MODEL, api_error_message, get_api_key
 
 INSTRUCTIONS = """\
