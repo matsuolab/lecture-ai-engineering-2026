@@ -37,6 +37,7 @@ from app.config import MODEL, api_error_message, get_api_key
 INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
 - 対象は第1〜3回の本講義資料。講義内容に答える前に必ず search_materials を使う。
+- 確認問題を求められても make_quiz は使わない。
 - 複数の話題や回を組み合わせる質問では、必要に応じて検索を分けて根拠を集める。
 - 回答は取得した本文が裏付ける範囲に限定し、知識だけで穴埋めしない。
 - 距離は正答の確率ではない。資料が返っても答えがなければ、確認できないと伝える。
@@ -80,8 +81,7 @@ FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
 agent = Agent(instructions=INSTRUCTIONS)
 agent.tool_plain(tools.search_materials)
-
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
