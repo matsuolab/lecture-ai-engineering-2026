@@ -180,6 +180,7 @@ def main() -> None:
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--mcp", action="store_true", help="第5回: ツールを MCP サーバー（app/mcp_servers.json）から受け取る")
     modes.add_argument("--graph", action="store_true", help="検索結果からグラフをたどり、候補ページを読んで答える")
+    modes.add_argument("--graph2", action="store_true", help="宿題: 観点ごとに入口を作るグラフ検索で答える")
     modes.add_argument("--tree", action="store_true", help="目次をたどり、必要なページを読んで答える")
     modes.add_argument("--full-context", action="store_true", help="検索せず、lectures.jsonの全資料を一度に渡す")
     parser.add_argument("--list-tools", action="store_true", help="モデルに見えるツール一覧を表示して終了する（APIキー不要）")
@@ -191,6 +192,12 @@ def main() -> None:
         mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])
     elif args.graph:
         mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[tools.search_graph])
+    elif args.graph2:
+        graph2_instructions = GRAPH_INSTRUCTIONS.replace("search_graph", "search_graph2") + (
+            "\n- search_graph2 の queries には、質問の観点を1〜3個の短い検索語で渡す。"
+            "比較の質問では、比べる対象ごとに分ける。"
+        )
+        mode = target.override(instructions=graph2_instructions, tools=[tools.search_graph2])    
     with mode:
         if args.list_tools:
             if args.full_context:

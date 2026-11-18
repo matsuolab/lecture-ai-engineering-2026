@@ -126,3 +126,19 @@ def search_graph(query: str) -> str:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
     except APIError as e:
         return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
+def search_graph2(queries: list[str]) -> str:
+    """質問を観点ごとに分けて資料を検索し、前後ページと質問の用語に関係するページを、質問に近い順に返す。
+
+    queriesには、質問に含まれる観点を1〜3個の短い検索語で指定する。
+    比較の質問では、比べる対象ごとに分ける（例: ["RAG", "ファインチューニング"]）。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.graph2 import search_graph2 as search
+
+    try:
+        return json.dumps(search(queries), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
