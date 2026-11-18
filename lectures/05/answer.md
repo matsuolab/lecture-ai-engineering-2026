@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|---|
 | 全文投入 |Correct: LoRA freezes the original weights and trains small adapter matrices. QLoRA adds 4-bit quantization of the original weights|Lecture 2, p.52 for freezing and training; pp.51–52 for quantization.|3.04|117,023/172|1|0.035537|
 | ベクトル検索 |Correct on all three points. The search returned p.52 as its first result|Lecture 2, pp.51–52. Page 52 identifies the fixed weights W and the trainable matrices A and B.|2.25|3,025/209|2|0.001430 |
-| Tree |Correct on all three points. The agent opened both relevant pages before answering|Lecture 2, pp.51–52. Page 51 compares LoRA and QLoRA; p.52 explains which weights are frozen, trained, or quantized|9.94|13,694/357|6|0.005001|
+| Tree |Correct on all three points. The agent opened both relevant pages before answering|Lecture 2, pp.51–52. Page 51 compares LoRA and QLoRA; p.52 explains which weights are frozen, trained, or quantized|6.94|13,694/357|6|0.005001|
 | Graph |Correct: W stays fixed, A and B are trained, and QLoRA quantizes the original weights to 4 bits|Lecture 2, p.52 for LoRA and pp.51–52 for QLoRA. The trace showed p.52 as a starting page for the graph search|3.96|5,443/187|2|0.002100|
 
 <!-- 未実行・算定不可の場合は、その旨を書いてください。質問を追加した場合は、質問ごとに表を分けてください。 -->
