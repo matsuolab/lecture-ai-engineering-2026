@@ -31,7 +31,7 @@ from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
 from app import tools
-from app.retrieval import run_full_context
+from app.retrieval import browse_tree, run_full_context, search_graph
 from app.config import MODEL, api_error_message, get_api_key
 
 INSTRUCTIONS = """\
@@ -44,6 +44,34 @@ INSTRUCTIONS = """\
 """
 
 FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
+
+RAG_INSTRUCTIONS = """\
+あなたは講義資料に基づいて質問に答える学習支援エージェントです。
+- search_materials を使い、質問に関係する講義ページを検索する。
+- 取得した本文を根拠に回答し、根拠となる講義回とPDFページ番号を示す。
+- 検索結果に答えがない場合は、推測せず見つからなかったと伝える。
+"""
+
+FULL_CONTEXT_INSTRUCTIONS = """\
+あなたは講義資料に基づいて質問に答える学習支援エージェントです。
+- 資料に書かれている内容だけを根拠に回答し、講義回とPDFページ番号を示す。
+- 資料に答えがない場合は、推測せず見つからなかったと伝える。
+"""
+
+TREE_INSTRUCTIONS = """\
+あなたは講義資料を案内する学習支援エージェントです。
+- browse_tree だけを使い、まず目次を確認してから必要な講義・章・ページへ進む。
+- ページ候補の先頭文で関連性を判断し、必要なページのIDを指定して本文を取得する。
+- 回答は取得した本文に基づけ、根拠となる講義回とPDFページ番号を示す。
+- 根拠が見つからない場合は、推測せずその旨を伝える。
+"""
+
+GRAPH_INSTRUCTIONS = """\
+あなたは講義資料を案内する学習支援エージェントです。
+- search_graph を使い、質問に関連するページとその周辺ページを取得する。
+- 返された本文に基づいて回答し、根拠となる講義回とPDFページ番号を示す。
+- 根拠が見つからない場合は、推測せずその旨を伝える。
+"""
 
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
@@ -116,7 +144,7 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
                 print(f"[tool call]   {part.tool_name}({part.args})")
             elif isinstance(part, ToolReturnPart):
                 if part.tool_name == "browse_tree":
-                    data = json.loads(part.content)
+                    data = part.content if isinstance(part.content, dict) else json.loads(part.content)
                     if "error" in data:
                         print(f"[tool return] {part.tool_name} -> {data['error']}")
                     else:
@@ -143,6 +171,34 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
     print(f"[cost] 生成APIの推定コスト: {cost}（埋め込み・索引構築分は含まない）")
 
 
+def run_query(
+    target: Agent,
+    question: str,
+    model,
+    *,
+    full_context: bool = False,
+    tree: bool = False,
+    graph: bool = False,
+    mcp: bool = False,
+):
+    """選択した取得方式で回答を実行する。"""
+    if full_context:
+        return run_full_context(
+            target, question, model, FULL_CONTEXT_INSTRUCTIONS, FULL_CONTEXT_PROMPT
+        )
+
+    mode = nullcontext()
+    if tree:
+        mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[browse_tree])
+    elif graph:
+        mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[search_graph])
+    elif not mcp:
+        mode = target.override(instructions=RAG_INSTRUCTIONS, tools=[tools.search_materials])
+
+    with mode:
+        return target.run_sync(question, model=model)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
@@ -156,33 +212,45 @@ def main() -> None:
     args = parser.parse_args()
 
     target = build_mcp_agent() if args.mcp else agent
-    mode = nullcontext()
-    if args.tree:
-        mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])
-    elif args.graph:
-        mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[tools.search_graph])
-    with mode:
-        if args.list_tools:
-            if args.full_context:
-                with target.override(tools=[]):
-                    print_tools(target)
-            else:
+    if args.list_tools:
+        if args.full_context:
+            with target.override(tools=[]):
                 print_tools(target)
-            return
-        if not args.question:
-            parser.error("質問を指定してください")
+        else:
+            mode = nullcontext()
+            if args.tree:
+                mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[browse_tree])
+            elif args.graph:
+                mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[search_graph])
+            elif not args.mcp:
+                mode = target.override(instructions=RAG_INSTRUCTIONS, tools=[tools.search_materials])
+            with mode:
+                print_tools(target)
+        return
+    if not args.question:
+        parser.error("質問を指定してください")
 
     print(f"[model] {MODEL}")
     if args.mcp:
         print("[tools] MCP サーバー（app/mcp_servers.json）")
+    started_at = perf_counter()
     try:
-        result = target.run_sync(args.question, model=build_model())
+        result = run_query(
+            target,
+            args.question,
+            build_model(),
+            full_context=args.full_context,
+            tree=args.tree,
+            graph=args.graph,
+            mcp=args.mcp,
+        )
     except ModelHTTPError as e:
         print(api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
+    elapsed_seconds = perf_counter() - started_at
     print(result.output)
     if args.trace:
-        print_trace(result)
+        print_trace(result, elapsed_seconds)
 
 
 if __name__ == "__main__":

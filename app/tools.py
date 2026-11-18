@@ -82,3 +82,10 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def search_materials(query: str) -> str:
+    """講義資料をベクトル検索し、回答の根拠になるページを返す。"""
+    from app.retrieval import search
+
+    return json.dumps({"results": search(query)}, ensure_ascii=False)
