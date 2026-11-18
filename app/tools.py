@@ -10,6 +10,8 @@ from datetime import datetime
 from functools import cache
 from pathlib import Path
 
+from app.config import api_error_message
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
@@ -82,47 +84,48 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def make_quiz(lecture: int) -> str:
-    """指定した回の用語から1つ選び、意味を尋ねる確認問題と答えを返す。
+def search_materials(query: str) -> str:
+    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
 
-    「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う。
+    queryに調べたい内容を指定する。
     """
-    terms = [term for term in load_glossary() if term["lecture"] == lecture]
-    if not terms:
-        return f"第{lecture}回の用語は用語集にありません。"
+    from google.genai.errors import APIError
+    import sqlite3
+    from app.retrieval import search
 
-    term = random.choice(terms)
-    return json.dumps(
-        {
-            "question": f"「{term['term']}」の意味は？",
-            "answer": term["definition"],
-        },
-        ensure_ascii=False,
-    )
+    try:
+        return json.dumps({"results": search(query)}, ensure_ascii=False)
+    except (ValueError, FileNotFoundError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code), "results": []}, ensure_ascii=False)
 
 
-def save_learning_log(
-    question: str,
-    answer: str,
-    quiz_lecture: int | None = None,
-    quiz_content: str | None = None,
-) -> str:
-    """利用者がCLIで保存を承認した会話ログを日別JSONLに追記する。
+def browse_tree(node_id: str | None = None) -> str:
+    """目次とページの先頭文を返す。ページIDを指定すると全文を返す。
 
-    クイズを作成した場合は quiz_lecture と quiz_content も指定する。
+    最初はnode_idを省略する。続いて返されたIDを指定して目次をたどる。
     """
-    now = datetime.now().astimezone()
-    entry = {
-        "timestamp": now.isoformat(),
-        "question": question,
-        "answer": answer,
-    }
-    if quiz_lecture is not None and quiz_content is not None:
-        entry["quiz"] = f"クイズ作成：lecture{quiz_lecture} {quiz_content}"
+    from app.retrieval import browse_tree as browse
 
-    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_path = LEARNING_LOG_DIR / f"{now:%Y-%m-%d}.jsonl"
-    with log_path.open("a", encoding="utf-8") as log_file:
-        log_file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    try:
+        return json.dumps(browse(node_id), ensure_ascii=False)
+    except (ValueError, OSError) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
 
-    return f"{log_path.name} に会話ログを保存しました。"
+
+def search_graph(query: str) -> str:
+    """資料を検索し、前後ページ・共通用語をたどって関連ページの本文と引用情報を返す。
+
+    queryに調べたい内容を指定する。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.retrieval import search_graph as search
+
+    try:
+        return json.dumps(search(query), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
