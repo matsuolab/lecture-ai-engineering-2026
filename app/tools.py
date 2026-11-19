@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
@@ -69,6 +70,25 @@ def search_glossary(query: str) -> str:
     )
 
 
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から1つ選び、確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、講義内容の復習問題を求められたときに使う。
+    """
+    terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語が用語集に見つかりませんでした。"
+
+    term = random.choice(terms)
+    return json.dumps(
+        {
+            "question": f"「{term['term']}」の意味は？",
+            "answer": term["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
@@ -82,9 +102,12 @@ def get_lecture_summary(lecture: int) -> str:
 
 
 def search_materials(query: str) -> str:
-    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
+    """第1〜3回の講義資料を検索するツール。
 
-    queryに調べたい内容を指定する。
+    AI技術について質問されたら使用する。
+    質問に複数の技術用語が含まれている場合は、
+    用語ごとに分けて検索すること。
+    queryには原則として1つの技術用語を指定する。
     """
     from google.genai.errors import APIError
     import sqlite3
