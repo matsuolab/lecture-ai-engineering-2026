@@ -1,0 +1,191 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 15,
+    "generation_seconds": 47.022,
+    "max_new_tokens": 256,
+    "outputs_reaching_limit": 0
+  },
+  "rows": [
+    {
+      "id": "lora_in_glossary",
+      "group": "in_glossary",
+      "term_id": "lora",
+      "question": "LoRAの意味を教えてください。",
+      "reference": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "rubric": "Base weights stay frozen; small low-rank matrices are trained.",
+      "answer": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "seconds": 4.291,
+      "output_tokens": 78,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "lora_reworded",
+      "group": "reworded",
+      "term_id": "lora",
+      "question": "元のモデルの重みを固定したまま、小さな行列だけを学習する方法を説明してください。",
+      "reference": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "rubric": "Base weights stay frozen; small low-rank matrices are trained.",
+      "answer": "モデルの重みを固定したまま、小さな学習データでモデルを成長させる手法。固定した重みをメモリに載せ、小さな行列でパラメータを更新し、更新した重みをモデルに戻す。少ないデータでモデルが成長し、さらにもっと小さなデータでさらに成長させる。本講座の第2回演習では固定した重みをモデルに戻すため、必要な最小データでモデルを成長させる。",
+      "seconds": 5.062,
+      "output_tokens": 90,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "qlora_in_glossary",
+      "group": "in_glossary",
+      "term_id": "qlora",
+      "question": "QLoRAの意味を教えてください。",
+      "reference": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "rubric": "Quantizes base weights to save memory and trains LoRA adapters.",
+      "answer": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "seconds": 4.077,
+      "output_tokens": 73,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "qlora_reworded",
+      "group": "reworded",
+      "term_id": "qlora",
+      "question": "ベースモデルを4ビットで保持しながらLoRAで追加学習する方法を説明してください。",
+      "reference": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "rubric": "Quantizes base weights to save memory and trains LoRA adapters.",
+      "answer": "学習する行列の大きさを2ビットから1ビットに減らす（例：64×64から40×40）。LoRAで必要なパラメータは行列の積の項で、行列の大きさが減るほどパラメータが減り、保存能と更新能のバランスが上がる。本講座の第2回演習ではモデルが4ビットで保存できるため、アダプタは40×40の行列で構成し、学習は64×64から40×40へLoRAで進む。",
+      "seconds": 6.719,
+      "output_tokens": 121,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "learning-rate_in_glossary",
+      "group": "in_glossary",
+      "term_id": "learning-rate",
+      "question": "学習率の意味を教えてください。",
+      "reference": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。",
+      "rubric": "Controls update size; excessively large values can destabilize training.",
+      "answer": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。",
+      "seconds": 2.126,
+      "output_tokens": 38,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "learning-rate_reworded",
+      "group": "reworded",
+      "term_id": "learning-rate",
+      "question": "1回の更新でパラメータを動かす大きさを決める設定と、大きすぎる場合の問題を説明してください。",
+      "reference": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。",
+      "rubric": "Controls update size; excessively large values can destabilize training.",
+      "answer": "学習率を指定する設定ファイル（Pydantic AIの LoraConfig の学習率）や、Hugging Faceの setup.cfg/config.jsonなどで決める。大きいほど1回の更新でパラメータが動く多様になるが、同じ入力で同じ出力を得られないデータや、評価が不安定になる。",
+      "seconds": 3.822,
+      "output_tokens": 69,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "epoch_in_glossary",
+      "group": "in_glossary",
+      "term_id": "epoch",
+      "question": "エポックの意味を教えてください。",
+      "reference": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。",
+      "rubric": "One pass through all training data; too many passes can cause overfitting.",
+      "answer": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。",
+      "seconds": 1.507,
+      "output_tokens": 27,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "epoch_reworded",
+      "group": "reworded",
+      "term_id": "epoch",
+      "question": "学習データ全体を一度使い終えることを何と呼び、その回数を増やしすぎると何が起こりやすいですか。",
+      "reference": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。",
+      "rubric": "One pass through all training data; too many passes can cause overfitting.",
+      "answer": "过头学習（過学習）。すべての入力に同じ出力を返すモデルを学習させるほど出力が安定しやすく、検証データで検出しやすい。モデルをもっともらしく作るため、学習データに全てを入れるのが一般的。",
+      "seconds": 2.711,
+      "output_tokens": 49,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "overfitting_in_glossary",
+      "group": "in_glossary",
+      "term_id": "overfitting",
+      "question": "過学習の意味を教えてください。",
+      "reference": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "rubric": "Fits training data excessively and performs worse on unseen inputs.",
+      "answer": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "seconds": 1.831,
+      "output_tokens": 33,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "overfitting_reworded",
+      "group": "reworded",
+      "term_id": "overfitting",
+      "question": "学習に使ったデータにはよく答えるのに、新しい入力では性能が下がる状態を説明してください。",
+      "reference": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "rubric": "Fits training data excessively and performs worse on unseen inputs.",
+      "answer": "学習したモデルが未知の入力に合うようになり、実際の出力と実際の結果が異なるほど性能が落ちる状態。モデルが覚えているのは学習したデータに固有の振る舞い（ツールの呼び分け、過去の回答の続き、過去の質問の続きなど）なので、新しい入力に当てはめるのが難しい。",
+      "seconds": 3.897,
+      "output_tokens": 70,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "quantization_in_glossary",
+      "group": "in_glossary",
+      "term_id": "quantization",
+      "question": "量子化の意味を教えてください。",
+      "reference": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "rubric": "Uses fewer bits to reduce memory; accuracy may decrease.",
+      "answer": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "seconds": 2.165,
+      "output_tokens": 39,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "quantization_reworded",
+      "group": "reworded",
+      "term_id": "quantization",
+      "question": "モデルの重みを少ないビット数で表現する目的と、精度への影響を説明してください。",
+      "reference": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "rubric": "Uses fewer bits to reduce memory; accuracy may decrease.",
+      "answer": "同じ入力に使うGPUメモリや計算資源を減らすための手法。精度は少し下がることがある。",
+      "seconds": 1.308,
+      "output_tokens": 23,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "outside_dpo",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "DPOの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "BaseChatのDPO（指令-followingをツールで学習する）の仕組み。Geminiのモデルをツールで読み込むことで、指示された質問に実際に回答するよう学習させる。モデルが知らないこと（ツールが存在するか、どう呼ぶか）をデータで補完させる。",
+      "seconds": 3.563,
+      "output_tokens": 63,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "outside_moe",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "MoEの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "モデルの重みを少ないノルマで複数のベクトル（mつもの）を選ぶこと。必要なGPUメモリと出力品質を調整できる。Pydantic AIでは MoEConnector で扱える。",
+      "seconds": 2.444,
+      "output_tokens": 44,
+      "reached_max_new_tokens": false
+    },
+    {
+      "id": "outside_bpe",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "BPEの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "モデルの出力を finer の分辨率で切り分ける手法。分辨率を増やしすぎると出力が不安定になる。",
+      "seconds": 1.499,
+      "output_tokens": 26,
+      "reached_max_new_tokens": false
+    }
+  ]
+}

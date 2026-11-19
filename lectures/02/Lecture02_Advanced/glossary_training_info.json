@@ -1,0 +1,109 @@
+{
+  "config": {
+    "base_model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "seed": 42,
+    "num_train_epochs": 20,
+    "warmup_steps": 6,
+    "lr": 0.0002,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "max_seq_len": 512,
+    "max_new_tokens": 256,
+    "gen": {
+      "do_sample": false
+    },
+    "work_dir": "/content/qlora_lab",
+    "drive_dir": "/content/drive/MyDrive/aie2026/qlora_lab"
+  },
+  "training_examples": 58,
+  "validation_examples": 58,
+  "training_seconds": 374.437,
+  "global_steps": 160,
+  "epochs_completed": 20.0,
+  "mean_training_loss": 0.5848738271743059,
+  "last_logged_loss": 0.06689931750297547,
+  "loss_history": [
+    {
+      "step": 10,
+      "epoch": 1.2666666666666666,
+      "loss": 3.2048309326171873
+    },
+    {
+      "step": 20,
+      "epoch": 2.533333333333333,
+      "loss": 2.135610008239746
+    },
+    {
+      "step": 30,
+      "epoch": 3.8,
+      "loss": 1.5245195388793946
+    },
+    {
+      "step": 40,
+      "epoch": 5.0,
+      "loss": 0.9040406227111817
+    },
+    {
+      "step": 50,
+      "epoch": 6.266666666666667,
+      "loss": 0.46540131568908694
+    },
+    {
+      "step": 60,
+      "epoch": 7.533333333333333,
+      "loss": 0.23629395961761473
+    },
+    {
+      "step": 70,
+      "epoch": 8.8,
+      "loss": 0.156465482711792
+    },
+    {
+      "step": 80,
+      "epoch": 10.0,
+      "loss": 0.11950509548187256
+    },
+    {
+      "step": 90,
+      "epoch": 11.266666666666667,
+      "loss": 0.09736431837081909
+    },
+    {
+      "step": 100,
+      "epoch": 12.533333333333333,
+      "loss": 0.08383818864822387
+    },
+    {
+      "step": 110,
+      "epoch": 13.8,
+      "loss": 0.08137784600257873
+    },
+    {
+      "step": 120,
+      "epoch": 15.0,
+      "loss": 0.07545302510261535
+    },
+    {
+      "step": 130,
+      "epoch": 16.266666666666666,
+      "loss": 0.06926312446594238
+    },
+    {
+      "step": 140,
+      "epoch": 17.533333333333335,
+      "loss": 0.06993931531906128
+    },
+    {
+      "step": 150,
+      "epoch": 18.8,
+      "loss": 0.06717914342880249
+    },
+    {
+      "step": 160,
+      "epoch": 20.0,
+      "loss": 0.06689931750297547
+    }
+  ],
+  "executed_training_myself": true
+}

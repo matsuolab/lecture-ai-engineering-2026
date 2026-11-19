@@ -61,7 +61,15 @@ def browse_tree(node_id: str | None = None) -> dict:
         if node["kind"] == "page":
             info.update({key: value for key, value in pages[node["id"]].items() if key != "page_id"})
             if not full:
-                info["content"] = re.split(r"(?<=[。！？])|\n", info["content"].strip(), maxsplit=1)[0]
+                lines = [s.strip() for s in info["content"].splitlines() if s.strip()]
+                headings = {"".join(info[k].split()) for k in ("title", "section")}
+
+                def is_heading(line):
+                    text = re.sub(r"^\d+\s*/\s*\d+\s*", "", line)
+                    return not text or "".join(text.split()) in headings
+
+                preview = next((line for line in lines if not is_heading(line)), "")
+                info["content"] = preview[:120] or info["title"]
         return info
 
     remaining = [tree]
@@ -135,7 +143,27 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+
+        import os
+        if os.getenv("AIE_RAG_NEIGHBORS") != "1":
+            return hits
+
+        results = list(hits)
+        seen = {hit["page_id"] for hit in hits}
+        for hit in hits:
+            neighbors = db.execute("""
+                SELECT page_id, document_id, lecture, document_title,
+                       section, title, page, content
+                FROM chunks
+                WHERE document_id = ? AND page IN (?, ?)
+                ORDER BY page
+            """, (hit["document_id"], hit["page"] - 1, hit["page"] + 1))
+            for row in neighbors:
+                if row["page_id"] not in seen:
+                    results.append(dict(row))
+                    seen.add(row["page_id"])
+        return results
 
 
 def search_graph(query: str) -> dict:

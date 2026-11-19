@@ -1,0 +1,191 @@
+{
+  "summary": {
+    "label": "before_4bit",
+    "n": 15,
+    "generation_seconds": 277.383,
+    "max_new_tokens": 256,
+    "outputs_reaching_limit": 15
+  },
+  "rows": [
+    {
+      "id": "lora_in_glossary",
+      "group": "in_glossary",
+      "term_id": "lora",
+      "question": "LoRAの意味を教えてください。",
+      "reference": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "rubric": "Base weights stay frozen; small low-rank matrices are trained.",
+      "answer": "**LoRA** は、大規模言語モデル（LLM）や生成型 AI（Generative AI）において、**「LoRA（Learning to Rank）」** という用語を指します。\n\nこれは、モデルの**パラメータ（学習データ）を、より多くのデータセットから抽出して学習させる**技術です。\n\n### 主な特徴と仕組み\n\n1.  **学習目的**\n    *   従来の LLM は、すべての入力（テキスト）に対して同じように学習して、すべての文脈や知識を学習します。\n    *   LoRA は、**「特定の文脈（例：特定の質問やタスク）」に対して、より多くの知識や情報（データ）を学習する**ためです。\n    *   例：特定の質問に対して、より多くの情報（例：特定の専門知識や文脈）を学習する。\n\n2.  **学習プロセス**\n    *   LoRA は、モデルの**パラメータ**（学習データ）を、より多くのデータセットから抽出して学習させるためです。\n    *   従来の LLM は、すべての入力に対して同じように学習します。\n    *   LoRA は、特定の文脈に対して、より多くの知識",
+      "seconds": 17.386,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "lora_reworded",
+      "group": "reworded",
+      "term_id": "lora",
+      "question": "元のモデルの重みを固定したまま、小さな行列だけを学習する方法を説明してください。",
+      "reference": "事前学習済みの重みは固定したまま、重みの更新分を2つの小さな行列の積（低ランク行列）で表し、その小さな行列だけを学習するPEFT手法。学習するパラメータが少なく、学習結果（アダプタ）も小さいファイルで保存できる。本講座の第2回演習ではLoRAを扱う。",
+      "rubric": "Base weights stay frozen; small low-rank matrices are trained.",
+      "answer": "元のモデルの重みを固定（固定化）し、**「小さな行列だけを学習する」**というアプローチは、**「小規模なデータセット」や「非常に小さいモデルサイズ」**に対して非常に有効な方法です。\n\nこの方法の核心は、**「学習の速度（学習率）と計算コスト（計算量）」のバランス**にあります。\n\n### 1. 学習の速度（学習率）の向上\n元のモデルの重みを固定したまま学習する場合、学習は「元のモデルの重みを固定したまま」から始まります。\n*   **問題点**: 元のモデルの重みを固定したまま学習すると、学習は「元のモデルの重みを固定したまま」から始まります。\n*   **改善点**: 小さな行列だけを学習する際、学習率（学習速度）を大きくします。\n    *   元のモデルの重みを固定したまま学習する場合、学習は「元のモデルの重みを固定したまま」から始まります。\n    *   小さな行列だけを学習する際、学習率を大きくします。\n    *   これにより、学習が非常に速く進みます。\n\n### 2. 計算コストの削減\n*   **",
+      "seconds": 17.407,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "qlora_in_glossary",
+      "group": "in_glossary",
+      "term_id": "qlora",
+      "question": "QLoRAの意味を教えてください。",
+      "reference": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "rubric": "Quantizes base weights to save memory and trains LoRA adapters.",
+      "answer": "**QLoRA** は、**Qualit**（品質）と **LoRA**（Low-Rank Adaptation）を組み合わせた、**Llama 2**（または Llama 1.7）のモデルの一種です。\n\nこの名称は、モデルの**「品質（Quality）」**という観点から、**「LoRA（低秩適応）」**という手法によって設計されたためです。\n\n### 主な特徴と意味\n\n1.  **品質（Quality）の重視**\n    *   従来の Llama 2 モデルは、学習過程で「品質」を重視するのではなく、**「ロジック（Logic）」**を重視していました。\n    *   QLoRA は、学習過程で**「品質（Quality）」**を重視するよう設計されました。\n    *   結果として、QLoRA モデルは、**「ロジック（Logic）」よりも「品質（Quality）」**を重視する傾向があります。\n\n2.  **LoRA（低秩適応）の適用**\n    *   QLoRA は、**LoRA**という手法を適用しています。LoRA は、モデルの**「ロジック（Logic）」**",
+      "seconds": 17.433,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "qlora_reworded",
+      "group": "reworded",
+      "term_id": "qlora",
+      "question": "ベースモデルを4ビットで保持しながらLoRAで追加学習する方法を説明してください。",
+      "reference": "ベースモデルの重みを4ビットなどに量子化してメモリを節約したうえで、LoRAで学習する手法。より大きなモデルを小さなGPUで扱える。本講座の第2回演習ではモデルがGPUに載るためLoRAで学習し、4ビットで読み込んだときのメモリと出力の違いを発展で比べる。",
+      "rubric": "Quantizes base weights to save memory and trains LoRA adapters.",
+      "answer": "ベースモデルを 4 ビット（4-bit）で保持しながら LoRA（Linearly Addable Representations）を学習する手法は、**「LoRA によるハイブリッド学習（Hybrid Learning）」**と呼ばれます。\n\nこの方法の核心は、**「LoRA による特徴量の追加（LoRA 学習）」と「ベースモデルの固定（4-bit 保持）」**の両方を同時に実行すること**です**。\n\n以下に、具体的な手順や原理を解説します。\n\n### 1. 基本構成\nこの手法は、以下の 2 つのステップを組み合わせます。\n\n*   **ステップ 1: LoRA 学習**\n    *   特徴量（ベクトル）を 4 ビット（4-bit）のサイズに制限します。\n    *   学習データ（例：テキスト、画像、音声）に対して LoRA 学習を行います。\n    *   結果として、**LoRA 学習した特徴量**が、ベースモデルの**4-bit 固有特徴量**に追加されます。\n    *   結果として、**4-bit 固有特徴量 + LoRA 学習した特徴量**の組み合わせが、最終的な表示",
+      "seconds": 17.198,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "learning-rate_in_glossary",
+      "group": "in_glossary",
+      "term_id": "learning-rate",
+      "question": "学習率の意味を教えてください。",
+      "reference": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。",
+      "rubric": "Controls update size; excessively large values can destabilize training.",
+      "answer": "**学習率（Learning Rate）**とは、機械学習のモデルを「学習」する際に、**各ステップで、モデルが学習した結果にどれだけ影響を与えるか**を決定する**パラメータ**です。\n\n簡単に言うと、「学習する速度」や「学習の安定性」を調整する重要な要素です。\n\n### 学習率の役割\n学習率は、モデルがデータに対してどのように変化していくかを制御します。\n\n1.  **学習の速度（学習率の大小）**\n    *   **学習率が大きい場合**: 学習が**速く進み**ます。\n        *   例：モデルがデータに対して大きく変化すると、学習率が小さくなる。\n        *   結果：モデルが学習した結果に大きな影響を与え、**過学習（Overfitting）**のリスクが高まります。\n    *   **学習率が小さい場合**: 学習が**遅く進み**ます。\n        *   例：学習率が大きくなる。\n        *   結果：モデルが学習した結果に**影響を与えにくい**ため、**欠学習（Underfitting）**のリスクが高まります。\n\n2.  **学習の安定性（学習",
+      "seconds": 30.822,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "learning-rate_reworded",
+      "group": "reworded",
+      "term_id": "learning-rate",
+      "question": "1回の更新でパラメータを動かす大きさを決める設定と、大きすぎる場合の問題を説明してください。",
+      "reference": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。",
+      "rubric": "Controls update size; excessively large values can destabilize training.",
+      "answer": "ご質問ありがとうございます。1 つの更新で「パラメータの大きさを決める」設定と、その**「大きすぎる場合（過剰パラメータ）の問題」**について解説します。\n\n### 1. 1 つの更新でパラメータを動かす設定\n\n一般的に、API やサービスが「1 つの更新」で動作するよう設計されている場合、**「パラメータの大きさを決める」**設定は、**「パラメータのサイズ（長さ）を制限する」**設定と混同されがちです。\n\n*   **パラメータのサイズ（長さ）を制限する設定**：\n    *   例：`{id: 1, name: \"John\", age: 30}`\n    *   1 つの更新で、`id` だけ 1 つの値（例：`1`）を渡すように設定します。\n    *   結果：`{id: 1, name: \"John\", age: 30}` という 3 つの要素が、1 つの更新で渡されるため、**「パラメータのサイズを制限する」**設定が有効になります。\n    *",
+      "seconds": 19.881,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "epoch_in_glossary",
+      "group": "in_glossary",
+      "term_id": "epoch",
+      "question": "エポックの意味を教えてください。",
+      "reference": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。",
+      "rubric": "One pass through all training data; too many passes can cause overfitting.",
+      "answer": "**エポック（Epoch）**は、**「時代」や「時代の時代」**を指す言葉です。\n\n簡単に言うと、**「今」が「過去」から 100 年（または 1000 年）後の時代**を意味します。\n\n### 具体的な例\n\n*   **現在**：2024 年\n*   **100 年後**：2034 年\n*   **1000 年後**：2034 + 1000 = **2034**（2034 年）\n\nつまり、2034 年という「1000 年後」の時代を「エポック」と呼びます。\n\n### 意味の広がり\n\n「エポック」という言葉は、単に「時代」を指すだけでなく、以下のような意味合いにも使われます。\n\n1.  **時代の推移**\n    「今」が「過去」から 1000 年後の時代であること。\n    *   例：「2034 年というエポック」\n\n2.  **時代の変化**",
+      "seconds": 17.352,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "epoch_reworded",
+      "group": "reworded",
+      "term_id": "epoch",
+      "question": "学習データ全体を一度使い終えることを何と呼び、その回数を増やしすぎると何が起こりやすいですか。",
+      "reference": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。",
+      "rubric": "One pass through all training data; too many passes can cause overfitting.",
+      "answer": "学習データ全体を一度使い終えることを**「データセットの再利用率（または再利用率）」**と呼びます。\n\nその回数を増やしすぎると、**「過学習（Overfitting）」**が発生しやすいです。\n\n### 解説\n\n*   **データセットの再利用率**：\n    学習データが一度使い終わるまでの回数。例えば、100 個のデータから 10 回使い終わる場合、その回数は「10」です。\n    *   100 個のデータから 10 回使い終わる場合：再利用率 = 10 / 100 = 0.1 （10%）\n    *   100 個のデータから 100 回使い終わる場合：再利用率 = 100 / 100 = 1 （100%）\n\n*   **過学習（Overfitting）**：\n    過学習とは、学習データが過剰に学習され、モデルが「データに特異（特異）なパターン」を学習する現象です。\n    *   過学習が発生すると、モデルは学習",
+      "seconds": 17.434,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "overfitting_in_glossary",
+      "group": "in_glossary",
+      "term_id": "overfitting",
+      "question": "過学習の意味を教えてください。",
+      "reference": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "rubric": "Fits training data excessively and performs worse on unseen inputs.",
+      "answer": "**過学習（Overfitting）**とは、学習の過程で、モデルが**学習したデータ（訓練データ）のみに集中し、そのデータに特異的なパターンしか学習しない**現象を指します。\n\n簡単に言うと、「学習した結果、そのデータに特異的なパターンしか学習しない」という状態を指します。\n\n### 具体的な特徴と問題点\n\n1.  **学習対象の狭さ**\n    *   学習したモデルは、学習したデータ（例：「猫の顔」や「猫の足」）に特異的なパターンしか学習しない。\n    *   逆に、学習したデータから外れたパターン（例：「猫の鼻」や「猫の足」）を学習できない。\n    *   結果として、モデルは学習したデータに特異的なパターンしか学習しない。\n\n2.  **過学習の兆候**\n    *   **過学習の兆候**として、学習したデータに特異的なパターンしか学習しない。\n    *   学習したデータから外れたパターン（例：「猫の鼻」や「猫の足」）を学習できない。\n    *   結果として",
+      "seconds": 17.533,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "overfitting_reworded",
+      "group": "reworded",
+      "term_id": "overfitting",
+      "question": "学習に使ったデータにはよく答えるのに、新しい入力では性能が下がる状態を説明してください。",
+      "reference": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。",
+      "rubric": "Fits training data excessively and performs worse on unseen inputs.",
+      "answer": "学習において、**「よく答えるのに、新しい入力では性能が下がる状態」**を説明する最も一般的な現象は、**「過学習（Overfitting）」**と呼ばれる現象です。\n\nこの現象は、学習の初期段階で学習者が「よく答える」表現（正確度が高い）に集中し、**「過学習」**という状態を形成します。\n\n### 過学習（Overfitting）の仕組み\n\n1.  **学習の初期段階**\n    *   学習者が「よく答える」表現（正確度が高い）に集中します。\n    *   学習データ（例：「2+2=4」）に対して、学習者が「2+2=4」を正しく回答します。\n    *   学習データに対して、学習者が「2+2=4」を正しく回答します。\n\n2.  **過学習の形成**\n    *   学習者が「よく答える」表現に集中し、学習データに対して「2+2=4」を正しく回答します。\n    *   学習データに対して、学習者が「2+2=4」を正しく回答します。\n    *   学習者が",
+      "seconds": 17.427,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "quantization_in_glossary",
+      "group": "in_glossary",
+      "term_id": "quantization",
+      "question": "量子化の意味を教えてください。",
+      "reference": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "rubric": "Uses fewer bits to reduce memory; accuracy may decrease.",
+      "answer": "**量子化**（Quantization）は、物理学や数学において**「量子力学」の基礎となる概念**です。\n\n一言で言うと、**「量子」という概念を「整数」に固定する**ことです。\n\n### 具体的な意味と特徴\n\n1.  **量子（Quantum）の性質**\n    *   量子力学では、**エネルギー、角動量、磁荷、角運動量**などの物理量は、**整数**（0, 1, 2, 3...）しか取れないという性質を持っています。\n    *   例：光のエネルギーは、$E = h\\nu$（$h$はプランク定数、$\\nu$は波長）という関係式で表されます。ここで、$h$は定数ですが、$E$や$\\nu$は、$h$の倍数になることが限られます。\n\n2.  **量子化の適用**\n    *   量子化とは、**「量子力学」の理論を「量子力学」の基礎として適用**する手法です。\n    *   例：\n        *   **量子力学**：$E = h\\nu$",
+      "seconds": 17.5,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "quantization_reworded",
+      "group": "reworded",
+      "term_id": "quantization",
+      "question": "モデルの重みを少ないビット数で表現する目的と、精度への影響を説明してください。",
+      "reference": "モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。",
+      "rubric": "Uses fewer bits to reduce memory; accuracy may decrease.",
+      "answer": "モデルの重み（weight）を**少ないビット数で表現する**という目的は、**計算コスト（CPU/メモリ）とメモリ使用量**を大幅に削減する目的です。\n\nこのアプローチは、特に**大規模なデータセット**や**高頻度な入力**に対して非常に有効です。以下に、精度への影響を説明します。\n\n### 1. 精度への影響：「精度の損失」\n\nモデルの精度（出力の正確さ）は、入力と出力の差（誤差）によって決まります。重みを小さくする主な目的は、**「入力と出力の差を小さくする」**という点です。\n\n*   **入力と出力の差の減少**\n    重み $w$ を $1$ 倍にすると、入力 $x$ に対する出力 $y$ は $w \\cdot x$ になります。\n    したがって、$w$ が $100$ 倍に小さければ、$y$ は $100$ 倍に小さくなります。\n    結果として、入力 $x$ と出力 $y$ の差（誤差）は $100$",
+      "seconds": 17.414,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "outside_dpo",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "DPOの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "**DPO** は、**Data Processing Operations（データ処理操作）**の略です。\n\nこれは、データ処理を行う際に使用される**「データ処理の品質保証（Quality Assurance）」**や**「データ処理の検証（Quality Control）」**の意図を表現する用語です。\n\nより詳しく解説すると、DPO は以下の 2 つの目的を同時に達成するために使われることが多く、それぞれが異なる意味を持つ場合があります。\n\n### 1. DPO（Quality Assurance）\n**「品質保証（Quality Assurance）」**\n*   **意味**: 製品やサービスが製造・提供された際、その品質が適切か確認するプロセスです。\n*   **目的**: 製品が「良い」か確認し、問題がないか確認します。\n*   **例**: 製造業では、製品が「安全」か確認する検査、またはソフトウェア開発では、コードが「正しい」か確認するテスト。\n\n### 2. DPO（Quality Control）\n**「品質制御（Quality Control）」**\n*   **意味**: 製品やサービスが製造・提供された際、その品質が適切か確認するプロセスです。\n*   **目的**: 製品が「",
+      "seconds": 17.6,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "outside_moe",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "MoEの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "**MoE** は、**M**edium **O**uter **E**nvironment（メディア・アウトエントリ・エンリベント）の略です。\n\nこれは、**M**edium **O**uter **E**nvironment **E**nvironment（メディア・アウトエントリ・エンリベント・エンリベント）の縮写です。\n\nこの用語は、**M**edium **O**uter **E**nvironment **E**nvironment **E**nvironment（メディア・アウトエントリ・エンリベント・エンリベント・エンリベント）の縮写です。\n\n**M**edium **O**uter **E**nvironment **E**nvironment **E**nvironment（メディア・アウトエントリ・エンリベント・エンリベント・エンリベント）の縮写です。\n\n**M**edium **O**uter **E**nvironment **E**nvironment **E**nvironment（メディア・アウトエントリ・エンリベント・エンリベント・エンリベント）の縮写です。\n\n**M**edium **O**uter **E**nvironment **E",
+      "seconds": 17.393,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    },
+    {
+      "id": "outside_bpe",
+      "group": "outside_glossary",
+      "term_id": null,
+      "question": "BPEの意味を教えてください。",
+      "reference": null,
+      "rubric": "Record whether the model explains, expresses uncertainty, or gives an irrelevant answer. No glossary reference is available.",
+      "answer": "**BPE** は、**Blur-Enhanced Pixelation**（ぼかしたエッジ化）の略称で、画像処理や画像編集において非常に重要な手法です。\n\nこの用語は主に **OpenCV**（OpenCV ライブラリ）や **TensorFlow**（TensorFlow 画像処理）などの画像処理ライブラリで使われます。\n\n### BPE の基本思想\nBPE は、画像の「ノイズ（ノイズ）」を減らすために、**「隣り合う色や明度値が異なる領域を区切る」**という考えに基づいています。\n\n*   **問題**: 画像には「色」や「明度」が連続しているため、隣り合う色や明度値が異なる領域を区切ることは、画像の「ノイズ」を減らすのに効果的です。\n*   **方法**: BPE は、隣り合う色や明度値が異なる領域を区切るために、**「隣り合う色や明度値が異なる領域を区切る」**という考えに基づいています。\n\n### BPE の主な用途\n1.  **画像エディタ**: 画像編集ソフト（例：Photoshop, Lightroom）で、",
+      "seconds": 17.603,
+      "output_tokens": 256,
+      "reached_max_new_tokens": true
+    }
+  ]
+}

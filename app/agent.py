@@ -21,7 +21,7 @@ from pathlib import Path
 from contextlib import nullcontext
 from time import perf_counter
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -78,6 +78,11 @@ FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
 
 
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
+agent = Agent(instructions=INSTRUCTIONS, output_type=[str, DeferredToolRequests])
+agent.tool_plain(tools.search_glossary)
+agent.tool_plain(tools.get_lecture_summary)
+agent.tool_plain(tools.make_quiz)
+agent.tool_plain(tools.save_learning_log, requires_approval=True)
 agent = Agent(instructions=INSTRUCTIONS)
 agent.tool_plain(tools.search_materials)
 
@@ -186,6 +191,49 @@ def main() -> None:
     args = parser.parse_args()
 
     target = build_mcp_agent() if args.mcp else agent
+    if args.list_tools:
+        print_tools(target)
+        return
+    if not args.question:
+        parser.error("質問を指定してください")
+
+    print(f"[model] {MODEL}")
+    if args.mcp:
+        print("[tools] MCP サーバー（app/mcp_servers.json）")
+    try:
+        model = build_model()
+        result = target.run_sync(args.question, model=model)
+
+        while isinstance(result.output, DeferredToolRequests):
+            decisions = DeferredToolResults()
+
+            for call in result.output.approvals:
+                print(f"\n[approval] {call.tool_name}: {call.args}")
+                try:
+                    answer = input("Save this learning log? [y/N] ")
+                except EOFError:
+                    answer = ""
+
+                if answer.strip().lower() not in {"y", "yes"}:
+                    print("Learning log was not saved: you declined.")
+                    if args.trace:
+                        print_trace(result)
+                    return
+
+                decisions.approvals[call.tool_call_id] = True
+
+            result = target.run_sync(
+                model=model,
+                message_history=result.all_messages(),
+                deferred_tool_results=decisions,
+            )
+    except ModelHTTPError as e:
+        print(api_error_message(e.status_code, str(e.body)[:200]))
+        raise SystemExit(1)
+
+    print(result.output)
+    if args.trace:
+        print_trace(result)
     mode = nullcontext()
     if args.tree:
         mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])

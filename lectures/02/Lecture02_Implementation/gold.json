@@ -1,0 +1,140 @@
+{
+  "申し込みは何月何日の何時までですか": {
+    "needs_review": false,
+    "must_include": [
+      "11 月 10 日",
+      "18:00"
+    ]
+  },
+  "参加申し込みの最終日時を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "11 月 10 日",
+      "18:00"
+    ]
+  },
+  "登録はいつ締め切られますか": {
+    "needs_review": false,
+    "must_include": [
+      "11 月 10 日",
+      "18:00"
+    ]
+  },
+  "自宅からオンライン参加することは可能ですか": {
+    "needs_review": false,
+    "must_include": [
+      "対面",
+      "オンライン"
+    ]
+  },
+  "会場に行かずにリモートで受講できますか": {
+    "needs_review": false,
+    "must_include": [
+      "対面",
+      "オンライン"
+    ]
+  },
+  "オンライン参加に対応していますか": {
+    "needs_review": false,
+    "must_include": [
+      "対面",
+      "オンライン"
+    ]
+  },
+  "会場の建物と教室番号は何ですか": {
+    "needs_review": false,
+    "must_include": [
+      "B 棟",
+      "B204"
+    ]
+  },
+  "当日はどの建物のどの教室に集合しますか": {
+    "needs_review": false,
+    "must_include": [
+      "B 棟",
+      "B204"
+    ]
+  },
+  "ワークショップが行われる教室を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "B 棟",
+      "B204"
+    ]
+  },
+  "参加料金はいくら必要ですか": {
+    "needs_review": false,
+    "must_include": [
+      "無料"
+    ]
+  },
+  "ワークショップへの参加は無料ですか": {
+    "needs_review": false,
+    "must_include": [
+      "無料"
+    ]
+  },
+  "受講するための費用を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "無料"
+    ]
+  },
+  "参加者が準備して持って行くものは何ですか": {
+    "needs_review": false,
+    "must_include": [
+      "ノートパソコン",
+      "持参"
+    ]
+  },
+  "自分のパソコンを持って行く必要がありますか": {
+    "needs_review": false,
+    "must_include": [
+      "ノートパソコン",
+      "持参"
+    ]
+  },
+  "当日持参する機器を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "ノートパソコン",
+      "持参"
+    ]
+  },
+  "当日の昼食は提供されますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "参加者の定員は何人ですか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "登録締切後でも申し込めますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "参加前にマーケティングの知識は必要ですか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "会場で Wi-Fi は使えますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "ワークショップの資料は後日配布されますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  }
+}

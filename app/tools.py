@@ -5,8 +5,10 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
+from uuid import uuid4
 
 from app.config import api_error_message
 
@@ -68,7 +70,6 @@ def search_glossary(query: str) -> str:
         ensure_ascii=False,
     )
 
-
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 
@@ -80,6 +81,36 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
+def make_quiz(lecture: int) -> str:
+    """Create one review question for the requested lecture.
+
+    Use this tool when the learner asks for a quiz or review question
+    for a specific lecture. The answer comes from the course glossary.
+    """
+    entries = [
+        entry for entry in load_glossary()
+        if entry["lecture"] == lecture
+    ]
+    if not entries:
+        return f"No glossary terms found for Lecture {lecture}."
+
+    entry = random.choice(entries)
+    return json.dumps(
+        {
+            "question": f"What does {entry['term']} mean?",
+            "answer": entry["definition"],
+        },
+        ensure_ascii=False,
+    )
+
+def save_learning_log(lecture: int, note: str) -> str:
+    """Save a learning note when the learner asks to record it."""
+    log_dir = DATA_DIR.parent / "learning_log"
+    log_dir.mkdir(exist_ok=True)
+
+    path = log_dir / f"lecture-{lecture:02d}-{uuid4().hex}.txt"
+    path.write_text(note.strip() + "\n", encoding="utf-8")
+    return f"Saved learning log to learning_log/{path.name}"
 
 def search_materials(query: str) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。

@@ -1,0 +1,140 @@
+{
+  "提出の期限は？": {
+    "needs_review": false,
+    "must_include": [
+      "9 月 30 日",
+      "23:59"
+    ]
+  },
+  "提出期限の日付と時刻を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "9 月 30 日",
+      "23:59"
+    ]
+  },
+  "課題の締切は何月何日の何時ですか": {
+    "needs_review": false,
+    "must_include": [
+      "9 月 30 日",
+      "23:59"
+    ]
+  },
+  "提出場所は？": {
+    "needs_review": false,
+    "must_include": [
+      "学習ポータル",
+      "課題"
+    ]
+  },
+  "課題の提出はどこで行いますか": {
+    "needs_review": false,
+    "must_include": [
+      "学習ポータル",
+      "課題"
+    ]
+  },
+  "提出物を出す先を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "学習ポータル",
+      "課題"
+    ]
+  },
+  "PDF 以外でも出せますか": {
+    "needs_review": false,
+    "must_include": [
+      "PDF"
+    ]
+  },
+  "提出するファイルの形式は何ですか": {
+    "needs_review": false,
+    "must_include": [
+      "PDF"
+    ]
+  },
+  "提出ファイルは何形式で、いくつ出しますか": {
+    "needs_review": false,
+    "must_include": [
+      "PDF"
+    ]
+  },
+  "相談できる時間帯は？": {
+    "needs_review": false,
+    "must_include": [
+      "火曜",
+      "17:00"
+    ]
+  },
+  "オフィスアワーの曜日と時間を教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "火曜",
+      "17:00"
+    ]
+  },
+  "質問を受け付けてもらえるのは何曜日の何時からですか": {
+    "needs_review": false,
+    "must_include": [
+      "火曜",
+      "17:00"
+    ]
+  },
+  "締切後の扱いを教えてください": {
+    "needs_review": false,
+    "must_include": [
+      "48 時間",
+      "減点"
+    ]
+  },
+  "提出が締切に間に合わなかったらどうなりますか": {
+    "needs_review": false,
+    "must_include": [
+      "48 時間",
+      "減点"
+    ]
+  },
+  "期限後に提出した課題は受理されますか": {
+    "needs_review": false,
+    "must_include": [
+      "48 時間",
+      "減点"
+    ]
+  },
+  "成績はいつ出ますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "講義の録画は公開されますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "課題の文字数に制限はありますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "提出した課題へのフィードバックはもらえますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "参考文献の書き方に指定はありますか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  },
+  "オフィスアワーは事前予約が必要ですか": {
+    "needs_review": true,
+    "must_include": [
+      "確認"
+    ]
+  }
+}
