@@ -17,7 +17,7 @@ import sqlite_vec
 from app.config import (
     EMBEDDING_DIMENSIONS, EMBEDDING_MAX_TOKENS, EMBEDDING_MODEL,
     RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
-    RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
+    RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS, READ_PAGES_MAX
 )
 
 
@@ -49,8 +49,58 @@ def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
     return pages
 
 
+def page_summary(title: str, content: str) -> str:
+    """目次の候補に出す、ページの要点文を返す。
+
+    スライドは「（章見出し）→ タイトル → 要点の1行 → 図・出典」の順に並ぶことが多い。
+    冒頭の数行のうち、タイトルに含まれる行（複数行に分かれたタイトルも含む）より後ろで、
+    出典・著作権表示・ページ番号を除いた最初の行を要点文とする。
+    タイトルに当たる行が見つからなければ、従来どおり先頭文を返す。
+    """
+    def normalize(text: str) -> str:
+        return re.sub(r"\s+", "", text)
+
+    def is_noise(line: str) -> bool:
+        # 「この 15 分の芯」は第2回の各章の扉に付く決まり文句で、要点ではない。
+        return (line.startswith(("出典", "©")) or "UNIVERSITY OF TOKYO" in line.upper()
+                or line.isdigit() or re.fullmatch(r"この\s*\d+\s*分の芯", line) is not None)
+
+    lines = [line.strip() for line in content.strip().splitlines() if line.strip()]
+    lines = [line for line in lines if not is_noise(line)]
+    title_key = normalize(title)
+    last_title_line = None
+    for index, line in enumerate(lines[:4]):
+        if normalize(line) and normalize(line) in title_key:
+            last_title_line = index
+    if last_title_line is not None and last_title_line + 1 < len(lines):
+        return lines[last_title_line + 1]
+    return re.split(r"(?<=[。！？])|\n", content.strip(), maxsplit=1)[0]
+
+
+CONTENTS_TITLE_MAX = 24
+
+
+def contents_hint(node: dict) -> str:
+    """章・講義の候補に出す、中に含まれる見出しの一覧を返す。
+
+    章ならページのタイトル、講義なら章の名前を並べる（講義直下のページは除く）。
+    章と同じ名前の扉ページと、同じタイトルの重複は除き、長いタイトルは切り詰める。
+    """
+    children = node.get("children", [])
+    if node["kind"] == "document":
+        children = [child for child in children if child["kind"] == "section"]
+    titles = []
+    for child in children:
+        title = re.sub(r"\s+", " ", child["title"]).strip()
+        if title == node["title"] or title in titles:
+            continue
+        titles.append(title)
+    return " / ".join(title if len(title) <= CONTENTS_TITLE_MAX else title[:CONTENTS_TITLE_MAX] + "…"
+                      for title in titles)
+
+
 def browse_tree(node_id: str | None = None) -> dict:
-    """直下のページは先頭文、指定したページ自身は全文を返す。"""
+    """直下のページは要点文（page_summary）、指定したページ自身は全文を返す。"""
     tree = json.loads(RAG_TREE.read_text(encoding="utf-8"))
     tree["children"] = [node for node in tree["children"] if node["id"] in RAG_DOCUMENT_IDS]
     node_id = node_id or tree["id"]
@@ -61,7 +111,9 @@ def browse_tree(node_id: str | None = None) -> dict:
         if node["kind"] == "page":
             info.update({key: value for key, value in pages[node["id"]].items() if key != "page_id"})
             if not full:
-                info["content"] = re.split(r"(?<=[。！？])|\n", info["content"].strip(), maxsplit=1)[0]
+                info["content"] = page_summary(info["title"], info["content"])
+        elif not full and node.get("children"):
+            info["contains"] = contents_hint(node)
         return info
 
     remaining = [tree]
@@ -74,6 +126,22 @@ def browse_tree(node_id: str | None = None) -> dict:
             }
         remaining.extend(node.get("children", []))
     raise ValueError("対象の目次ノードが見つかりません。")
+
+def read_pages(page_ids: list[str]) -> dict:
+    """第1〜3回の本講義から、複数ページの本文と引用情報をまとめて返す。
+
+    1回の呼び出しで読めるのは最大READ_PAGES_MAX件。重複は除き、見つからないIDはerrorsに入れる。
+    """
+    if not isinstance(page_ids, list) or not page_ids:
+        raise ValueError("ページIDを1件以上指定してください。")
+    unique_ids = list(dict.fromkeys(page_ids))
+    if len(unique_ids) > READ_PAGES_MAX:
+        raise ValueError(f"一度に読めるのは{READ_PAGES_MAX}ページまでです。候補を絞ってください。")
+    pages = {page["page_id"]: page for page in load_pages(RAG_SOURCE)}
+    return {
+        "pages": [pages[page_id] for page_id in unique_ids if page_id in pages],
+        "errors": [f"ページが見つかりません: {page_id}" for page_id in unique_ids if page_id not in pages],
+    }
 
 
 def read_page(page_id: str) -> dict:

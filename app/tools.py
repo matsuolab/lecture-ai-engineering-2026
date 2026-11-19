@@ -100,7 +100,7 @@ def search_materials(query: str) -> str:
 
 
 def browse_tree(node_id: str | None = None) -> str:
-    """目次とページの先頭文を返す。ページIDを指定すると全文を返す。
+    """目次とページの要点文を返す。ページIDを指定すると全文を返す。
 
     最初はnode_idを省略する。続いて返されたIDを指定して目次をたどる。
     """
@@ -110,6 +110,19 @@ def browse_tree(node_id: str | None = None) -> str:
         return json.dumps(browse(node_id), ensure_ascii=False)
     except (ValueError, OSError) as e:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+def read_pages(page_ids: list[str]) -> str:
+    """ページIDを最大6件まとめて受け取り、各ページの全文・タイトル・ページ番号を返す。
+
+    browse_tree の候補から、根拠になりそうなページを選んで指定する。
+    """
+    from app.retrieval import read_pages as read
+
+    try:
+        return json.dumps(read(page_ids), ensure_ascii=False)
+    except (ValueError, OSError) as e:
+        return json.dumps({"error": str(e), "pages": []}, ensure_ascii=False)
 
 
 def search_graph(query: str) -> str:

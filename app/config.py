@@ -26,6 +26,7 @@ EMBEDDING_MODEL = "gemini-embedding-001"
 EMBEDDING_DIMENSIONS = 768
 # 2,048トークンの上限に対し、タスク指定等の分を残す。超過時は切り捨てず停止する。
 EMBEDDING_MAX_TOKENS = 2000
+READ_PAGES_MAX = 6
 
 
 def api_error_message(status: int, detail: str = "") -> str:
