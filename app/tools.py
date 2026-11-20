@@ -68,6 +68,27 @@ def search_glossary(query: str) -> str:
         ensure_ascii=False,
     )
 
+##make quiz
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から 1つを選び、
+    確認問題と答えを返す。
+
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    glossary = load_glossary()
+    items = [
+        {
+            "term": e["term"],
+            "definition": e["definition"],
+        }
+        for e in glossary
+        if e.get("lecture") == lecture
+    ]
+    if not items:
+        return f"第{lecture}回のクイズ作成用の用語データが見つかりませんでした。"
+    return json.dumps(items, ensure_ascii=False)
+
 
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
