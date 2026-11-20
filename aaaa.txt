@@ -1,0 +1,24 @@
+[model] gemini-3.5-flash-lite
+ご質問の用語について、講座の用語集を基にそれぞれ解説します。
+
+* **過学習（オーバーフィッティング）**
+  学習データにだけ過度に適合してしまい、未知のデータに対する予測性能（汎用性能）が落ちてしまう状態のことです。学習に使わない検証データを使って性能を測ることで気づくことができます。
+* **エポック**
+  学習データ全体を1周学習することを「1エポック」と数えます。エポック数を増やしすぎると過学習しやすくなる傾向があります。
+* **学習率**
+  1回のパラメータ更新で、どれだけ値を動かすかを決めるハイパーパラメータです。学習率が大きすぎると学習が不安定になり、小さすぎると学習の進みが遅くなってしまいます。
+* **誤差**
+  ※用語集には「誤差」の独立した定義はありませんが、機械学習においては「モデルが出力した予測値と、本来の正しい値（正解）とのズレ」を指します。AIは、この誤差を小さくするようにパラメータを調整（学習）していきます。
+
+関連する回：第2回
+
+--- trace ---
+[tool call]   search_glossary({'query': '過学習'})
+[tool call]   search_glossary({'query': 'エポック'})
+[tool call]   search_glossary({'query': '学習率'})
+[tool call]   search_glossary({'query': '誤差'})
+[tool return] search_glossary -> [{"term": "過学習", "lecture": 2, "definition": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。", "related": ["ep…
+[tool return] search_glossary -> [{"term": "エポック", "lecture": 2, "definition": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。", "related": ["overfitting"…
+[tool return] search_glossary -> [{"term": "学習率", "lecture": 2, "definition": "1回の更新でパラメータをどれだけ動かすかを決めるハイパーパラメータ。大きすぎると学習が不安定になり、小さすぎると進みが遅い。", "related"…
+[tool return] search_glossary -> 用語集に「誤差」は見つかりませんでした。…
+[usage] RunUsage(cost=Decimal('0.0011361'), details={'text_prompt_tokens': 1187}, input_text_tokens=1187, input_tokens=1187, output_tokens=312, requests=2, tool_calls=4)

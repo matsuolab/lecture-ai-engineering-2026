@@ -1,0 +1,14 @@
+[model] gemini-3.5-flash-lite
+第2回の内容から、理解度を確かめる確認問題を1問出題します！
+
+**【確認問題】**
+次の説明に当てはまる用語は何ですか？
+「モデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。」
+
+---
+関連する回：第2回
+
+--- trace ---
+[tool call]   make_quiz({'lecture': 2})
+[tool return] make_quiz -> {"question": "次の説明に当てはまる用語は何ですか？\nモデルの重みを少ないビット数（例：16ビットから4ビット）で表し、メモリ使用量や計算量を減らす技術。精度は少し下がることがある。", "answer": "量子化"}…
+[usage] RunUsage(cost=Decimal('0.0005219'), details={'text_prompt_tokens': 898}, input_text_tokens=898, input_tokens=898, output_tokens=101, requests=2, tool_calls=1)
