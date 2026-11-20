@@ -1,0 +1,21 @@
+[model] gemini-3.5-flash-lite
+**過学習（オーバーフィッティング）**とは、AIモデルが**学習データにだけ過度に適合してしまい、未知の入力（テストデータなど）に対する予測や性能が落ちてしまう状態**のことです。
+
+具体的には、手元の学習データに対しては問題なく正解できるようになりますが、これまで見たことがない新しいデータを与えたときに、うまく対応できなくなってしまいます。
+
+### 主な原因
+- **学習のしすぎ（エポック数の増加など）**: 学習データ全体を何周も学習させる（エポックを増やす）ことで、モデルがデータの傾向だけでなく、ノイズや細かい癖まで丸暗記してしまうため起きやすくなります。
+
+### 気づき方・対策
+- 学習に使っていない**検証データ**を使ってモデルの性能を測定することで、過学習に気づくことができます。
+
+（関連する回：第2回）
+
+--- trace ---
+[tool call]   search_glossary({'query': '過学習'})
+[tool return] search_glossary -> [{"term": "過学習", "lecture": 2, "definition": "学習データにだけ過度に適合し、未知の入力に対する性能が落ちる状態。学習に使わない検証データで性能を測って気づく。", "related": ["ep…
+[tool call]   search_glossary({'query': 'epoch'})
+[tool return] search_glossary -> [{"term": "エポック", "lecture": 2, "definition": "学習データ全体を1周学習することを1エポックと数える。回数を増やしすぎると過学習しやすい。", "related": ["overfitting"…
+[tool call]   search_glossary({'query': 'evaluation-loop'})
+[tool return] search_glossary -> [{"term": "評価と改善のサイクル", "lecture": 1, "definition": "作る→測る→直すを繰り返す開発の進め方。AIアプリは出力が確率的に揺れるため、感覚ではなく評価データや指標で良し悪しを判断し、その結果…
+[usage] RunUsage(cost=Decimal('0.0013804'), details={'text_prompt_tokens': 2618}, input_text_tokens=2618, input_tokens=2618, output_tokens=238, requests=4, tool_calls=3)
