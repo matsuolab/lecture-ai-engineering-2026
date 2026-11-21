@@ -124,8 +124,34 @@ def open_index(path: Path):
         db.close()
 
 
-def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+def get_neighbor_context(page_id: str, radius: int = 1) -> list[dict]:
+    """指定ページと同じ資料の前後ページだけを本文付きで返す。"""
+    if radius < 0:
+        raise ValueError("radiusは0以上で指定してください。")
+
+    pages = load_pages(RAG_SOURCE)
+    target = next((page for page in pages if page["page_id"] == page_id), None)
+    if target is None:
+        raise ValueError("対象のページが見つかりません。")
+
+    document_pages = [
+        page for page in pages
+        if page["document_id"] == target["document_id"]
+    ]
+    target_index = next(
+        i for i, page in enumerate(document_pages)
+        if page["page_id"] == page_id
+    )
+    return document_pages[
+        max(0, target_index - radius):target_index + radius + 1
+    ]
+
+
+def search(query: str, include_context: bool = False) -> list[dict]:
+    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。
+
+    include_context=Trueでは、資料内の前後1ページをcontext_pagesに付ける。
+    """
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
@@ -135,7 +161,20 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+
+    if include_context:
+        seen_page_ids = set()
+        for hit in hits:
+            hit_page_id = hit["page_id"]
+            seen_page_ids.add(hit_page_id)
+            unique_context = [
+                page for page in get_neighbor_context(hit_page_id)
+                if page["page_id"] not in seen_page_ids
+            ]
+            hit["context_pages"] = unique_context
+            seen_page_ids.update(page["page_id"] for page in unique_context)
+    return hits
 
 
 def search_graph(query: str) -> dict:
@@ -201,11 +240,24 @@ def run_full_context(agent, question: str, model, instructions: str, prompt_temp
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="エージェントを使わず、講義資料の検索だけを実行する")
     parser.add_argument("query", help="調べたい内容")
+    parser.add_argument(
+        "--context",
+        action="store_true",
+        help="資料内の前後1ページを本文付きで表示する",
+    )
     args = parser.parse_args()
-    for i, result in enumerate(search(args.query), 1):
+    for i, result in enumerate(search(args.query, include_context=args.context), 1):
         print(f"\n{'=' * 60}\n検索結果 {i}\n{'=' * 60}")
         print(f"講義: {result['document_title']}")
         print(f"章: {result['section']}")
         print(f"タイトル: {result['title']}")
         print(f"ページ: {result['page']}")
         print(f"\n{result['content']}")
+        if args.context:
+            print("\n前後1ページの本文:")
+            for context_page in result["context_pages"]:
+                print(
+                    f"\n[資料: {context_page['document_title']} / "
+                    f"PDF p.{context_page['page']} / {context_page['title']}]\n"
+                    f"{context_page['content']}"
+                )

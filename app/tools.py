@@ -81,17 +81,21 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def search_materials(query: str) -> str:
+def search_materials(query: str, include_context: bool = False) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
 
     queryに調べたい内容を指定する。
+    include_context=Trueでは、各検索ヒットの前後1ページも重複なく付ける。
     """
     from google.genai.errors import APIError
     import sqlite3
     from app.retrieval import search
 
     try:
-        return json.dumps({"results": search(query)}, ensure_ascii=False)
+        return json.dumps(
+            {"results": search(query, include_context=include_context)},
+            ensure_ascii=False,
+        )
     except (ValueError, FileNotFoundError, sqlite3.Error) as e:
         return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
     except APIError as e:
