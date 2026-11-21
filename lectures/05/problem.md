@@ -97,7 +97,7 @@ Treeは目次をたどってページを選びます。
 uv run python -m app.agent --tree --trace "$AIE_QUESTION"
 ```
 
-`browse_tree(node_id)`だけを使います。最初は講義一覧を取得し、返されたIDで講義・章・ページへ進みます。`children`のページには本文の先頭文だけが入り、ページIDを指定すると`node.content`に全文が入ります。句点のないページの候補文は先頭行です。traceで、選んだ目次と全文を取得したページを確認します。
+`browse_tree(node_id)`だけを使います。最初は講義一覧を取得し、返されたIDで講義・章・ページへ進みます。`children`のページには本文の先頭300文字が入り、ページIDを指定すると`node.content`に全文が入ります。traceで、選んだ目次と全文を取得したページを確認します。
 
 Graphはベクトル検索で入口を見つけ、その周囲へ候補を広げます。
 
