@@ -42,7 +42,21 @@ def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
             continue
         for section in document["content"]:
             for page in section["content"]:
+                page_number=page["id"][-3:]
+                page_name=page["id"][:-4]
+                page_number_previous=str(int(page_number)-1)
+                page_previous=page_name + page_number_previous
+                page_number_subsequent=str(int(page_number)+1)
+                page_subsequent=page_name + page_number_subsequent
                 pages.append({"page_id": page["id"], "document_id": document["id"],
+                              "lecture": int(document["id"][3:5]), "document_title": document["title"],
+                              "section": section["section"], "title": page["title"],
+                              "page": page["page"], "content": page["content"]})
+                pages.append({"page_id": page_previous, "document_id": document["id"],
+                              "lecture": int(document["id"][3:5]), "document_title": document["title"],
+                              "section": section["section"], "title": page["title"],
+                              "page": page["page"], "content": page["content"]})
+                pages.append({"page_id": page_subsequent, "document_id": document["id"],
                               "lecture": int(document["id"][3:5]), "document_title": document["title"],
                               "section": section["section"], "title": page["title"],
                               "page": page["page"], "content": page["content"]})
