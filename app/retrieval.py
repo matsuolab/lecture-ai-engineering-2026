@@ -3,7 +3,6 @@
 import argparse
 import json
 import math
-import re
 import sqlite3
 from contextlib import contextmanager
 from collections import defaultdict, deque
@@ -19,6 +18,8 @@ from app.config import (
     RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
     RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
+
+TREE_PREVIEW_CHARS = 300
 
 
 def get_all_materials() -> str:
@@ -50,7 +51,7 @@ def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
 
 
 def browse_tree(node_id: str | None = None) -> dict:
-    """直下のページは先頭文、指定したページ自身は全文を返す。"""
+    """直下のページは先頭300文字、指定したページ自身は全文を返す。"""
     tree = json.loads(RAG_TREE.read_text(encoding="utf-8"))
     tree["children"] = [node for node in tree["children"] if node["id"] in RAG_DOCUMENT_IDS]
     node_id = node_id or tree["id"]
@@ -61,7 +62,7 @@ def browse_tree(node_id: str | None = None) -> dict:
         if node["kind"] == "page":
             info.update({key: value for key, value in pages[node["id"]].items() if key != "page_id"})
             if not full:
-                info["content"] = re.split(r"(?<=[。！？])|\n", info["content"].strip(), maxsplit=1)[0]
+                info["content"] = info["content"][:TREE_PREVIEW_CHARS]
         return info
 
     remaining = [tree]
