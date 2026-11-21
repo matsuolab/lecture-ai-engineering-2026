@@ -71,9 +71,9 @@ def search_glossary(query: str) -> str:
 
 
 def get_lecture_summary(lecture: int) -> str:
-    """指定した回（1始まりの整数）の講義の提出期限を返す。
+    """指定した回（1始まりの整数）の講義の要点を返す。
 
-    「第3回の課題の期限はいつ？」のように、回の課題の時期を問われたときに使う。
+    「第3回では何を学ぶ？」のように、回の内容や関係を聞かれたときに使う。
     """
     path = DATA_DIR / "lectures" / f"{lecture:02d}.md"
     if not path.exists():
