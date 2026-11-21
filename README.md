@@ -28,6 +28,12 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 ```bash
 uv run pytest -q
 uv run python -m app.ask "LoRAとは何ですか？"
+uv run python -m app.agent --chat
+uv run python -m app.compare \
+  --model gemini-3.5-flash-lite \
+  --model gemini-3.1-flash-lite \
+  --question "LoRAとは何ですか？" \
+  --question "RAGとは何ですか？"
 ```
 
 詳しい手順は [lectures/01/problem.md](lectures/01/problem.md) を見てください。
@@ -119,4 +125,10 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 AIE_MODEL=gemini-3.5-flash uv run python -m app.ask "LoRAとは何ですか？"
 ```
 
-無料枠には1分あたり・1日あたりのリクエスト上限があります。上限は [Gemini API のレート制限のページ](https://ai.google.dev/gemini-api/docs/rate-limits) で確認してください。
+## 無料枠のレート制限
+
+`app.agent` は起動時に RPM（requests/minute）、TPM（input tokens/minute）、RPD（requests/day）を表示します。上限値はモデルやプロジェクトごとに異なるため、[AI Studio のプロジェクト画面](https://aistudio.google.com/)で確認し、環境変数 `AIE_RPM_LIMIT`、`AIE_TPM_LIMIT`、`AIE_RPD_LIMIT` に設定してください。未設定の上限は数値を推測せず「未設定」と表示します。
+
+チャットでは各ターンの入力・出力トークン数、このプロセス内の累計、観測した直近1分と当日の使用量を表示します。残りチャット回数は設定した3つの上限と、この実行での平均消費量からの概算です。他のアプリや別プロセスでの利用量は含まれず、TPM・RPMの更新タイミングも概算のため、実際の利用可能回数を保証するものではありません。
+
+モデルと質問の組み合わせを比較するには `uv run python -m app.compare` を使います。`--model` と `--question` は複数回指定できます。上限値は既存の `AIE_RPM_LIMIT` / `AIE_TPM_LIMIT` / `AIE_RPD_LIMIT` を共通値として使い、必要ならモデル名を大文字化して記号を `_` に置き換えた環境変数（例: `AIE_GEMINI_3_5_FLASH_LITE_RPM_LIMIT`）で個別上書きできます。

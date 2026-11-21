@@ -1,6 +1,8 @@
 """第3回: Pydantic AI で作る学習支援エージェント。
 
 使い方:
+    uv run python -m app.agent "AIE2026の講座で使う「lecNN-start タグ」とは何ですか？"
+    uv run python -m app.agent --chat                 # 会話履歴を保持して対話する
     uv run python -m app.agent "LoRAとQLoRAの違いは？"
     uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"   # ツール呼び出しを表示
     uv run python -m app.agent --graph --trace "LoRAとQLoRAの違いは？"  # 検索からグラフをたどって回答
@@ -17,7 +19,12 @@
 import argparse
 import inspect
 import json
+import os
+import time
+from dataclasses import dataclass
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from contextlib import nullcontext
 from time import perf_counter
 
@@ -29,6 +36,7 @@ from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.usage import RunUsage
 
 from app import tools
 from app.retrieval import run_full_context
@@ -85,6 +93,105 @@ agent.tool_plain(tools.search_materials)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
+PACIFIC = ZoneInfo("America/Los_Angeles")
+
+
+@dataclass(frozen=True)
+class RateLimits:
+    rpm: int | None = None
+    tpm: int | None = None
+    rpd: int | None = None
+
+
+@dataclass(frozen=True)
+class UsageEvent:
+    timestamp: datetime
+    pacific_date: date
+    requests: int
+    input_tokens: int
+    output_tokens: int
+
+
+def load_rate_limits() -> RateLimits:
+    """環境変数からプロジェクトの上限を読む。未設定値は推測しない。"""
+    values = {}
+    for name in ("RPM", "TPM", "RPD"):
+        raw = os.getenv(f"AIE_{name}_LIMIT")
+        if raw is None:
+            values[name.lower()] = None
+            continue
+        try:
+            value = int(raw)
+        except ValueError:
+            raise SystemExit(f"AIE_{name}_LIMIT は正の整数で指定してください") from None
+        if value <= 0:
+            raise SystemExit(f"AIE_{name}_LIMIT は正の整数で指定してください")
+        values[name.lower()] = value
+    return RateLimits(**values)
+
+
+def print_rate_limits(limits: RateLimits) -> None:
+    def display(value: int | None, env_name: str) -> str:
+        return str(value) if value is not None else f"未設定（{env_name}）"
+
+    print(
+        "[無料枠上限] "
+        f"RPM: {display(limits.rpm, 'AIE_RPM_LIMIT')} / "
+        f"TPM（入力）: {display(limits.tpm, 'AIE_TPM_LIMIT')} / "
+        f"RPD: {display(limits.rpd, 'AIE_RPD_LIMIT')}"
+    )
+
+
+def print_usage_summary(
+    usage: RunUsage,
+    events: list[UsageEvent],
+    limits: RateLimits,
+) -> None:
+    now = datetime.now(UTC)
+    event = UsageEvent(
+        timestamp=now,
+        pacific_date=now.astimezone(PACIFIC).date(),
+        requests=usage.requests,
+        input_tokens=usage.input_tokens,
+        output_tokens=usage.output_tokens,
+    )
+    events.append(event)
+
+    recent_events = [item for item in events if now - item.timestamp < timedelta(minutes=1)]
+    today_events = [item for item in events if item.pacific_date == event.pacific_date]
+    total_requests = sum(item.requests for item in events)
+    total_input = sum(item.input_tokens for item in events)
+    total_output = sum(item.output_tokens for item in events)
+    recent_requests = sum(item.requests for item in recent_events)
+    recent_input = sum(item.input_tokens for item in recent_events)
+    today_requests = sum(item.requests for item in today_events)
+
+    print(
+        f"[今回] 入力: {usage.input_tokens} tokens / "
+        f"出力: {usage.output_tokens} tokens / requests: {usage.requests}"
+    )
+    print(
+        f"[この実行の累計] 入力: {total_input} tokens / "
+        f"出力: {total_output} tokens / requests: {total_requests}"
+    )
+    print(
+        f"[観測使用量] 直近1分: {recent_requests} requests, {recent_input} input tokens / "
+        f"本日: {today_requests} requests（この実行分のみ）"
+    )
+
+    if limits.rpm is None or limits.tpm is None or limits.rpd is None:
+        print("[推定残り] RPM・TPM・RPDすべての上限を設定すると表示できます")
+        return
+
+    average_requests = total_requests / len(events)
+    average_input = total_input / len(events)
+    remaining = [
+        max(0, int((limits.rpm - recent_requests) / average_requests)),
+        max(0, int((limits.rpd - today_requests) / average_requests)),
+    ]
+    if average_input > 0:
+        remaining.append(max(0, int((limits.tpm - recent_input) / average_input)))
+    print(f"[推定残り] 約{min(remaining)}チャット（観測値からの概算）")
 
 
 def load_mcp_servers(config_path: Path = MCP_CONFIG) -> list[MCPToolset]:
@@ -173,9 +280,42 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
     print(f"[cost] 生成APIの推定コスト: {cost}（埋め込み・索引構築分は含まない）")
 
 
+def run_chat(
+    target: Agent,
+    model: GoogleModel,
+    trace: bool = False,
+    limits: RateLimits = RateLimits(),
+) -> None:
+    """対話モード。履歴はこのプロセスの終了まで保持する。"""
+    print("対話モードです。終了するには /exit を入力してください。")
+    message_history = []
+    usage_events = []
+    while True:
+        try:
+            question = input("あなた> ").strip()
+        except EOFError:
+            print()
+            break
+        if question.lower() in {"/exit", "/quit"}:
+            break
+        if not question:
+            continue
+
+        started = time.perf_counter()
+        result = target.run_sync(question, model=model, message_history=message_history)
+        elapsed = time.perf_counter() - started
+        message_history = result.all_messages()
+        print(f"AI> {result.output}\n")
+        print(f"[応答時間] {elapsed:.2f}秒")
+        print_usage_summary(result.usage, usage_events, limits)
+        if trace:
+            print_trace(result)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
+    parser.add_argument("--chat", action="store_true", help="対話モード（/exit で終了）")
     parser.add_argument("--trace", action="store_true", help="ツール呼び出しを表示する")
     modes = parser.add_mutually_exclusive_group()
     modes.add_argument("--mcp", action="store_true", help="第5回: ツールを MCP サーバー（app/mcp_servers.json）から受け取る")
@@ -186,6 +326,35 @@ def main() -> None:
     args = parser.parse_args()
 
     target = build_mcp_agent() if args.mcp else agent
+    if args.list_tools:
+        print_tools(target)
+        return
+    if args.chat and args.question:
+        parser.error("--chat と質問文は同時に指定できません")
+    if not args.chat and not args.question:
+        parser.error("質問を指定するか、--chat を指定してください")
+
+    print(f"[model] {MODEL}")
+    if args.mcp:
+        print("[tools] MCP サーバー（app/mcp_servers.json）")
+    try:
+        limits = load_rate_limits()
+        print_rate_limits(limits)
+        model = build_model()
+        if args.chat:
+            run_chat(target, model, args.trace, limits)
+            return
+        started = time.perf_counter()
+        result = target.run_sync(args.question, model=model)
+        elapsed = time.perf_counter() - started
+    except ModelHTTPError as e:
+        print(api_error_message(e.status_code, str(e.body)[:200]))
+        raise SystemExit(1)
+    print(result.output)
+    print(f"[応答時間] {elapsed:.2f}秒")
+    print_usage_summary(result.usage, [], limits)
+    if args.trace:
+        print_trace(result)
     mode = nullcontext()
     if args.tree:
         mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])
