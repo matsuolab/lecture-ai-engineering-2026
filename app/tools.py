@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
@@ -70,9 +71,9 @@ def search_glossary(query: str) -> str:
 
 
 def get_lecture_summary(lecture: int) -> str:
-    """指定した回（1始まりの整数）の講義の要点を返す。
+    """指定した回（1始まりの整数）の講義の提出期限を返す。
 
-    「第3回では何を学ぶ？」のように、回の内容や関係を聞かれたときに使う。
+    「第3回の課題の期限はいつ？」のように、回の課題の時期を問われたときに使う。
     """
     path = DATA_DIR / "lectures" / f"{lecture:02d}.md"
     if not path.exists():
@@ -80,6 +81,28 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から 1つを選び、
+    確認問題と答えを返す。
+    「第2回の確認問題を出して」のように、
+    復習用の問題を求められたときに使う。
+    """
+    # 1. load_glossary() から lecture が一致する用語を集める
+    terms = [term for term in load_glossary() if term["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語は用語集にありません。"
+
+    # 2. その中からランダムに1つ選ぶ
+    term = random.choice(terms)
+    # 3. 問題と答えを文字列で返す（ json.dumps など）
+    return json.dumps(
+        {
+            "term": term["term"],
+            "question": f"「{term['term']}」とは何ですか？",
+            "answer": term["definition"],
+        },
+        ensure_ascii=False,
+    )
 
 def search_materials(query: str) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
