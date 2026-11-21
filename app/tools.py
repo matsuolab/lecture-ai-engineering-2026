@@ -69,6 +69,63 @@ def search_glossary(query: str) -> str:
     )
 
 
+def find_related_terms(query: str, limit: int = 5) -> list[dict]:
+    """質問から直接関連する用語と、その関連用語を表示用のリストにまとめる。"""
+    q = _normalize(query)
+    if not q:
+        return []
+
+    glossary = load_glossary()
+    by_id = {entry["id"]: entry for entry in glossary}
+    direct: list[dict] = []
+
+    for entry in glossary:
+        names = _names(entry)
+        matched = any(
+            (len(name) >= 3 and (name in q or q in name))
+            for name in names
+        )
+        if not matched:
+            matched = q in _normalize(entry["definition"])
+        if matched:
+            direct.append(entry)
+
+    # 直接一致を優先し、足りなければ各エントリの related をたどる。
+    if limit <= 0:
+        return []
+
+    ordered: list[dict] = []
+    seen: set[str] = set()
+    candidates = direct + [
+        by_id[related_id]
+        for entry in direct
+        for related_id in entry["related"]
+        if related_id in by_id
+    ]
+    for entry in candidates:
+        if entry["id"] in seen:
+            continue
+        seen.add(entry["id"])
+        ordered.append(entry)
+        if len(ordered) >= max(0, limit):
+            break
+
+    return [
+        {
+            "term": entry["term"],
+            "lecture": entry["lecture"],
+            "definition": entry["definition"],
+            "related": entry["related"],
+        }
+        for entry in ordered
+    ]
+
+
+def get_related_terms(query: str, limit: int = 5) -> list[dict]:
+    """find_related_terms の分かりやすい別名。"""
+    return find_related_terms(query, limit)
+
+
 def get_lecture_summary(lecture: int) -> str:
     """指定した回（1始まりの整数）の講義の要点を返す。
 

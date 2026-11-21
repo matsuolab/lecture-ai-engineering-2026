@@ -46,3 +46,15 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_find_related_terms_returns_question_terms_and_limit():
+    hits = tools.find_related_terms("LoRAとQLoRAの違い", limit=5)
+    terms = {hit["term"] for hit in hits}
+    assert "LoRA" in terms
+    assert "QLoRA" in terms
+    assert len(hits) <= 5
+
+
+def test_find_related_terms_returns_empty_for_blank_question():
+    assert tools.find_related_terms("") == []
