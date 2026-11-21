@@ -89,12 +89,12 @@ def retryable(error: str) -> bool:
     return any(w in error for w in ("レート制限", "429", "503", "混み合って", "timeout"))
 
 
-def run_with_retry(question: str, top_k: int, neighbors: int, attempts: int = 4) -> dict:
+def run_with_retry(question: str, top_k: int, neighbors: int, attempts: int = 3) -> dict:
     for i in range(attempts):
         r = run_once(question, top_k, neighbors)
         if "error" not in r or not retryable(r["error"]) or i == attempts - 1:
             return r
-        wait = 30 * (i + 1)
+        wait = 15 * (i + 1)
         print(f"    待って再試行します（{wait}秒）: {r['error'][:60]}", flush=True)
         time.sleep(wait)
     return r
@@ -132,7 +132,7 @@ def summarize(records: list[dict]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--sleep", type=float, default=10, help="各実行のあとに待つ秒数（レート制限対策）")
+    parser.add_argument("--sleep", type=float, default=3, help="各実行のあとに待つ秒数（レート制限対策）")
     parser.add_argument("--questions", default="", help="実行する質問名をカンマ区切りで（例: QLoRA,HITL）。省略で全部")
     parser.add_argument("--ks", default="", help="実行する検索件数をカンマ区切りで（例: 2,3）。省略で全部")
     args = parser.parse_args()
