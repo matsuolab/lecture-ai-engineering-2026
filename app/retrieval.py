@@ -125,9 +125,19 @@ def open_index(path: Path):
 
 
 def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+    """質問を埋め込み、近いページと同一資料内の前後1ページを重複なく返す。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
+
+    all_pages = load_pages(RAG_SOURCE)
+    pages_by_id = {p["page_id"]: p for p in all_pages}
+    doc_sequences: dict[str, list[str]] = defaultdict(list)
+    doc_positions: dict[str, int] = {}
+    for p in all_pages:
+        doc_id = p["document_id"]
+        doc_positions[p["page_id"]] = len(doc_sequences[doc_id])
+        doc_sequences[doc_id].append(p["page_id"])
+
     with open_index(RAG_DB) as db:
         vector = embed_text(query.strip(), "RETRIEVAL_QUERY")
         rows = db.execute("""
@@ -135,7 +145,32 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+
+    expanded_results: list[dict] = []
+    seen_page_ids: set[str] = set()
+
+    for hit in hits:
+        pid = hit["page_id"]
+        if pid not in seen_page_ids:
+            seen_page_ids.add(pid)
+            expanded_results.append({**hit, "context_role": "hit"})
+
+        if pid in doc_positions:
+            doc_id = pages_by_id[pid]["document_id"]
+            seq = doc_sequences[doc_id]
+            pos = doc_positions[pid]
+            for adj_pos in (pos - 1, pos + 1):
+                if 0 <= adj_pos < len(seq):
+                    adj_pid = seq[adj_pos]
+                    if adj_pid not in seen_page_ids:
+                        seen_page_ids.add(adj_pid)
+                        adj_page = dict(pages_by_id[adj_pid])
+                        adj_page["distance"] = None
+                        adj_page["context_role"] = "adjacent"
+                        expanded_results.append(adj_page)
+
+    return expanded_results
 
 
 def search_graph(query: str) -> dict:
