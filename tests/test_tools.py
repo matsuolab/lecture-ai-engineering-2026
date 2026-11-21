@@ -46,3 +46,22 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert "3レベル" in DEFAULT_QUESTION
     hits = json.loads(tools.search_glossary("3レベル"))
     assert hits[0]["term"] == "宿題の3レベル"
+
+
+def test_neighbor_context_stays_in_same_document():
+    from app.retrieval import get_neighbor_context
+
+    context = get_neighbor_context("lec02-main-p052")
+    assert [page["page_id"] for page in context] == [
+        "lec02-main-p051",
+        "lec02-main-p052",
+        "lec02-main-p053",
+    ]
+    assert len({page["page_id"] for page in context}) == len(context)
+
+
+def test_neighbor_context_does_not_cross_document_boundary():
+    from app.retrieval import get_neighbor_context
+
+    first_page = get_neighbor_context("lec01-main-p001")
+    assert all(page["document_id"] == "lec01-main" for page in first_page)
