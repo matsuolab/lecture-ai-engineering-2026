@@ -5,6 +5,7 @@
     uv run python lectures/05/run_matrix.py --repeats 1  # まず動作確認（30回）
 
 質問・モデル・資料は固定。条件の順番は、質問ごとに1回ずつ巡回する（キャッシュ等の偏りを避ける）。
+失敗した条件だけを自動で再実行する（成功済みは再利用）。途中で止まっても同じコマンドで再開できる。
 出力: lectures/05/matrix_results.jsonl（全記録）と matrix_summary.md（条件別の集計）。
 「正しい回答か」は自動では判定しない。jsonl の answer を人が読んで確かめる。
 """
@@ -16,6 +17,7 @@ import re
 import statistics
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -60,7 +62,8 @@ def run_once(question: str, top_k: int, neighbors: int) -> dict:
         return {"error": "timeout"}
     out, err = proc.stdout, proc.stderr
     if proc.returncode != 0:
-        return {"error": f"exit {proc.returncode}: {(err or out)[-300:]}"}
+        # エラー文は標準出力に出る。標準エラーは [retrieved] 行なので、両方を見せる。
+        return {"error": f"exit {proc.returncode}: {out.strip()[-200:]} | {err.strip()[-100:]}"}
     answer = out.split("--- trace ---")[0].strip()
     trace = out
     t = re.search(r"回答完了まで ([\d.]+) 秒", trace)
@@ -80,6 +83,21 @@ def run_once(question: str, top_k: int, neighbors: int) -> dict:
         "retrieved": sorted(retrieved_pages(err + out)),
         "cited": sorted(cited_pages(answer)),
     }
+
+
+def retryable(error: str) -> bool:
+    return any(w in error for w in ("レート制限", "429", "503", "混み合って", "timeout"))
+
+
+def run_with_retry(question: str, top_k: int, neighbors: int, attempts: int = 4) -> dict:
+    for i in range(attempts):
+        r = run_once(question, top_k, neighbors)
+        if "error" not in r or not retryable(r["error"]) or i == attempts - 1:
+            return r
+        wait = 30 * (i + 1)
+        print(f"    待って再試行します（{wait}秒）: {r['error'][:60]}", flush=True)
+        time.sleep(wait)
+    return r
 
 
 def summarize(records: list[dict]) -> str:
@@ -114,25 +132,53 @@ def summarize(records: list[dict]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--sleep", type=float, default=10, help="各実行のあとに待つ秒数（レート制限対策）")
+    parser.add_argument("--questions", default="", help="実行する質問名をカンマ区切りで（例: QLoRA,HITL）。省略で全部")
+    parser.add_argument("--ks", default="", help="実行する検索件数をカンマ区切りで（例: 2,3）。省略で全部")
     args = parser.parse_args()
 
-    records, total = [], args.repeats * len(QUESTIONS) * len(CONFIGS)
-    done = 0
+    only_q = {q for q in args.questions.split(",") if q}
+    only_k = {int(k) for k in args.ks.split(",") if k}
     jsonl = OUT_DIR / "matrix_results.jsonl"
-    with jsonl.open("w", encoding="utf-8") as f:
-        for rep in range(1, args.repeats + 1):
-            for name, question, _ in QUESTIONS:
-                for k, n in CONFIGS:
-                    done += 1
-                    r = run_once(question, k, n)
-                    rec = {"rep": rep, "q": name, "k": k, "n": n, **r}
-                    records.append(rec)
-                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-                    f.flush()
-                    status = rec.get("error") or f"{r['time']}s ${r['cost']:.4f} retrieved={r['retrieved']}"
-                    print(f"[{done}/{total}] rep{rep} {name} k={k} n={n}: {status}", flush=True)
-    (OUT_DIR / "matrix_summary.md").write_text(summarize(records), encoding="utf-8")
-    print(f"\n保存: {jsonl.name}, matrix_summary.md")
+
+    # 前回までに成功した記録は残す。範囲内で失敗・未実行の条件だけ実行する（途中再開もできる）
+    results = {}
+    if jsonl.exists():
+        for line in jsonl.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                r = json.loads(line)
+                if "error" not in r:
+                    results[(r["rep"], r["q"], r["k"], r["n"])] = r
+
+    todo = [(rep, name, question, k, n)
+            for rep in range(1, args.repeats + 1)
+            for name, question, _ in QUESTIONS if not only_q or name in only_q
+            for k, n in CONFIGS if not only_k or k in only_k]
+    pending = [t for t in todo if (t[0], t[1], t[3], t[4]) not in results]
+    print(f"範囲内 {len(todo)} 条件のうち、実行するのは {len(pending)} 回（残りは前回の記録を再利用）", flush=True)
+
+    def save() -> None:
+        with jsonl.open("w", encoding="utf-8") as f:
+            for rec in results.values():
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+    failed = 0
+    for i, (rep, name, question, k, n) in enumerate(pending, 1):
+        r = run_with_retry(question, k, n)
+        rec = {"rep": rep, "q": name, "k": k, "n": n, **r}
+        if "error" in rec:
+            failed += 1
+            status = rec["error"]
+        else:
+            results[(rep, name, k, n)] = rec
+            save()
+            status = f"{r['time']}s ${r['cost']:.4f} retrieved={r['retrieved']}"
+        print(f"[{i}/{len(pending)}] rep{rep} {name} k={k} n={n}: {status}", flush=True)
+        time.sleep(args.sleep)
+
+    save()
+    (OUT_DIR / "matrix_summary.md").write_text(summarize(list(results.values())), encoding="utf-8")
+    print(f"\n保存: {jsonl.name}, matrix_summary.md（失敗{failed}件。残っていれば同じコマンドをもう一度）")
 
 
 if __name__ == "__main__":
