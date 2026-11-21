@@ -130,7 +130,7 @@ def search_materials(query: str) -> str:
     """
     from google.genai.errors import APIError
     import sqlite3
-    from app.retrieval import search
+    from app.retrieval import search_with_neighbors as search
 
     try:
         return json.dumps({"results": search(query)}, ensure_ascii=False)
