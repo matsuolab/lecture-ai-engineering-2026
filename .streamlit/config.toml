@@ -1,0 +1,12 @@
+# 第4回: tools/annotate.py（Streamlit）の設定。Codespaces のポート転送で開けるようにする
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = false
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
