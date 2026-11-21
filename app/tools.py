@@ -6,6 +6,7 @@
 
 import json
 import random
+import sys
 from datetime import datetime
 from functools import cache
 from pathlib import Path
@@ -133,7 +134,12 @@ def search_materials(query: str) -> str:
     from app.retrieval import search_with_neighbors as search
 
     try:
-        return json.dumps({"results": search(query)}, ensure_ascii=False)
+        results = search(query)
+        # 【第5回宿題】モデルへ実際に渡したページを記録する（*は前後ページ）。traceでは本文が見えないため。
+        print("[retrieved] " + ", ".join(
+            f"{r['lecture']}-p{r['page']}" + ("*" if r.get("role") == "neighbor" else "") for r in results
+        ), file=sys.stderr)
+        return json.dumps({"results": results}, ensure_ascii=False)
     except (ValueError, FileNotFoundError, sqlite3.Error) as e:
         return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
     except APIError as e:
