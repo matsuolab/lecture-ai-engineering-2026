@@ -124,8 +124,8 @@ def open_index(path: Path):
         db.close()
 
 
-def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+def search(query: str, neighbors: int = 0) -> list[dict]:
+    """質問を埋め込み、近いページ（最大RAG_TOP_K件）を返す。neighbors > 0 なら前後ページも付ける。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
@@ -135,7 +135,29 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+
+    if neighbors <= 0:
+        return hits
+
+    pages = load_pages()
+    index_by_id = {page["page_id"]: i for i, page in enumerate(pages)}
+
+    results = []
+    seen = set()
+    for hit in hits:
+        idx = index_by_id[hit["page_id"]]
+        for j in range(idx - neighbors, idx + neighbors + 1):
+            if not (0 <= j < len(pages)):
+                continue
+            page = pages[j]
+            if page["document_id"] != hit["document_id"]:
+                continue
+            if page["page_id"] in seen:
+                continue
+            seen.add(page["page_id"])
+            results.append(page)
+    return results
 
 
 def search_graph(query: str) -> dict:
@@ -202,7 +224,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="エージェントを使わず、講義資料の検索だけを実行する")
     parser.add_argument("query", help="調べたい内容")
     args = parser.parse_args()
-    for i, result in enumerate(search(args.query), 1):
+    for i, result in enumerate(search(args.query, neighbors=1), 1):
         print(f"\n{'=' * 60}\n検索結果 {i}\n{'=' * 60}")
         print(f"講義: {result['document_title']}")
         print(f"章: {result['section']}")
