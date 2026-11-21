@@ -14,6 +14,7 @@ pass / fail / unsure のどれかを返させる（構造化出力）。unsure �
 """
 
 import argparse
+import hashlib
 import json
 import re
 import time
@@ -53,9 +54,11 @@ Verdict = Literal["pass", "fail", "unsure"]
 
 class CriterionVerdict(BaseModel):
     """1 つの基準に対する判定。reason を先に書かせてから verdict を決めさせる（理由→判定の順）。"""
+    """1 つの基準に対する判定。verdict を先に決めさせてからreason を決めさせる（判定→理由の順）。"""
 
-    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
+    #reason: str = Field(description="判定の理由。日本語で 1〜2 文")
     verdict: Verdict = Field(description="pass / fail / unsure のどれか")
+    reason: str = Field(description="判定の理由。日本語で 1〜2 文")
 
 
 class JudgeResult(BaseModel):
@@ -188,18 +191,90 @@ def build_test_model() -> FunctionModel:
 
 
 # ---------------------------------------------------------------- 採点と集計
-def judge_cases(agent: Agent, cases: list[dict], wait: float = 0.0) -> dict[str, dict]:
-    """評価セットを 1 件ずつ採点する。戻り値は id → {基準: {reason, verdict}}。"""
-    verdicts: dict[str, dict] = {}
+def progress_fingerprint(cases: list[dict], rubric: str, model_name: str) -> str:
+    payload = json.dumps(
+        {"cases": cases, "rubric": rubric, "model": model_name},
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def load_progress(path: Path, fingerprint: str, case_ids: set[str]) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    progress = json.loads(path.read_text(encoding="utf-8"))
+    if progress.get("version") != 1 or progress.get("fingerprint") != fingerprint:
+        raise SystemExit(
+            f"{_rel(path)} は今回のモデル・基準・評価データと一致しません。"
+            "内容を確認してから進捗ファイルを削除してください。"
+        )
+    verdicts = progress.get("verdicts")
+    if not isinstance(verdicts, dict) or not set(verdicts).issubset(case_ids):
+        raise ValueError(f"{_rel(path)} の採点進捗データが不正です")
+    return verdicts
+
+
+def save_progress(path: Path, fingerprint: str, verdicts: dict[str, dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_name(path.name + ".tmp")
+    try:
+        temporary_path.write_text(
+            json.dumps(
+                {"version": 1, "fingerprint": fingerprint, "verdicts": verdicts},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        temporary_path.replace(path)
+    finally:
+        temporary_path.unlink(missing_ok=True)
+
+
+def judge_cases(
+    agent: Agent,
+    cases: list[dict],
+    wait: float = 0.0,
+    *,
+    progress_path: Path | None = None,
+    fingerprint: str | None = None,
+    previous_verdicts: dict[str, dict] | None = None,
+) -> dict[str, dict]:
+    """評価セットを採点し、成功したケースを保存する。"""
+    verdicts = dict(previous_verdicts or {})
     print(f"採点中 {len(cases)} 件 ", end="", flush=True)
     for case in cases:
-        result = agent.run_sync(judge_prompt(case))
+        if case["id"] in verdicts:
+            print("=", end="", flush=True)
+            continue
+
+        retry_wait = 5
+        while True:
+            try:
+                result = agent.run_sync(judge_prompt(case))
+                break
+            except ModelHTTPError as e:
+                if e.status_code != 503:
+                    raise
+                print(
+                    f"\n{api_error_message(e.status_code, str(e.body)[:200])}"
+                    f" {retry_wait}秒後に再試行します。",
+                    flush=True,
+                )
+                time.sleep(retry_wait)
+                retry_wait = min(retry_wait * 2, 300)
+
         out: JudgeResult = result.output
         verdicts[case["id"]] = {key: getattr(out, key).model_dump() for key, _ in LLM_CRITERIA}
         verdicts[case["id"]]["lecture_mark"] = {
             "reason": "末尾（最後の行）に「第N回」があるかをコードで判定",
             "verdict": check_lecture_mark(case["answer"]),
         }
+        if progress_path is not None:
+            if fingerprint is None:
+                raise ValueError("fingerprint is required when progress_path is set")
+            save_progress(progress_path, fingerprint, verdicts)
         print(".", end="", flush=True)
         if wait:
             time.sleep(wait)
@@ -328,7 +403,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--rubric", type=Path, default=DEFAULT_RUBRIC, help="採点の基準（markdown）")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="採点結果の保存先（json）")
     parser.add_argument("--model", default=None, help="採点に使うモデル。既定は AIE_MODEL。'test' で API を呼ばない偽モデル")
-    parser.add_argument("--wait", type=float, default=0.0, help="1 件ごとに待つ秒数（レート制限にかかるとき）")
+    parser.add_argument("--wait", type=float, default=5.0, help="採点リクエスト間の待ち時間（秒、既定: 5）")
     parser.add_argument("--compare", type=Path, help="LLM を呼ばず、このラベルファイルと --labels の一致率を出す")
     parser.add_argument("--generate", action="store_true", help="評価セットの回答を自分のエージェントで生成し直す（--cases に上書き）")
     args = parser.parse_args(argv)
@@ -365,8 +440,24 @@ def main(argv: list[str] | None = None) -> None:
         print(f"[model] {model_name}  temperature=0  rubric={_rel(args.rubric)}")
 
     judge = build_judge(model, rubric)
+    progress_path = args.out.with_name(args.out.name + ".progress.json")
+    fingerprint = progress_fingerprint(cases, rubric, model_name)
+    previous_verdicts = load_progress(
+        progress_path,
+        fingerprint,
+        {case["id"] for case in cases},
+    )
+    if previous_verdicts:
+        print(f"[progress] {len(previous_verdicts)}/{len(cases)} 件の採点済み結果から再開します")
     try:
-        verdicts = judge_cases(judge, cases, wait=args.wait)
+        verdicts = judge_cases(
+            judge,
+            cases,
+            wait=args.wait,
+            progress_path=progress_path,
+            fingerprint=fingerprint,
+            previous_verdicts=previous_verdicts,
+        )
     except ModelHTTPError as e:
         print("\n" + api_error_message(e.status_code, str(e.body)[:200]))
         raise SystemExit(1)
@@ -387,6 +478,7 @@ def main(argv: list[str] | None = None) -> None:
         ),
         encoding="utf-8",
     )
+    progress_path.unlink(missing_ok=True)
     print(f"\n→ {_rel(args.out)} に保存しました")
 
 
