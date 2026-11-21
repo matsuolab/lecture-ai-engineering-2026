@@ -139,7 +139,7 @@ def search(query: str) -> list[dict]:
 
 
 def search_graph(query: str) -> dict:
-    """ベクトル検索を入口に、前後ページと共通用語で候補を広げる。"""
+    """ベクトル検索を入口に、高選択性用語と複数シード共起を優先して候補を広げる。"""
     pages = {page["page_id"]: page for page in load_pages(RAG_SOURCE)}
     graph = json.loads(RAG_GRAPH.read_text(encoding="utf-8"))
     nodes = {node["id"]: node for node in graph["nodes"]
@@ -151,9 +151,11 @@ def search_graph(query: str) -> dict:
             adjacent[a].add(b)
             adjacent[b].add(a)
 
+    max_term_degree = 12
     seeds = [hit for hit in search(query) if hit["page_id"] in pages][:min(GRAPH_START_K, GRAPH_MAX_RESULTS)]
     seed_ids = {seed["page_id"] for seed in seeds}
-    results, candidates = [], {}
+    results, candidates, seed_hits_per_page = [], {}, defaultdict(set)
+
     for rank, seed in enumerate(seeds):
         root = seed["page_id"]
         results.append({**pages[root], "distance": seed["distance"], "hops": 0,
@@ -164,22 +166,27 @@ def search_graph(query: str) -> dict:
             current, path = queue.popleft()
             if len(path) - 1 >= GRAPH_HOPS:
                 continue
-            # 同じ深さなら、接続先が少ない用語からたどる。
             neighbors = sorted(adjacent[current], key=lambda n: (len(adjacent[n]), n))
             for neighbor in neighbors:
                 if neighbor in visited:
+                    continue
+                if nodes[neighbor]["kind"] == "term" and len(adjacent[neighbor]) > max_term_degree:
                     continue
                 visited.add(neighbor)
                 route = path + [neighbor]
                 queue.append((neighbor, route))
                 if neighbor not in pages or neighbor in seed_ids:
                     continue
-                frequency = max((len(adjacent[n]) for n in route if nodes[n]["kind"] == "term"), default=0)
-                priority = (len(route) - 1, frequency, rank, neighbor)
+                seed_hits_per_page[neighbor].add(root)
+                term_degrees = [len(adjacent[n]) for n in route if nodes[n]["kind"] == "term"]
+                frequency = max(term_degrees, default=0)
+                multi_seed_bonus = -len(seed_hits_per_page[neighbor])
+                priority = (multi_seed_bonus, len(route) - 1, frequency, rank, neighbor)
                 candidate = {**pages[neighbor], "hops": len(route) - 1,
                              "path": [{"id": n, "title": nodes[n]["title"]} for n in route]}
                 if neighbor not in candidates or priority < candidates[neighbor][0]:
                     candidates[neighbor] = (priority, candidate)
+
     expanded = [candidate for _, candidate in sorted(candidates.values())]
     return {"seeds": results, "expanded": expanded[:max(0, GRAPH_MAX_RESULTS - len(results))],
             "max_hops": GRAPH_HOPS}
