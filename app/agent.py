@@ -173,6 +173,16 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
     print(f"[cost] 生成APIの推定コスト: {cost}（埋め込み・索引構築分は含まない）")
 
 
+def print_related_terms(question: str, limit: int = 5) -> None:
+    """回答に続けて、質問に関係する用語を表示する。"""
+    related = tools.find_related_terms(question, limit=limit)
+    if not related:
+        return
+    print("\n--- related terms ---")
+    for entry in related:
+        print(f"- {entry['term']}（第{entry['lecture']}回）: {entry['definition']}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="学習支援エージェントに質問する")
     parser.add_argument("question", nargs="?")
@@ -220,6 +230,7 @@ def main() -> None:
             raise SystemExit(1)
         elapsed_seconds = perf_counter() - started
         print(result.output)
+        print_related_terms(args.question)
         if args.trace:
             print_trace(result, elapsed_seconds)
 
