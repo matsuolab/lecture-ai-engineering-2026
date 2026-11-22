@@ -1,14 +1,15 @@
-"""第5回: 用語集と各回の要点を MCP サーバーとして公開する。
+"""第6回: 用語集と各回の要点を MCP サーバーとして公開する。
 
 使い方:
-    uv run python -m app.agent --mcp --list-tools   # このサーバーが公開するツールを一覧する（APIキー不要）
+    uv run python -m app.mcp_agent --list-tools     # このサーバーが公開するツールを一覧する（APIキー不要）
     uv run python -m app.mcp_server --http          # Streamable HTTP で起動する（http://127.0.0.1:8000/mcp）
 
-引数なしで実行すると stdio（標準入出力）で待ち受ける。これは MCP クライアント（app.agent の --mcp や
-Copilot Chat）がサブプロセスとして起動する使い方なので、手で実行すると入力待ちのまま止まって見える。
+引数なしで実行すると stdio（標準入出力）で待ち受ける。これは MCP クライアント（app.mcp_agent など）が
+サブプロセスとして起動する使い方なので、手で実行すると入力待ちのまま止まって見える。
 
 第3回では tools.py の関数を agent.py に直接登録した。MCP サーバーにすると、同じ関数を
-Pydantic AI 以外のクライアント（Copilot Chat など）からも、共通の手順で使えるようになる。
+エージェントのプログラム（app/mcp_agent.py）からも、MCP に対応したほかのソフトウェアからも、
+共通の手順で使えるようになる。
 """
 
 import argparse
@@ -26,8 +27,7 @@ server = MCPServer(
 # 第3回と同じ関数を、そのまま MCP のツールとして公開する。docstring と型ヒントが説明文になる
 server.tool()(tools.search_glossary)
 
-# TODO(第5回 演習): tools.get_lecture_summary も公開しよう（上の1行と同じ書き方）
-# 第3回で make_quiz を作った人は、それも公開できる
+# TODO(宿題・基礎): get_lecture_summary も公開しよう
 
 
 def main() -> None:

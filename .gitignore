@@ -15,3 +15,6 @@ learning_log/
 
 # ADK のローカル実行状態（第3回 宿題のadk webで生成）
 .adk/
+
+# 第5回: 資料から再生成する検索DB
+.cache/rag/
