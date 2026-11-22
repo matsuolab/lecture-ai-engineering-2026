@@ -21,6 +21,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, QuantileTransformer
 
 from bag import bag_matrix, nested_bag_score
+from pfn import nested_pfn_score, pfn_matrix
 from clean import RECOVER_MODES, USER, clean_log, read_csv
 from features import (USER_COLS, event_tokens, extra_features, title_text_features, user_log_features,
                       user_static_features)
@@ -138,11 +139,13 @@ def to_category(X: pd.DataFrame, ref: pd.DataFrame) -> pd.DataFrame:
 MODELS = {"lgb": fit_lgb, "cat": fit_cat, "lr": fit_lr}
 
 
-def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=1.0, verbose=True):
+def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=20.0, verbose=True, pfn_Z=None):
     """Repeated Stratified K-fold。
 
     bag=(行列, index) を渡すと、各 fold で袋モデルの入れ子スコア（学習側は内側 OOF）を
     列 bag_score として全モデルの入力に加える（検証レポート v19 の手法）。
+    pfn_Z（TabPFN 入力行列, train+test）を渡すと、同様に TabPFN の入れ子予測を列 pfn_score として加える。
+    pfn_Z はクレンジング違いの実行間で共通にすること（キャッシュを分割単位で共有するため）。
     返り値: oof(各 repeat の平均), test 予測(全 fold 平均), fold ごとの損失 {model: [..]}
     """
     allX = pd.concat([X, Xte])
@@ -160,6 +163,13 @@ def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=
             B = Xte.assign(bag_score=sc.reindex(Xte.index).to_numpy())
             if A["bag_score"].iloc[np.r_[tr, va]].isna().any() or B["bag_score"].isna().any():
                 raise RuntimeError("bag_score に欠損があります")
+        if pfn_Z is not None:
+            others = X.index[va].append(Xte.index)
+            ps = nested_pfn_score(pfn_Z, y.iloc[tr], others, seed=seed + i)
+            A = A.assign(pfn_score=ps.reindex(X.index).to_numpy())
+            B = B.assign(pfn_score=ps.reindex(Xte.index).to_numpy())
+            if A["pfn_score"].iloc[np.r_[tr, va]].isna().any() or B["pfn_score"].isna().any():
+                raise RuntimeError("pfn_score に欠損があります")
         for k in models:
             if k == "lgb":
                 A2, B2 = to_category(A, allX), to_category(B, allX)
@@ -220,6 +230,7 @@ def main():
     ap.add_argument("--models", default="lgb,lr")  # CatBoost はブレンド重みがほぼ 0 のため既定では外す
     ap.add_argument("--repeats", type=int, default=10)
     ap.add_argument("--variants", default=",".join(RECOVER_MODES))
+    ap.add_argument("--pfn", action="store_true", help="TabPFN の入れ子予測を特徴量に加える（要: 重みファイル）")
     ap.add_argument("--params", type=Path, default=Path("config/params.json"))
     ap.add_argument("--seed", type=int, default=2025)
     args = ap.parse_args()
@@ -229,10 +240,15 @@ def main():
     models = args.models.split(",")
     modes = args.variants.split(",")
     oofs, tests = [], []
+    pfn_Z = None
+    if args.pfn:
+        # TabPFN の入力は基本クレンジング版で固定（分割単位のキャッシュをクレンジング違いで共有）
+        X0, _, Xte0, _, _ = build_features(args.input, recover_mode="full", with_bag=False)
+        pfn_Z = pfn_matrix(pd.concat([X0, Xte0]), USER_COLS)
     for mode in modes:
         X, y, Xte, sub, bag = build_features(args.input, recover_mode=mode)
         print(f"[{mode}] train={X.shape} test={Xte.shape} pos_rate={y.mean():.4f}")
-        o, t, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag)
+        o, t, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag, pfn_Z=pfn_Z)
         oofs.append(o)
         tests.append(t)
     # 復元方法の異なるクレンジングごとの予測を logit 平均（復元の不確かさを打ち消す）
