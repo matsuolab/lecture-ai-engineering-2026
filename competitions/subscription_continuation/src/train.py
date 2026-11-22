@@ -23,7 +23,7 @@ from sklearn.preprocessing import OneHotEncoder, QuantileTransformer
 from bag import bag_matrix, nested_bag_score
 from external import ExternalScores
 from pfn import nested_pfn_score, pfn_matrix
-from clean import RECOVER_MODES, USER, clean_log, read_csv
+from clean import RECOVER_MODES, USER, clean_log, load_production_log, read_csv
 from features import (USER_COLS, event_tokens, extra_features, title_text_features, user_log_features,
                       user_static_features)
 
@@ -54,7 +54,11 @@ def build_features(inp: Path, dedupe: bool = True, extra: bool = True, drop_qual
     if not set(train[TARGET].unique()) <= {0, 1}:
         raise ValueError("継続フラグに 0/1 以外の値があります")
 
-    clog = clean_log(log, films, dedupe=dedupe, recover_mode=recover_mode)
+    if recover_mode == "production":
+        # 検証レポートのクレンジング済みログ（external/log_clean_production.parquet）を4種類目として使う
+        clog = load_production_log(inp.parent / "external" / "log_clean_production.parquet", films)
+    else:
+        clog = clean_log(log, films, dedupe=dedupe, recover_mode=recover_mode)
     users = pd.concat([train.drop(columns=[TARGET]), test], ignore_index=True)
     X = user_static_features(users)
     X = X.join(user_log_features(clog, films)).join(title_text_features(clog, films))
@@ -137,7 +141,13 @@ def to_category(X: pd.DataFrame, ref: pd.DataFrame) -> pd.DataFrame:
     return X
 
 
-MODELS = {"lgb": fit_lgb, "cat": fit_cat, "lr": fit_lr}
+def fit_lgb3(Xtr, ytr, Xva, Xte, seed):
+    """fold ごとに LightGBM を 3 seed で学習して平均（分散低減）。"""
+    outs = [fit_lgb(Xtr, ytr, Xva, Xte, seed + 10000 * j) for j in range(3)]
+    return np.mean([o[0] for o in outs], axis=0), np.mean([o[1] for o in outs], axis=0)
+
+
+MODELS = {"lgb": fit_lgb, "lgb3": fit_lgb3, "cat": fit_cat, "lr": fit_lr}
 
 
 def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=20.0, verbose=True, pfn_Z=None,
@@ -191,7 +201,7 @@ def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=
                 A[f"ext_{name}"] = col
                 B[f"ext_{name}"] = vte
         for k in models:
-            if k == "lgb":
+            if k.startswith("lgb"):
                 A2, B2 = to_category(A, allX), to_category(B, allX)
             else:
                 A2, B2 = A, B
@@ -210,19 +220,44 @@ def logit(p):
     return np.log(p / (1 - p))
 
 
+COV_PREFIX = "cov_"  # この接頭辞のキーは確率ではなく共変量（0/1 など）として校正式に線形で入れる
+
+
+def _design(preds: dict) -> np.ndarray:
+    return np.column_stack([preds[k] if k.startswith(COV_PREFIX) else logit(preds[k]) for k in preds])
+
+
 def blend(oof: dict, y: np.ndarray):
-    """logit 空間での非負重み + 温度/バイアス（Platt）を OOF で最適化。"""
+    """logit 空間での非負重み + バイアス（Platt）を OOF で最適化。
+
+    キーが cov_ で始まる要素は共変量として扱い、重みの符号は制約しない（例: シーズン進行フラグ。検証レポート v9b）。
+    """
     keys = list(oof)
-    L = np.column_stack([logit(oof[k]) for k in keys])
+    L = _design(oof)
+    is_cov = np.array([k.startswith(COV_PREFIX) for k in keys])
+
+    def coef(w):
+        return np.where(is_cov, w[:-1], np.abs(w[:-1]))
 
     def loss(w):
-        z = L @ np.abs(w[:-1]) + w[-1]
+        z = L @ coef(w) + w[-1]
         return log_loss(y, np.clip(1 / (1 + np.exp(-z)), EPS, 1 - EPS))
 
-    w0 = np.r_[np.ones(len(keys)) / len(keys), 0.0]
-    res = minimize(loss, w0, method="Nelder-Mead", options=dict(maxiter=5000, xatol=1e-6, fatol=1e-8))
-    w = np.r_[np.abs(res.x[:-1]), res.x[-1]]
+    w0 = np.r_[np.where(is_cov, 0.0, 1.0 / max(1, (~is_cov).sum())), 0.0]
+    res = minimize(loss, w0, method="Nelder-Mead", options=dict(maxiter=8000, xatol=1e-6, fatol=1e-8))
+    w = np.r_[coef(res.x), res.x[-1]]
     return dict(zip(keys + ["bias"], w.tolist())), res.fun
+
+
+def crossfit_blend_pred(oof: dict, y: np.ndarray, n_rounds: int = 20) -> np.ndarray:
+    """ブレンド重み・校正を別の利用者で決めた場合の予測（各利用者について n_rounds 回の平均確率）。"""
+    from sklearn.model_selection import StratifiedKFold
+    acc = np.zeros(len(y))
+    for r in range(n_rounds):
+        for a, b in StratifiedKFold(5, shuffle=True, random_state=r).split(y, y):
+            wa, _ = blend({k: v[a] for k, v in oof.items()}, y[a])
+            acc[b] += apply_blend({k: v[b] for k, v in oof.items()}, wa)
+    return acc / n_rounds
 
 
 def crossfit_blend_loss(oof: dict, y: np.ndarray, n_rounds: int = 20) -> float:
@@ -239,7 +274,7 @@ def crossfit_blend_loss(oof: dict, y: np.ndarray, n_rounds: int = 20) -> float:
 
 
 def apply_blend(preds: dict, w: dict):
-    z = sum(w[k] * logit(preds[k]) for k in preds) + w["bias"]
+    z = _design(preds) @ np.array([w[k] for k in preds]) + w["bias"]
     return 1 / (1 + np.exp(-z))
 
 

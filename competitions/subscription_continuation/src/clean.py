@@ -206,6 +206,11 @@ def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True, recov
     fixed = fix_minute_scale(log[MINUTES], fdur)
     log["minute_fixed"] = (fixed.ne(log[MINUTES]) & log[MINUTES].notna()).astype(int)
     log[MINUTES] = fixed
+    return _finalize(log, films, fdur)
+
+
+def _finalize(log: pd.DataFrame, films: pd.DataFrame, fdur: pd.Series) -> pd.DataFrame:
+    """視聴時間の欠損補完・クリップ、完了率、デバイス・エピソード欠損の補完（クレンジング共通の後処理）。"""
     # 欠損はタイトルの1話時間、それも無ければ全体中央値
     log[MINUTES] = log[MINUTES].fillna(fdur).fillna(log[MINUTES].median())
     # 1話時間の 1.2 倍で上限クリップ（タイトル不明なら 180 分）
@@ -234,3 +239,31 @@ def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True, recov
     log["ep_missing"] = (~known).astype(int)
     log[EP] = log[EP].fillna(est_f).fillna(est_b).fillna(1).clip(lower=1)
     return log.sort_index()
+
+
+PRODUCTION_COLS = {"ts": DT, "user_id": USER, "profile": PROFILE, "title_id": TITLE, "wt": MINUTES,
+                   "season": SEASON, "ep": EP, "device": DEVICE}
+
+
+def load_production_log(path, films: pd.DataFrame) -> pd.DataFrame:
+    """検証レポートのパイプラインがクレンジングしたログ（parquet）を、このパイプラインの形式に変換する。
+
+    レポート側の処理: 重複除去・視聴時間の桁ずれ補正（尤度で除数選択）・タイトルIDのランキング学習による復元
+    （マスク検証 83%）・話数補完。ここでは列名の対応付けと、共通の後処理（_finalize）だけを行う。
+    """
+    raw = pd.read_parquet(path)
+    missing = set(PRODUCTION_COLS) - set(raw.columns)
+    if missing:
+        raise ValueError(f"整形済みログに必要な列がありません: {missing}")
+    log = raw[list(PRODUCTION_COLS)].rename(columns=PRODUCTION_COLS).copy()
+    log[DT] = pd.to_datetime(log[DT])
+    log[SEASON] = pd.to_numeric(log[SEASON], errors="coerce").fillna(1)
+    log[EP] = pd.to_numeric(log[EP], errors="coerce")
+    log[MINUTES] = pd.to_numeric(log[MINUTES], errors="coerce")
+    log[TITLE] = log[TITLE].where(log[TITLE].isin(set(films[TITLE])), other=np.nan).astype(object)
+    log["title_raw_bad"] = (raw["tid_kind"].astype(str) != "ok").astype(int).to_numpy()
+    log["title_missing"] = raw["title_id_orig"].isna().astype(int).to_numpy()
+    log["minute_fixed"] = raw["wt_fixed_flag"].astype(int).to_numpy()
+    log = log.reset_index(drop=True)
+    fdur = log[TITLE].map(films.set_index(TITLE)["1話当たりの時間(分)"])
+    return _finalize(log, films, fdur)
