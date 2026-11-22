@@ -45,7 +45,7 @@
   - `browse_tree({})`
   - `browse_tree({'node_id': 'lec03-main'})`
   - `browse_tree({'node_id': 'lec03-main-s049'})`
-  - `browse_tree({'node_id': 'lec03-main-p049'})`
+  - `browse_tree({'node_id': 'lec03-main-p049'})`　←同じ資料を２度読んでいる。
   - `browse_tree({'node_id': 'lec03-main-p050'})`
 - Graph: 1回
   - `search_graph({'query': 'ハーネス 第3回'})`
