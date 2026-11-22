@@ -16,7 +16,7 @@ import sqlite_vec
 
 from app.config import (
     EMBEDDING_DIMENSIONS, EMBEDDING_MAX_TOKENS, EMBEDDING_MODEL,
-    RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
+    RAG_DB, RAG_DOCUMENT_IDS, RAG_INCLUDE_NEIGHBORS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
     RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
 
@@ -124,8 +124,8 @@ def open_index(path: Path):
         db.close()
 
 
-def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+def search(query: str, *, include_neighbors: bool = False) -> list[dict]:
+    """近いページを最大RAG_TOP_K件返し、指定された場合は前後1ページも添える。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
@@ -135,7 +135,27 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+        if include_neighbors:
+            return hits + _neighbor_pages(db, hits)
+        return hits
+
+
+def _neighbor_pages(db: sqlite3.Connection, hits: list[dict]) -> list[dict]:
+    """同じ資料の索引から直前・直後のページを取得し、既出のページを除く。"""
+    seen = {hit["page_id"] for hit in hits}
+    neighbors = []
+    for hit in hits:
+        rows = db.execute("""
+            SELECT page_id, document_id, lecture, document_title, section, title, page, content
+            FROM chunks WHERE document_id = ? AND page IN (?, ?)
+            ORDER BY page, page_id
+        """, (hit["document_id"], hit["page"] - 1, hit["page"] + 1))
+        for row in rows:
+            if row["page_id"] not in seen:
+                seen.add(row["page_id"])
+                neighbors.append(dict(row))
+    return neighbors
 
 
 def search_graph(query: str) -> dict:
@@ -202,7 +222,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="エージェントを使わず、講義資料の検索だけを実行する")
     parser.add_argument("query", help="調べたい内容")
     args = parser.parse_args()
-    for i, result in enumerate(search(args.query), 1):
+    for i, result in enumerate(search(args.query, include_neighbors=RAG_INCLUDE_NEIGHBORS), 1):
         print(f"\n{'=' * 60}\n検索結果 {i}\n{'=' * 60}")
         print(f"講義: {result['document_title']}")
         print(f"章: {result['section']}")

@@ -42,6 +42,36 @@ def test_built_index_can_be_searched(materials, monkeypatch):
     assert hits[0]["distance"] == pytest.approx(0)
 
 
+def test_search_can_add_unique_neighbors_from_the_same_document(materials, monkeypatch):
+    source, database = materials
+    documents = json.loads(source.read_text(encoding="utf-8"))
+    for document, numbers in zip(documents, [(1, 2, 3, 4, 6), (1, 5), (1,)]):
+        document["content"][0]["content"] = [
+            {"id": f"{document['id']}-p{number:03d}", "title": f"ページ{number}",
+             "page": number, "content": f"{document['id']}の本文{number}"}
+            for number in numbers
+        ]
+    source.write_text(json.dumps(documents), encoding="utf-8")
+
+    def embed(text, _task):
+        is_hit = any(text.endswith(f"lec01-mainの本文{page}") for page in (1, 3, 4))
+        return [1, 0] if is_hit else [0, 1]
+
+    build_index(source, database, embedder=embed)
+    embed_query = Mock(return_value=[1, 0])
+    monkeypatch.setattr(retrieval, "RAG_DB", database)
+    monkeypatch.setattr(retrieval, "RAG_TOP_K", 3)
+    monkeypatch.setattr(retrieval, "embed_text", embed_query)
+
+    hits = retrieval.search("質問")
+    assert [hit["page_id"] for hit in hits] == ["lec01-main-p001", "lec01-main-p003", "lec01-main-p004"]
+    embed_query.reset_mock()
+    results = retrieval.search("質問", include_neighbors=True)
+    embed_query.assert_called_once_with("質問", "RETRIEVAL_QUERY")
+    expected_neighbor = next(page for page in retrieval.load_pages(source) if page["page_id"] == "lec01-main-p002")
+    assert results == hits + [expected_neighbor]
+
+
 def test_existing_index_survives_failed_rebuild(materials):
     source, database = materials
     build_index(source, database, embedder=lambda *_: [1, 0])
