@@ -135,7 +135,38 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+
+    pages = load_pages(RAG_SOURCE)
+    return [add_neighbor_context(hit, pages) for hit in hits]
+
+
+def add_neighbor_context(hit: dict, pages: list[dict] | None = None) -> dict:
+    """検索ヒットと同じ資料内の前後1ページを重複なく付ける。"""
+    pages = pages if pages is not None else load_pages(RAG_SOURCE)
+    same_document = [page for page in pages if page["document_id"] == hit["document_id"]]
+    try:
+        index = next(i for i, page in enumerate(same_document)
+                     if page["page_id"] == hit["page_id"])
+    except StopIteration:
+        return hit
+
+    source_hit = same_document[index]
+    if hit.get("content") != source_hit["content"]:
+        return hit
+
+    context = []
+    seen = set()
+    for page in same_document[max(0, index - 1):index + 2]:
+        if page["page_id"] not in seen:
+            seen.add(page["page_id"])
+            context.append(page)
+
+    return {
+        **hit,
+        "content": "\n\n".join(page["content"] for page in context),
+        "context": context,
+    }
 
 
 def search_graph(query: str) -> dict:
