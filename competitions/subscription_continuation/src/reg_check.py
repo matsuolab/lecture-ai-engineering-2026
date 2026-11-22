@@ -25,6 +25,10 @@ CANDIDATES = {
                         path_smooth=10.0),
     "R2_strong": dict(num_leaves=7, max_depth=3, min_child_samples=50, reg_lambda=20.0, reg_alpha=1.0,
                       path_smooth=30.0, n_estimators=1500),
+    # 入れ子検証（外側 seed 1〜2 の 10 fold）で学習側ごとに選ばれたパラメータの中央値（学習率等は幾何平均）
+    "R3_nested_consensus": dict(n_estimators=416, learning_rate=0.015, num_leaves=20, max_depth=4, min_child_samples=45,
+                                subsample=0.84, colsample_bytree=0.26, reg_lambda=0.13, reg_alpha=0.068,
+                                min_data_per_group=54, cat_smooth=18.8, cat_l2=19.7, max_cat_to_onehot=15),
 }
 
 
