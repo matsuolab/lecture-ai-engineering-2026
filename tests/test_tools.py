@@ -39,6 +39,40 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_make_quiz_reveals_answer_after_yes(monkeypatch, capsys):
+    terms = tools.load_glossary()
+    expected = next(term for term in terms if term["lecture"] == 3)
+
+    def choose_term(candidates):
+        assert all(term["lecture"] == 3 for term in candidates)
+        return expected
+
+    monkeypatch.setattr(tools.random, "choice", choose_term)
+    monkeypatch.setattr("builtins.input", lambda prompt: " yes ")
+    quiz = json.loads(tools.make_quiz(3))
+    question = f"「{expected['term']}」とは何ですか？"
+
+    assert quiz == [
+        {
+            "question": question,
+            "answer": expected["definition"],
+        }
+    ]
+    output = capsys.readouterr().out
+    assert question in output
+    assert expected["definition"] in output
+
+
+def test_make_quiz_hides_answer_unless_yes_is_entered(monkeypatch):
+    expected = next(term for term in tools.load_glossary() if term["lecture"] == 3)
+    monkeypatch.setattr(tools.random, "choice", lambda candidates: expected)
+    monkeypatch.setattr("builtins.input", lambda prompt: "no")
+
+    quiz = json.loads(tools.make_quiz(3))
+
+    assert quiz == [{"question": f"「{expected['term']}」とは何ですか？"}]
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
