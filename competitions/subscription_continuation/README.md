@@ -25,6 +25,11 @@ python -m pytest tests -q            # 単体テスト
 - 外部の入れ子予測は検証レポートのパイプラインが Colab（GPU）で計算したもの（`external/*.npz`, git 管理外）。
   分割が手元の `StratifiedKFold(5, shuffle=True, random_state=s)` と全 75 fold で一致することを読み込み時に検証している。
   実行: `python src/train.py --ext tabpfn,tabfm,limix,ftfm --out output/ext4`
+- 公開 LB（2026-11-23）: 本命 ext4 0.26142 / 保険 ext2 0.26391（レポート v52 は 0.25398）。
+  CV→LB の絶対差 +0.018 は公開分（約424人）の標準誤差 ≈0.026 の範囲。ただし v52 との差は OOF 見込み −0.0045 に対し LB +0.0074（対差の SE≈0.0072, 約1.65σ）。
+  手元版は test 予測が v52 より極端（ロジット標準偏差 3.71 vs 3.39）。
+- 対策案: 手元版と v52（`series_logits.npz` の fmlmxft 系列）を OOF で重み付けして混合 → 交差フィット 0.2412
+  （手元 0.2433 / v52 0.2472）。`output/submission_ext4_x_v52.csv`（重み 手元0.64 : v52 0.32）。
 - 本命 4 本版の test 予測は、レポートの v52（公開 LB 0.25398）とロジット相関 0.979。
 - LimiX-2・FTFM-1（と TabFM）の重みは非商用ライセンス。提出前にコンペ規約で使用可否の確認が必要。
 - 修正: 以前の版は袋モデルの C が main から渡らず 1.0（単体 0.438 の弱い設定）で動いていた。既定値を 20 に修正。
