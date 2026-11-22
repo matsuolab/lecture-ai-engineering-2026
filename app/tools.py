@@ -5,9 +5,10 @@
 """
 
 import json
-import random
 from functools import cache
 from pathlib import Path
+
+from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MAX_RESULTS = 3
@@ -80,29 +81,48 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def make_quiz(lecture: int | None = None) -> str:
-    """用語集から確認問題を1問作る。
+def search_materials(query: str) -> str:
+    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
 
-    確認問題を求められたときに使う。lecture が指定された場合はその回の用語から、
-    指定がなければ全回の用語から1つ選び、問題と答えを返す。
+    queryに調べたい内容を指定する。
     """
-    if lecture is not None and lecture < 1:
-        return "回は1以上の整数を指定してください。"
+    from google.genai.errors import APIError
+    import sqlite3
+    from app.retrieval import search
 
-    terms = load_glossary()
-    if lecture is not None:
-        terms = [term for term in terms if term["lecture"] == lecture]
-    if not terms:
-        if lecture is None:
-            return "用語集に確認問題を作れる用語がありません。"
-        return f"第{lecture}回の用語は用語集にありません。"
+    try:
+        return json.dumps({"results": search(query)}, ensure_ascii=False)
+    except (ValueError, FileNotFoundError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code), "results": []}, ensure_ascii=False)
 
-    term = random.choice(terms)
-    return json.dumps(
-        {
-            "lecture": term["lecture"],
-            "question": f"「{term['term']}」とは何ですか？",
-            "answer": term["definition"],
-        },
-        ensure_ascii=False,
-    )
+
+def browse_tree(node_id: str | None = None) -> str:
+    """目次とページの先頭文を返す。ページIDを指定すると全文を返す。
+
+    最初はnode_idを省略する。続いて返されたIDを指定して目次をたどる。
+    """
+    from app.retrieval import browse_tree as browse
+
+    try:
+        return json.dumps(browse(node_id), ensure_ascii=False)
+    except (ValueError, OSError) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+def search_graph(query: str) -> str:
+    """資料を検索し、前後ページ・共通用語をたどって関連ページの本文と引用情報を返す。
+
+    queryに調べたい内容を指定する。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.retrieval import search_graph as search
+
+    try:
+        return json.dumps(search(query), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
