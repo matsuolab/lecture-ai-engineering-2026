@@ -5,20 +5,23 @@ TestModel は実際のLLMを呼ばない偽モデルで、登録されたツー�
 「ツールが登録され、呼ばれ、結果がモデルに戻るか」を確かめられる。
 """
 
-from pydantic_ai import DeferredToolRequests, DeferredToolResults
+import json
+
+from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
 from app.agent import agent
 
-BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
+BASE_TOOLS = {"search_materials"}
 
 
 def _parts(result, kind):
     return [p for m in result.all_messages() for p in m.parts if isinstance(p, kind)]
 
 
-def test_base_tools_are_registered_and_called():
+def test_base_tools_are_registered_and_called(monkeypatch):
+    monkeypatch.setattr("app.retrieval.search", lambda *args, **kwargs: [])
     model = TestModel()
     with agent.override(model=model):
         result = agent.run_sync("LoRAとは？")
@@ -34,30 +37,12 @@ def test_base_tools_are_registered_and_called():
     assert result.output
 
 
-def test_glossary_result_reaches_the_model():
-    model = TestModel(call_tools=["search_glossary"])
+def test_material_result_reaches_the_model(monkeypatch):
+    hit = {"page_id": "lec02-main-p052", "lecture": 2, "page": 52, "content": "元の重みは固定"}
+    monkeypatch.setattr("app.retrieval.search", lambda *args, **kwargs: [hit])
+    model = TestModel(call_tools=["search_materials"])
     with agent.override(model=model):
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
-    assert returns and returns[0].tool_name == "search_glossary"
-
-
-def test_learning_log_is_deferred_until_approved(tmp_path, monkeypatch):
-    from app import tools
-
-    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", tmp_path / "learning_log")
-    with agent.override(model=TestModel(call_tools=["save_learning_log"])):
-        waiting = agent.run_sync("学習記録を保存して")
-
-    assert isinstance(waiting.output, DeferredToolRequests)
-    approval = next(call for call in waiting.output.approvals if call.tool_name == "save_learning_log")
-    assert not list((tmp_path / "learning_log").glob("*.md"))
-
-    result = agent.run_sync(
-        message_history=waiting.all_messages(),
-        deferred_tool_results=DeferredToolResults(approvals={approval.tool_call_id: True}),
-        model=TestModel(call_tools=[]),
-    )
-
-    assert not isinstance(result.output, DeferredToolRequests)
-    assert list((tmp_path / "learning_log").glob("*.md"))
+    assert returns and returns[0].tool_name == "search_materials"
+    assert json.loads(returns[0].content)["results"] == [hit]
