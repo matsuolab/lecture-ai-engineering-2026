@@ -1,0 +1,65 @@
+* [33m409ca65[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mlec04[m[33m, [m[1;31morigin/lec04[m[33m)[m 第4回演習・宿題 修正
+* [33m4dd0066[m 第4回演習・宿題
+* [33mb4c7fc0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m 第4回 演習
+* [33m5e65b81[m 第4回 演習
+*   [33m2f37a50[m Merge branch 'matsuolab:main' into main
+[32m|[m[33m\[m  
+[32m|[m *   [33m1ce722c[m Merge pull request #520 from Limmel6/lec05
+[32m|[m [34m|[m[35m\[m  
+[32m|[m [34m|[m *   [33m62b9061[m Merge pull request #1 from Limmel6/lec05-bundle-db
+[32m|[m [34m|[m [36m|[m[1;31m\[m  
+[32m|[m [34m|[m [36m|[m * [33m88b420a[m 第5回: 作成済みの検索DBを同梱する
+[32m|[m [34m|[m [36m|[m[36m/[m  
+[32m|[m [34m|[m * [33md6ff1a7[m 第5回: 講義資料を検索して回答する演習・宿題を追加
+[32m|[m [34m|[m[34m/[m  
+[32m|[m [34m|[m * [33m24763df[m[33m ([m[1;31morigin/lec03[m[33m, [m[1;32mlec03[m[33m)[m 第3回演習 make_quiz追加
+[32m|[m [34m|[m * [33md833b77[m 第3回演習・宿題
+[32m|[m [34m|[m[32m/[m  
+[32m|[m[32m/[m[34m|[m   
+* [34m|[m [33m85b4931[m Merge branch 'matsuolab:main' into main
+[1;33m|[m[34m\[m[34m|[m 
+[1;33m|[m *   [33mbc41dfa[m Merge pull request #432 from matsuolab/lec04-prep
+[1;33m|[m [1;35m|[m[1;36m\[m  
+[1;33m|[m [1;35m|[m * [33mcf0e2c3[m 第4回: 評価セットのラベル付けと LLM-as-a-Judge の演習・宿題を追加
+[1;33m|[m [1;35m|[m * [33m6df1d11[m MCP の回を第5回から第6回に変更（第5回はデータとコンテキストの回になるため）
+[1;33m|[m [1;35m|[m[1;35m/[m  
+[1;33m|[m * [33mfae899a[m B2: 第2回の参考結果（講師が T4 で実行したもの）を追加
+[1;33m|[m * [33m123fcc1[m A4: 用語集と第3回の要点から adk web の説明を外す
+[1;33m|[m * [33mf3f40a3[m A3: 承認付きのツールを足しても test_agent が落ちないようにする
+[1;33m|[m * [33mcfcfef2[m B4: 第3回の参考リンクを移転先の URL にする
+[1;33m|[m * [33mbd1de82[m A2: 第3回の宿題の説明を丁寧にする（実装のテストを外す、発展(a)は adk run、発展(b)は Pi の手順を4つに分ける）
+[1;33m|[m * [33mfabea4b[m A1: 第3回の演習の手順をスライドの手順1〜6に合わせる
+[1;33m|[m * [33mc17c00e[m 呼び出すモデルについての補足説明を追加
+[1;33m|[m * [33m662cddd[m problem.md 発展の内容を修正
+* [1;36m|[m   [33m57f8b12[m Merge pull request #2 from hgrabbit324/lec02
+[31m|[m[32m\[m [1;36m\[m  
+[31m|[m * [1;36m|[m [33m16fb6f9[m[33m ([m[1;31morigin/lec02[m[33m, [m[1;32mlec02[m[33m)[m 第2回演習
+* [32m|[m [1;36m|[m [33me68b87f[m Merge pull request #1 from hgrabbit324:lec01
+[1;36m|[m[32m\[m[32m|[m [1;36m|[m 
+[1;36m|[m [32m|[m[1;36m/[m  
+[1;36m|[m[1;36m/[m[32m|[m   
+[1;36m|[m * [33m5cddcc9[m[33m ([m[1;31morigin/lec01[m[33m, [m[1;32mlec01[m[33m)[m 第1回 宿題
+[1;36m|[m[1;36m/[m  
+* [33mf9ab3d5[m Codespaces の環境定義（.devcontainer）と .gitignore を追加
+* [33m22770cf[m 第1回~第3回、第5回のコンテンツを追加
+ [34m\[m 
+  * [33m1bf6573[m Initial commit
+* [33mcafd144[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 3
+* [33mbd762d9[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 3 start
+* [33me61bc77[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 2
+* [33m20f08a9[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 2 start
+* [33m4bd8476[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 1
+* [33ma3948e8[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - turn 1 start
+ [35m\[m 
+  * [33m6ea740a[m Agent host session 5f468331-391b-4759-8f44-26600b64e760 - baseline checkpoint
+* [33m7ed3a8b[m Agent host session 52f6b891-67e7-4c53-a813-7460b3aaa9fc - turn 1
+* [33m08e93db[m Agent host session 52f6b891-67e7-4c53-a813-7460b3aaa9fc - turn 1 start
+ [36m\[m 
+  * [33m7c41db7[m Agent host session 52f6b891-67e7-4c53-a813-7460b3aaa9fc - baseline checkpoint
+* [33m88ea514[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 3
+* [33m95d625a[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 3 start
+* [33mb7eae52[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 2
+* [33m6dbddb7[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 2 start
+* [33m94d497b[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 1
+* [33m07723aa[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - turn 1 start
+* [33ma21c74f[m Agent host session 07f2ce53-9998-434a-b977-a25974d7d06c - baseline checkpoint
