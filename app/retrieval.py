@@ -20,6 +20,8 @@ from app.config import (
     RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
 
+NEIGHBOR_WINDOW = 1
+
 
 def get_all_materials() -> str:
     """全資料を、講義・章・ページの情報付きで1つの文字列にまとめる。"""
@@ -33,6 +35,7 @@ def get_all_materials() -> str:
         for page in section["content"]
     )
 
+
 def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
     """資料→章→ページのJSONを、対象資料のページ一覧に変換する。"""
     documents = json.loads(source.read_text(encoding="utf-8"))
@@ -42,10 +45,16 @@ def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
             continue
         for section in document["content"]:
             for page in section["content"]:
-                pages.append({"page_id": page["id"], "document_id": document["id"],
-                              "lecture": int(document["id"][3:5]), "document_title": document["title"],
-                              "section": section["section"], "title": page["title"],
-                              "page": page["page"], "content": page["content"]})
+                pages.append({
+                    "page_id": page["id"],
+                    "document_id": document["id"],
+                    "lecture": int(document["id"][3:5]),
+                    "document_title": document["title"],
+                    "section": section["section"],
+                    "title": page["title"],
+                    "page": page["page"],
+                    "content": page["content"],
+                })
     return pages
 
 
@@ -99,7 +108,8 @@ def embed_text(text: str, task_type: str) -> list[float]:
         if count is None or count > EMBEDDING_MAX_TOKENS:
             raise ValueError(f"埋め込み入力が上限を超えるか計測不能です: {count} tokens。")
         response = client.models.embed_content(
-            model=EMBEDDING_MODEL, contents=text,
+            model=EMBEDDING_MODEL,
+            contents=text,
             config=types.EmbedContentConfig(task_type=task_type, output_dimensionality=EMBEDDING_DIMENSIONS),
         )
     embedding = response.embeddings[0]
@@ -124,26 +134,83 @@ def open_index(path: Path):
         db.close()
 
 
+def _attach_neighbor_pages(hits: list[dict], window: int = NEIGHBOR_WINDOW) -> list[dict]:
+    """ヒットした各ページの前後 window ページを同一資料内から補完し、重複を除外して返す。"""
+    if window <= 0 or not hits:
+        return hits
+
+    all_pages = load_pages(RAG_SOURCE)
+    by_doc_page = {
+        (p["document_id"], p["page"]): p
+        for p in all_pages
+    }
+
+    seen_ids: set[str] = set()
+    expanded: list[dict] = []
+
+    for hit in hits:
+        doc_id = hit["document_id"]
+        cur_page = hit["page"]
+
+        for offset in range(-window, 0):
+            neighbor = by_doc_page.get((doc_id, cur_page + offset))
+            if neighbor and neighbor["page_id"] not in seen_ids:
+                seen_ids.add(neighbor["page_id"])
+                expanded.append({
+                    **neighbor,
+                    "distance": None,
+                    "is_neighbor": True,
+                    "neighbor_of": hit["page_id"],
+                })
+
+        if hit["page_id"] not in seen_ids:
+            seen_ids.add(hit["page_id"])
+            expanded.append({
+                **hit,
+                "is_neighbor": False,
+                "neighbor_of": None,
+            })
+
+        for offset in range(1, window + 1):
+            neighbor = by_doc_page.get((doc_id, cur_page + offset))
+            if neighbor and neighbor["page_id"] not in seen_ids:
+                seen_ids.add(neighbor["page_id"])
+                expanded.append({
+                    **neighbor,
+                    "distance": None,
+                    "is_neighbor": True,
+                    "neighbor_of": hit["page_id"],
+                })
+
+    return expanded
+
+
 def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+    """質問を埋め込み、近いページを最大RAG_TOP_K件取得し、前後ページを付与して返す。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
         vector = embed_text(query.strip(), "RETRIEVAL_QUERY")
-        rows = db.execute("""
+        rows = db.execute(
+            """
             SELECT page_id, document_id, lecture, document_title, section, title, page, content,
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
-        """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+            """,
+            (sqlite_vec.serialize_float32(vector), RAG_TOP_K),
+        )
+        hits = [dict(row) for row in rows]
+    return _attach_neighbor_pages(hits, window=NEIGHBOR_WINDOW)
 
 
 def search_graph(query: str) -> dict:
     """ベクトル検索を入口に、前後ページと共通用語で候補を広げる。"""
     pages = {page["page_id"]: page for page in load_pages(RAG_SOURCE)}
     graph = json.loads(RAG_GRAPH.read_text(encoding="utf-8"))
-    nodes = {node["id"]: node for node in graph["nodes"]
-             if node["kind"] == "term" or node["id"] in pages}
+    nodes = {
+        node["id"]: node for node in graph["nodes"]
+        if node["kind"] == "term" or node["id"] in pages
+    }
     adjacent = defaultdict(set)
     for edge in graph["edges"]:
         a, b = edge["source"], edge["target"]
@@ -156,15 +223,18 @@ def search_graph(query: str) -> dict:
     results, candidates = [], {}
     for rank, seed in enumerate(seeds):
         root = seed["page_id"]
-        results.append({**pages[root], "distance": seed["distance"], "hops": 0,
-                        "path": [{"id": root, "title": pages[root]["title"]}]})
+        results.append({
+            **pages[root],
+            "distance": seed["distance"],
+            "hops": 0,
+            "path": [{"id": root, "title": pages[root]["title"]}],
+        })
         queue = deque([(root, [root])])
         visited = {root}
         while queue:
             current, path = queue.popleft()
             if len(path) - 1 >= GRAPH_HOPS:
                 continue
-            # 同じ深さなら、接続先が少ない用語からたどる。
             neighbors = sorted(adjacent[current], key=lambda n: (len(adjacent[n]), n))
             for neighbor in neighbors:
                 if neighbor in visited:
@@ -176,14 +246,19 @@ def search_graph(query: str) -> dict:
                     continue
                 frequency = max((len(adjacent[n]) for n in route if nodes[n]["kind"] == "term"), default=0)
                 priority = (len(route) - 1, frequency, rank, neighbor)
-                candidate = {**pages[neighbor], "hops": len(route) - 1,
-                             "path": [{"id": n, "title": nodes[n]["title"]} for n in route]}
+                candidate = {
+                    **pages[neighbor],
+                    "hops": len(route) - 1,
+                    "path": [{"id": n, "title": nodes[n]["title"]} for n in route],
+                }
                 if neighbor not in candidates or priority < candidates[neighbor][0]:
                     candidates[neighbor] = (priority, candidate)
     expanded = [candidate for _, candidate in sorted(candidates.values())]
-    return {"seeds": results, "expanded": expanded[:max(0, GRAPH_MAX_RESULTS - len(results))],
-            "max_hops": GRAPH_HOPS}
-
+    return {
+        "seeds": results,
+        "expanded": expanded[:max(0, GRAPH_MAX_RESULTS - len(results))],
+        "max_hops": GRAPH_HOPS,
+    }
 
 
 def run_full_context(agent, question: str, model, instructions: str, prompt_template: str):
@@ -203,7 +278,8 @@ if __name__ == "__main__":
     parser.add_argument("query", help="調べたい内容")
     args = parser.parse_args()
     for i, result in enumerate(search(args.query), 1):
-        print(f"\n{'=' * 60}\n検索結果 {i}\n{'=' * 60}")
+        role = f"前後補完 (元: {result.get('neighbor_of')})" if result.get("is_neighbor") else "検索ヒット"
+        print(f"\n{'=' * 60}\n検索結果 {i} [{role}]\n{'=' * 60}")
         print(f"講義: {result['document_title']}")
         print(f"章: {result['section']}")
         print(f"タイトル: {result['title']}")
