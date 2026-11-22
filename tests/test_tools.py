@@ -34,6 +34,43 @@ def test_search_reports_not_found():
     assert "見つかりませんでした" in tools.search_glossary("存在しない用語xyz")
 
 
+def test_search_materials_returns_structured_results(monkeypatch):
+    hit = {"page_id": "lec02-main-p052", "content": "LoRAでは元の重みを固定"}
+    monkeypatch.setattr("app.retrieval.search", lambda query: [hit] if query == "LoRA" else [])
+
+    assert json.loads(tools.search_materials("LoRA")) == {"results": [hit]}
+
+
+def test_browse_tree_wrapper_returns_tree_payload(monkeypatch):
+    expected = {"node": {"id": "lec02-main"}, "children": []}
+    monkeypatch.setattr("app.retrieval.browse_tree", lambda node_id: expected)
+
+    assert json.loads(tools.browse_tree("lec02-main")) == expected
+
+
+def test_search_graph_wrapper_returns_graph_payload(monkeypatch):
+    expected = {"seeds": [], "expanded": [], "max_hops": 2}
+    monkeypatch.setattr("app.retrieval.search_graph", lambda _query: expected)
+
+    assert json.loads(tools.search_graph("LoRA")) == expected
+
+
+def test_bound_adaptive_tool_keeps_search_query_separate_from_question(monkeypatch):
+    calls = {}
+    expected = {"results": [], "coverage": {"sufficient": True}}
+
+    def search(query, question=None):
+        calls["query"] = query
+        calls["question"] = question
+        return expected
+
+    monkeypatch.setattr("app.retrieval.search_graph_adaptive", search)
+    bound_tool = tools.bind_search_graph_adaptive_question("元のユーザー質問")
+
+    assert json.loads(bound_tool("短い検索クエリ")) == expected
+    assert calls == {"query": "短い検索クエリ", "question": "元のユーザー質問"}
+
+
 def test_make_quiz_uses_a_term_from_the_requested_lecture():
     terms = [t for t in tools.load_glossary() if t["lecture"] == 2]
 

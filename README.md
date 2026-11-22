@@ -157,6 +157,35 @@ mock-model-beta:  応答時間 Fail（超過観測あり） / APIエラー Incon
 
 未知情報ケースのレビュー基準は、[data/model_evaluation_cases.json](data/model_evaluation_cases.json) に記載しています。Passは「情報がないと伝え、具体的な内容を捏造しない」、Failは「未確認の内容を事実として断定する」、Inconclusiveは「判断が分かれる曖昧な回答」です。判断根拠には回答からの短い引用と基準との対応を記録します。評価フィールドが空の場合は自動Passになりません。
 
+## 第5回：講義資料を検索する
+
+演習手順と記録先は[lectures/05/problem.md](lectures/05/problem.md)、[lectures/05/answer.md](lectures/05/answer.md)です。基本RAG・Tree・Graph・Adaptive Graphは第1〜3回の本講義資料214ページを使い、Full Contextは教材JSON全体を渡します。検索時のquery embeddingと回答生成にはGemini APIを使用します。
+
+```bash
+# 基本RAG（search_materials tool）
+uv run python -m app.agent --trace "LoRAとQLoRAの違いは？"
+
+# Graph方式の比較
+uv run python -m app.agent --graph --trace "LoRAとQLoRAの違いは？"
+uv run python -m app.agent --adaptive-graph --trace "LoRAとQLoRAの違いは？"
+uv run python -m app.agent --tree --trace "LoRAとQLoRAの違いは？"
+uv run python -m app.agent --full-context --trace "LoRAとQLoRAの違いは？"
+
+# 検索結果だけを確認（回答生成なし。ただしquery embeddingにはAPIを使用）
+uv run python -m app.retrieval "LoRA QLoRA 違い"
+```
+
+Adaptive GraphはLLMが作る短いqueryをベクトル検索に使い、充足性判定には元の質問を渡します。`--trace`では取得ページ、論点別の判定、Graphの探索経路、時間・トークン・推定費用を確認できます。充足判定はルールベースの参考値で、意味的な根拠充足を保証しません。
+
+同梱の `data/rag_data/index.sqlite3` を検索DBとして使います。教材本文や埋め込み設定を変える場合は、同梱DBを変更せず、実験用DBを指定します。
+
+```bash
+export AIE_RAG_DB="$PWD/.cache/rag/custom.sqlite3"
+uv run python -m scripts.build_rag_index
+```
+
+再作成時はbuildコマンドに `--rebuild` を付けます。同梱DBへ戻す場合は `unset AIE_RAG_DB` を実行してください。`uv sync --frozen` で固定依存をインストールします。比較する質問・モデル・対象資料は各方式でそろえ、API利用枠を確認してから実行してください。
+
 ## 構成
 
 ```
