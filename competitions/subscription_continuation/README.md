@@ -14,6 +14,21 @@ python -m pytest tests -q            # 単体テスト
 
 `config/params.json` に Optuna で探索したパラメータが入っている（無ければ既定値で動く）。
 
+## 最新結果（分割 seed 0〜14 × 5-fold、3種クレンジング平均、交差フィット = ブレンド重みの楽観を除いた値）
+
+| 構成 | OOF（重み最適化込み） | 交差フィット | 提出ファイル |
+|---|---|---|---|
+| 外部予測なし | 0.26083 | 0.26279（seed 15〜29 でも 0.26355） | `output/submission_noext.csv` |
+| + TabPFN-mix・TabFM の入れ子予測 | 0.24813 | 0.25022 | `output/submission_ext2_backup.csv`（保険） |
+| + LimiX-2・FTFM-1 も追加（4本） | 0.24122 | 0.24332 | `output/submission_ext4_main.csv`（本命） |
+
+- 外部の入れ子予測は検証レポートのパイプラインが Colab（GPU）で計算したもの（`external/*.npz`, git 管理外）。
+  分割が手元の `StratifiedKFold(5, shuffle=True, random_state=s)` と全 75 fold で一致することを読み込み時に検証している。
+  実行: `python src/train.py --ext tabpfn,tabfm,limix,ftfm --out output/ext4`
+- 本命 4 本版の test 予測は、レポートの v52（公開 LB 0.25398）とロジット相関 0.979。
+- LimiX-2・FTFM-1（と TabFM）の重みは非商用ライセンス。提出前にコンペ規約で使用可否の確認が必要。
+- 修正: 以前の版は袋モデルの C が main から渡らず 1.0（単体 0.438 の弱い設定）で動いていた。既定値を 20 に修正。
+
 ## 手法
 
 1. **クレンジング** (`src/clean.py`)
