@@ -26,6 +26,7 @@ from features import USER_COLS, title_text_features, user_log_features, user_sta
 warnings.filterwarnings("ignore", category=UserWarning)
 TARGET = "継続フラグ"
 EPS = 1e-6
+CLIP = 1e-3  # OOF での悪化は 0.00006 程度。想定外の外れに対する保険
 
 
 def build_features(inp: Path):
@@ -174,7 +175,7 @@ def main():
     w, cv = blend(oof, y.to_numpy())
     print(f"blend weights={w}\n  blend logloss(OOF, 重み最適化込み)={cv:.5f}")
 
-    p = np.clip(apply_blend(test, w), 1e-4, 1 - 1e-4)
+    p = np.clip(apply_blend(test, w), CLIP, 1 - CLIP)
     if not np.isfinite(p).all():
         raise RuntimeError("予測に非有限値が含まれます")
     out = pd.DataFrame({USER: sub[USER].to_numpy(), "p": p})
