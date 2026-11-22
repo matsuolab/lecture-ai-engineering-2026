@@ -126,6 +126,9 @@ def open_index(path: Path):
 
 def search(query: str) -> list[dict]:
     """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+
+    print(f"RAG_TOP_K: {RAG_TOP_K}")
+
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
