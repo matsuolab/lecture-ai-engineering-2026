@@ -50,7 +50,7 @@ def test_default_question_of_lecture1_is_answerable_from_glossary():
     assert hits[0]["term"] == "宿題の3レベル"
 
 
-@pytest.mark.parametrize("lecture", [1, 2, 3, 5])
+@pytest.mark.parametrize("lecture", [1, 2, 3, 4, 6])
 def test_quiz_uses_a_term_and_definition_from_the_requested_lecture(lecture):
     quiz = json.loads(tools.make_quiz(lecture))
     expected = {
@@ -61,7 +61,7 @@ def test_quiz_uses_a_term_and_definition_from_the_requested_lecture(lecture):
     assert (quiz["question"], quiz["answer"]) in expected
 
 
-@pytest.mark.parametrize("lecture", [-1, 0, 4, 99])
+@pytest.mark.parametrize("lecture", [-1, 0, 99])
 def test_quiz_reports_when_the_requested_lecture_has_no_terms(lecture):
     result = tools.make_quiz(lecture)
     assert f"第{lecture}回" in result
