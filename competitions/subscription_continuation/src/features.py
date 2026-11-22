@@ -175,3 +175,95 @@ def user_static_features(df: pd.DataFrame) -> pd.DataFrame:
         X[f"{c}_ord"] = X[c].map({v: i for i, v in enumerate(levels)}).astype(float)
     return X
 
+
+
+def _entropy(counts: pd.Series) -> float:
+    p = counts / counts.sum()
+    return float(-(p * np.log(p)).sum())
+
+
+def extra_features(log: pd.DataFrame, films: pd.DataFrame) -> pd.DataFrame:
+    """検証レポートで効果が報告された切り口（シーズン進行・週次の追いつき・カテゴリ×独占×週次・
+    時間帯ルーティン・デバイスの組合せ）。"""
+    f = films.set_index(TITLE)
+    d = log.dropna(subset=[USER]).copy().sort_values([USER, DT], kind="stable")
+    d["cat"] = d[TITLE].map(f["カテゴリ"]).fillna("不明")
+    d["weekly"] = d[TITLE].map(f["週次配信"])
+    d["excl"] = d[TITLE].map(f["独占配信"])
+    d["n_ep_title"] = d[TITLE].map(f["エピソード数"])
+    first = d.groupby(USER)[DT].transform("min")
+    d["day"] = (d[DT].dt.normalize() - first.dt.normalize()).dt.days
+    g = d.groupby(USER)
+    F = pd.DataFrame(index=g.size().index)
+
+    # シーズン進行
+    F["max_season"] = g[SEASON].max()
+    F["season2plus_titles"] = d[d[SEASON] > 1].groupby(USER)[TITLE].nunique()
+
+    # 週次配信: 視聴時点で公開済みの話数 = 6/30 時点の話数 − (視聴日より後〜6/30 の木曜の数)
+    end = pd.Timestamp("2025-06-30")
+    thu_after = d[DT].dt.normalize().map(
+        lambda t: int(((end - t).days + ((t.dayofweek - 3) % 7)) // 7) if t <= end else 0)
+    d["avail_ep"] = (d["n_ep_title"] - thu_after).clip(lower=1)
+    w = d[d["weekly"] == 1]
+    if len(w):
+        ut = w.groupby([USER, TITLE]).agg(max_ep=(EP, "max"), avail=("avail_ep", "last"), last_day=("day", "max"))
+        ut["caught"] = (ut["max_ep"] >= ut["avail"]).astype(int)
+        F["weekly_caught_up"] = ut["caught"].groupby(level=0).sum()
+        F["weekly_caught_up_late"] = (ut["caught"] * (ut["last_day"] >= 7)).groupby(level=0).sum()
+        # 公開から2日以内の新話視聴（最新話 = 公開済み話数の話を見た回数）
+        fresh = (w[EP] >= w["avail_ep"]) & (w[DT].dt.dayofweek.isin([3, 4]))
+        F["weekly_fresh_views"] = fresh.groupby(w[USER]).sum()
+        F["weekly_thu_early"] = ((w[DT].dt.dayofweek == 3) & (w[DT].dt.hour < 6)).groupby(w[USER]).sum()
+
+    # カテゴリ×独占×週次 の視聴時間シェア
+    d["seg"] = d["cat"] + "_" + d["excl"].fillna(-1).astype(int).astype(str) + d["weekly"].fillna(-1).astype(int).astype(str)
+    seg = d.pivot_table(index=USER, columns="seg", values=MINUTES, aggfunc="sum", fill_value=0)
+    seg = seg.div(seg.sum(axis=1).replace(0, np.nan), axis=0).fillna(0)
+    seg.columns = [f"seg_{c}" for c in seg.columns]
+    F = F.join(seg)
+
+    # 時間帯ルーティン
+    F["hour_entropy"] = g["hour" if "hour" in d else DT].apply(lambda s: _entropy(s.dt.hour.value_counts()))
+    F["top3_hour_share"] = g[DT].apply(lambda s: s.dt.hour.value_counts().nlargest(3).sum() / len(s))
+    F["weekend_night_rate"] = g[DT].apply(lambda s: ((s.dt.dayofweek >= 4) & (s.dt.hour < 5)).mean())
+
+    # デバイスの組合せ
+    dev = d.pivot_table(index=USER, columns=DEVICE, values=MINUTES, aggfunc="size", fill_value=0) > 0
+    has = lambda c: dev[c] if c in dev else False  # noqa: E731
+    F["tv_and_phone"] = (has("TV") & has("Smartphone")).astype(int)
+    F["no_tv"] = (~has("TV")).astype(int) if "TV" in dev else 1
+    F["cross_device_titles"] = (d.groupby([USER, TITLE])[DEVICE].nunique() >= 2).groupby(level=0).sum()
+    F["tv_prime_rate"] = g.apply(lambda x: ((x[DEVICE] == "TV") & x[DT].dt.hour.between(19, 23)).mean())
+    F["tv_late_days"] = d[(d[DEVICE] == "TV") & d["day"].between(8, 12)].groupby(USER)["day"].nunique()
+    F = F.fillna(0)
+    F.index.name = USER
+    return F
+
+
+def event_tokens(log: pd.DataFrame, films: pd.DataFrame) -> pd.Series:
+    """各視聴行を「出来事トークン」の文字列にする（袋モデル用）。ユーザーごとに空白区切りで連結。"""
+    f = films.set_index(TITLE)
+    d = log.dropna(subset=[USER]).copy()
+    first = d.groupby(USER)[DT].transform("min")
+    day = (d[DT].dt.normalize() - first.dt.normalize()).dt.days
+    period = pd.cut(day, [-1, 3, 7, 10, 20], labels=["p0", "p1", "p2", "p3"]).astype(object).fillna("pna").astype(str)
+    t = d[TITLE].fillna("unk").astype(str)
+    n_ep = d[TITLE].map(f["エピソード数"])
+    prog = pd.cut((d[EP] / n_ep).fillna(0), [-np.inf, 0.25, 0.5, 0.99, np.inf], labels=["q1", "q2", "q3", "fin"])
+    prog = prog.astype(object).fillna("qna").astype(str)
+    cat = d[TITLE].map(f["カテゴリ"]).fillna("unk").astype(str)
+    ew = d[TITLE].map(f["独占配信"]).fillna(-1).astype(int).astype(str) + d[TITLE].map(f["週次配信"]).fillna(-1).astype(int).astype(str)
+    hour = d[DT].dt.hour
+    hb = pd.cut(hour, [-1, 4, 8, 16, 18, 23], labels=["h_night", "h_morn", "h_day", "h_eve", "h_prime"])
+    hb = hb.astype(object).fillna("hna").astype(str)
+    wk = np.where(d[DT].dt.dayofweek >= 5, "we", "wd")
+    dev = d[DEVICE].fillna("Unknown").astype(str)
+    season = np.where(d[SEASON] > 1, "s2p", "s1")
+    tok = ("T_" + t + " TP_" + t + "_" + prog + " TT_" + t + "_" + period + " C_" + cat + "_" + ew
+           + " CP_" + cat + "_" + period + " DP_" + dev + "_" + period + " HW_" + hb + "_" + wk
+           + " DH_" + dev + "_" + hb + " PR_" + d[PROFILE].astype(str) + " S_" + season + "_" + cat)
+    bad = tok.isna()
+    if bad.any():
+        raise ValueError(f"トークン生成で欠損が {int(bad.sum())} 行発生しました")
+    return tok.groupby(d[USER]).agg(" ".join)

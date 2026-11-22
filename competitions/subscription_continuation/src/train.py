@@ -20,8 +20,10 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, QuantileTransformer
 
+from bag import bag_matrix, nested_bag_score
 from clean import USER, clean_log, read_csv
-from features import USER_COLS, title_text_features, user_log_features, user_static_features
+from features import (USER_COLS, event_tokens, extra_features, title_text_features, user_log_features,
+                      user_static_features)
 
 warnings.filterwarnings("ignore", category=UserWarning)
 TARGET = "継続フラグ"
@@ -29,7 +31,15 @@ EPS = 1e-6
 CLIP = 1e-3  # OOF での悪化は 0.00006 程度。想定外の外れに対する保険
 
 
-def build_features(inp: Path):
+QUALITY_COLS = ["bad_title_rate", "device_missing_rate", "ep_missing_rate"]
+
+
+def build_features(inp: Path, dedupe: bool = True, extra: bool = True, drop_quality: bool = True,
+                   with_bag: bool = True):
+    """特徴量行列を作る。返り値: X(train), y, X(test), sample_submit, 袋行列(またはNone)。
+
+    drop_quality: 欠損率などデータ品質の列を除く（検証レポートで継続と無関係: AUC 0.49〜0.53）。
+    """
     train, test = read_csv(inp / "train.csv"), read_csv(inp / "test.csv")
     log, films = read_csv(inp / "viewing_log.csv"), read_csv(inp / "films.csv")
     sub = pd.read_csv(inp / "sample_submit.csv", header=None, names=[USER, "p"], encoding="utf-8-sig")
@@ -42,14 +52,22 @@ def build_features(inp: Path):
     if not set(train[TARGET].unique()) <= {0, 1}:
         raise ValueError("継続フラグに 0/1 以外の値があります")
 
-    clog = clean_log(log, films)
+    clog = clean_log(log, films, dedupe=dedupe)
     users = pd.concat([train.drop(columns=[TARGET]), test], ignore_index=True)
     X = user_static_features(users)
     X = X.join(user_log_features(clog, films)).join(title_text_features(clog, films))
+    if extra:
+        X = X.join(extra_features(clog, films))
+    if drop_quality:
+        X = X.drop(columns=QUALITY_COLS)
     num_cols = [c for c in X.columns if c not in USER_COLS]
     X[num_cols] = X[num_cols].fillna(0)  # ログが無いユーザーは 0（現データでは全員ログあり）
     y = train.set_index(USER)[TARGET].astype(int)
-    return X.loc[train[USER]], y.loc[train[USER]], X.loc[sub[USER]], sub
+    bag = None
+    if with_bag:
+        tok = event_tokens(clog, films).reindex(X.index).fillna("")
+        bag = bag_matrix(tok)
+    return X.loc[train[USER]], y.loc[train[USER]], X.loc[sub[USER]], sub, bag
 
 
 # ---------------------------------------------------------------- models
@@ -114,21 +132,41 @@ def to_category(X: pd.DataFrame, ref: pd.DataFrame) -> pd.DataFrame:
 MODELS = {"lgb": fit_lgb, "cat": fit_cat, "lr": fit_lr}
 
 
-def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42):
+def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=1.0, verbose=True):
+    """Repeated Stratified K-fold。
+
+    bag=(行列, index) を渡すと、各 fold で袋モデルの入れ子スコア（学習側は内側 OOF）を
+    列 bag_score として全モデルの入力に加える（検証レポート v19 の手法）。
+    返り値: oof(各 repeat の平均), test 予測(全 fold 平均), fold ごとの損失 {model: [..]}
+    """
     allX = pd.concat([X, Xte])
-    Xc, Xtec = to_category(X, allX), to_category(Xte, allX)
     oof = {k: np.zeros(len(X)) for k in models}
     test = {k: np.zeros(len(Xte)) for k in models}
+    fold_loss = {k: [] for k in models}
     rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=seed)
     for i, (tr, va) in enumerate(rskf.split(X, y)):
+        A, B = X, Xte
+        if bag is not None:
+            M, idx = bag
+            others = X.index[va].append(Xte.index)
+            sc = nested_bag_score(M, idx, y.iloc[tr], others, C=bag_C, seed=seed + i)
+            A = X.assign(bag_score=sc.reindex(X.index).to_numpy())
+            B = Xte.assign(bag_score=sc.reindex(Xte.index).to_numpy())
+            if A["bag_score"].iloc[np.r_[tr, va]].isna().any() or B["bag_score"].isna().any():
+                raise RuntimeError("bag_score に欠損があります")
         for k in models:
-            A, B = (Xc, Xtec) if k == "lgb" else (X, Xte)
-            pv, pt = MODELS[k](A.iloc[tr], y.iloc[tr], A.iloc[va], B, seed + i)
+            if k == "lgb":
+                A2, B2 = to_category(A, allX), to_category(B, allX)
+            else:
+                A2, B2 = A, B
+            pv, pt = MODELS[k](A2.iloc[tr], y.iloc[tr], A2.iloc[va], B2, seed + i)
             oof[k][va] += pv / n_repeats
             test[k] += pt / (n_splits * n_repeats)
-    for k in models:
-        print(f"  {k:5s} logloss={log_loss(y, np.clip(oof[k], EPS, 1 - EPS)):.5f} auc={roc_auc_score(y, oof[k]):.4f}")
-    return oof, test
+            fold_loss[k].append(log_loss(y.iloc[va], np.clip(pv, EPS, 1 - EPS)))
+    if verbose:
+        for k in models:
+            print(f"  {k:5s} logloss={log_loss(y, np.clip(oof[k], EPS, 1 - EPS)):.5f} auc={roc_auc_score(y, oof[k]):.4f}")
+    return oof, test, fold_loss
 
 
 def logit(p):
@@ -168,10 +206,10 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
 
     load_params(args.params)
-    X, y, Xte, sub = build_features(args.input)
+    X, y, Xte, sub, bag = build_features(args.input)
     print(f"train={X.shape} test={Xte.shape} pos_rate={y.mean():.4f}")
     models = args.models.split(",")
-    oof, test = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed)
+    oof, test, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag)
     w, cv = blend(oof, y.to_numpy())
     print(f"blend weights={w}\n  blend logloss(OOF, 重み最適化込み)={cv:.5f}")
 

@@ -150,8 +150,34 @@ def recover_title_ids(log: pd.DataFrame, films: pd.DataFrame, max_gap_hours: flo
     return pd.Series(out, index=log.index, name=TITLE)
 
 
-def clean_log(log: pd.DataFrame, films: pd.DataFrame) -> pd.DataFrame:
+def fix_minute_scale(minutes: pd.Series, dur: pd.Series) -> pd.Series:
+    """視聴時間の桁ずれ（×10 / ×60(秒) / ×100）を1話時間との比から補正する。
+
+    1話時間の 1.2 倍を超える値について、割った結果が 1話時間の 1.05 倍以下になる除数のうち
+    最小のもの（=補正後の値が最も大きく、1話を見切った値に近いもの）を選ぶ。
+    タイトル不明の行は 300 超を秒(/60)、180 超を ×10 とみなす。
+    """
+    m = minutes.astype(float).copy()
+    r = m / dur
+    known = dur.notna() & (r > 1.2)
+    fixed = pd.Series(np.nan, index=m.index)
+    for k in (100, 60, 10):  # 後のものほど優先（小さい除数を優先）
+        ok = known & (r / k <= 1.05)
+        fixed[ok] = m[ok] / k
+    still = known & fixed.isna()
+    fixed[still] = m[still] / 100  # どれでも過大なら最大の除数
+    m[known] = fixed[known]
+    unk = dur.isna()
+    m[unk & (m > SECONDS_THRESHOLD)] /= 60
+    m[unk & (m > 180)] /= 10
+    return m
+
+
+def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True) -> pd.DataFrame:
     log = log.copy()
+    if dedupe:
+        # 完全重複行（全列一致）は記録の重複とみなして除去（50ユーザーに 2,670 行）
+        log = log.drop_duplicates()
     log[DT] = pd.to_datetime(log[DT], errors="coerce")
     if log[DT].isna().any():
         raise ValueError(f"日時をパースできない行が {log[DT].isna().sum()} 行あります")
@@ -163,10 +189,12 @@ def clean_log(log: pd.DataFrame, films: pd.DataFrame) -> pd.DataFrame:
     log["title_missing"] = log[TITLE].isna().astype(int)
     log[TITLE] = recover_title_ids(log, films)
 
-    # 視聴時間: 秒単位の記録を分に変換
-    sec = log[MINUTES] > SECONDS_THRESHOLD
-    log.loc[sec, MINUTES] = log.loc[sec, MINUTES] / 60.0
+    # 視聴時間: 桁ずれ（×10 / 秒 / ×100）を補正
     fdur = log[TITLE].map(films.set_index(TITLE)["1話当たりの時間(分)"])
+    log["minute_fixed"] = 0
+    fixed = fix_minute_scale(log[MINUTES], fdur)
+    log["minute_fixed"] = (fixed.ne(log[MINUTES]) & log[MINUTES].notna()).astype(int)
+    log[MINUTES] = fixed
     # 欠損はタイトルの1話時間、それも無ければ全体中央値
     log[MINUTES] = log[MINUTES].fillna(fdur).fillna(log[MINUTES].median())
     # 1話時間の 1.2 倍で上限クリップ（タイトル不明なら 180 分）
