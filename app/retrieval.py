@@ -76,12 +76,27 @@ def browse_tree(node_id: str | None = None) -> dict:
     raise ValueError("対象の目次ノードが見つかりません。")
 
 
+def _read_page(page_id: str, pages: list[dict]) -> dict:
+    page_index = next(
+        (index for index, page in enumerate(pages) if page["page_id"] == page_id),
+        None,
+    )
+    if page_index is None:
+        raise ValueError("対象のページが見つかりません。")
+
+    page = pages[page_index]
+    document_pages = [p for p in pages if p["document_id"] == page["document_id"]]
+    document_index = next(
+        index for index, item in enumerate(document_pages) if item["page_id"] == page_id
+    )
+    adjacent_pages = document_pages[max(0, document_index - 1):document_index + 2]
+    adjacent_pages = [p for p in adjacent_pages if p["page_id"] != page_id]
+    return {**page, "adjacent_pages": adjacent_pages}
+
+
 def read_page(page_id: str) -> dict:
-    """第1〜3回の本講義から、指定した1ページの本文と引用情報を返す。"""
-    for page in load_pages(RAG_SOURCE):
-        if page["page_id"] == page_id:
-            return page
-    raise ValueError("対象のページが見つかりません。")
+    """指定ページと同一資料内の前後1ページを、本文・引用情報付きで返す。"""
+    return _read_page(page_id, load_pages(RAG_SOURCE))
 
 
 def normalized_vector(values: list[float]) -> list[float]:
@@ -136,6 +151,29 @@ def search(query: str) -> list[dict]:
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
         return [dict(row) for row in rows]
+
+
+def search_with_neighbors(query: str) -> list[dict]:
+    """検索ヒットに同一資料内の前後ページを加え、ページIDごとに重複なく返す。"""
+    hits = search(query)
+    if not hits:
+        return []
+    pages = load_pages(RAG_SOURCE)
+    expanded: dict[str, dict] = {}
+    page_order = []
+
+    for hit in hits:
+        page = _read_page(hit["page_id"], pages)
+        for candidate in [hit, *page["adjacent_pages"]]:
+            page_id = candidate["page_id"]
+            if page_id not in expanded:
+                expanded[page_id] = {**candidate, "search_hit": page_id == hit["page_id"]}
+                page_order.append(page_id)
+            elif page_id == hit["page_id"]:
+                expanded[page_id].update(hit)
+                expanded[page_id]["search_hit"] = True
+
+    return [expanded[page_id] for page_id in page_order]
 
 
 def search_graph(query: str) -> dict:
