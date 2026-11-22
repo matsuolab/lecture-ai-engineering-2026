@@ -1,0 +1,4 @@
+input/
+output/
+__pycache__/
+*.pkl
