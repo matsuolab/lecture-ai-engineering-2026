@@ -49,7 +49,11 @@ def _candidates(raw, films_ids: list[str], by_suffix: dict, movie_ids: list[str]
     return []
 
 
-def recover_title_ids(log: pd.DataFrame, films: pd.DataFrame, max_gap_hours: float = 6.0) -> pd.Series:
+RECOVER_MODES = ("full", "no_history", "neighbor")
+
+
+def recover_title_ids(log: pd.DataFrame, films: pd.DataFrame, max_gap_hours: float = 6.0,
+                      mode: str = "full") -> pd.Series:
     """壊れたタイトルIDを推定して返す（推定できなければ NaN）。
 
     優先順位:
@@ -57,7 +61,12 @@ def recover_title_ids(log: pd.DataFrame, films: pd.DataFrame, max_gap_hours: flo
       2. 同一ユーザーが視聴した候補のうち最も視聴回数が多いもの
       3. 候補が数字/movie 由来なら、視聴時間・エピソードNoと整合する候補のうち全体で最も人気のもの
       4. 欠損(NaN)で手掛かりが無ければ NaN のまま
+
+    mode: "full" は上記すべて、"no_history" は 2 を使わない、"neighbor" は 1 のみ（残りは NaN）。
+    復元方法の異なるクレンジングの予測を平均すると、復元の不確かさが打ち消される（検証レポート v13/v37）。
     """
+    if mode not in RECOVER_MODES:
+        raise ValueError(f"mode は {RECOVER_MODES} のいずれか: {mode}")
     film_ids = films[TITLE].tolist()
     valid = set(film_ids)
     by_suffix: dict[str, list[str]] = {}
@@ -135,8 +144,10 @@ def recover_title_ids(log: pd.DataFrame, films: pd.DataFrame, max_gap_hours: flo
                 m = m / 60.0
             return -abs(np.log((m + 1) / (dur[c] + 1)))
 
+        if mode == "neighbor":
+            continue
         # 2. 同一ユーザーの視聴履歴（視聴時間・エピソードと整合する候補を優先）
-        hist = user_hist.get(u, {})
+        hist = user_hist.get(u, {}) if mode == "full" else {}
         in_hist = [c for c in cands if c in hist]
         if in_hist:
             cons = [c for c in in_hist if consistent(c)] or in_hist
@@ -173,7 +184,7 @@ def fix_minute_scale(minutes: pd.Series, dur: pd.Series) -> pd.Series:
     return m
 
 
-def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True) -> pd.DataFrame:
+def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True, recover_mode: str = "full") -> pd.DataFrame:
     log = log.copy()
     if dedupe:
         # 完全重複行（全列一致）は記録の重複とみなして除去（50ユーザーに 2,670 行）
@@ -187,7 +198,7 @@ def clean_log(log: pd.DataFrame, films: pd.DataFrame, dedupe: bool = True) -> pd
 
     log["title_raw_bad"] = (~log[TITLE].isin(set(films[TITLE]))).astype(int)
     log["title_missing"] = log[TITLE].isna().astype(int)
-    log[TITLE] = recover_title_ids(log, films)
+    log[TITLE] = recover_title_ids(log, films, mode=recover_mode)
 
     # 視聴時間: 桁ずれ（×10 / 秒 / ×100）を補正
     fdur = log[TITLE].map(films.set_index(TITLE)["1話当たりの時間(分)"])

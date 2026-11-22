@@ -21,7 +21,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, QuantileTransformer
 
 from bag import bag_matrix, nested_bag_score
-from clean import USER, clean_log, read_csv
+from clean import RECOVER_MODES, USER, clean_log, read_csv
 from features import (USER_COLS, event_tokens, extra_features, title_text_features, user_log_features,
                       user_static_features)
 
@@ -35,7 +35,7 @@ QUALITY_COLS = ["bad_title_rate", "device_missing_rate", "ep_missing_rate"]
 
 
 def build_features(inp: Path, dedupe: bool = True, extra: bool = True, drop_quality: bool = True,
-                   with_bag: bool = True):
+                   with_bag: bool = True, recover_mode: str = "full"):
     """特徴量行列を作る。返り値: X(train), y, X(test), sample_submit, 袋行列(またはNone)。
 
     drop_quality: 欠損率などデータ品質の列を除く（検証レポートで継続と無関係: AUC 0.49〜0.53）。
@@ -52,7 +52,7 @@ def build_features(inp: Path, dedupe: bool = True, extra: bool = True, drop_qual
     if not set(train[TARGET].unique()) <= {0, 1}:
         raise ValueError("継続フラグに 0/1 以外の値があります")
 
-    clog = clean_log(log, films, dedupe=dedupe)
+    clog = clean_log(log, films, dedupe=dedupe, recover_mode=recover_mode)
     users = pd.concat([train.drop(columns=[TARGET]), test], ignore_index=True)
     X = user_static_features(users)
     X = X.join(user_log_features(clog, films)).join(title_text_features(clog, films))
@@ -62,6 +62,7 @@ def build_features(inp: Path, dedupe: bool = True, extra: bool = True, drop_qual
         X = X.drop(columns=QUALITY_COLS)
     num_cols = [c for c in X.columns if c not in USER_COLS]
     X[num_cols] = X[num_cols].fillna(0)  # ログが無いユーザーは 0（現データでは全員ログあり）
+    X = X.copy()  # 列追加の繰り返しで断片化したフレームを詰め直す
     y = train.set_index(USER)[TARGET].astype(int)
     bag = None
     if with_bag:
@@ -198,18 +199,30 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", type=Path, default=Path("input"))
     ap.add_argument("--out", type=Path, default=Path("output"))
-    ap.add_argument("--models", default="lgb,cat,lr")
-    ap.add_argument("--repeats", type=int, default=3)
+    ap.add_argument("--models", default="lgb,lr")  # CatBoost はブレンド重みがほぼ 0 のため既定では外す
+    ap.add_argument("--repeats", type=int, default=10)
+    ap.add_argument("--variants", default=",".join(RECOVER_MODES))
     ap.add_argument("--params", type=Path, default=Path("config/params.json"))
     ap.add_argument("--seed", type=int, default=2025)
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
     load_params(args.params)
-    X, y, Xte, sub, bag = build_features(args.input)
-    print(f"train={X.shape} test={Xte.shape} pos_rate={y.mean():.4f}")
     models = args.models.split(",")
-    oof, test, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag)
+    modes = args.variants.split(",")
+    oofs, tests = [], []
+    for mode in modes:
+        X, y, Xte, sub, bag = build_features(args.input, recover_mode=mode)
+        print(f"[{mode}] train={X.shape} test={Xte.shape} pos_rate={y.mean():.4f}")
+        o, t, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag)
+        oofs.append(o)
+        tests.append(t)
+    # 復元方法の異なるクレンジングごとの予測を logit 平均（復元の不確かさを打ち消す）
+    avg = lambda ds, k: 1 / (1 + np.exp(-np.mean([logit(d[k]) for d in ds], axis=0)))  # noqa: E731
+    oof = {k: avg(oofs, k) for k in models}
+    test = {k: avg(tests, k) for k in models}
+    for k in models:
+        print(f"  [avg] {k:5s} logloss={log_loss(y, np.clip(oof[k], EPS, 1 - EPS)):.5f}")
     w, cv = blend(oof, y.to_numpy())
     print(f"blend weights={w}\n  blend logloss(OOF, 重み最適化込み)={cv:.5f}")
 

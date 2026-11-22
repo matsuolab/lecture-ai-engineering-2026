@@ -94,3 +94,44 @@ def test_clean_log_rejects_bad_datetime():
     log["日時"] = ["not a date"]
     with pytest.raises(ValueError):
         clean_log(log, FILMS)
+
+
+def test_fix_minute_scale_picks_plausible_divisor():
+    from clean import fix_minute_scale
+    m = pd.Series([240.0, 3000.0, 50.0, 24.0, np.nan])
+    d = pd.Series([24.0, 50.0, 50.0, 24.0, 60.0])
+    out = fix_minute_scale(m, d)
+    assert out.iloc[:4].tolist() == [24.0, 50.0, 50.0, 24.0]  # ×10, 秒(×60), 正常, 正常
+    assert np.isnan(out.iloc[4])
+
+
+def test_clean_log_drops_exact_duplicates():
+    row = ("2025-06-01 20:00", "U1", "USER_1", "jd_001", 50, 1, 1, "TV")
+    log = make_log([row, row, ("2025-06-01 21:00", "U1", "USER_1", "jd_001", 50, 1, 2, "TV")])
+    assert len(clean_log(log, FILMS)) == 2
+    assert len(clean_log(log, FILMS, dedupe=False)) == 3
+
+
+def test_recover_modes():
+    log = make_log([
+        ("2025-06-01 20:00", "U1", "USER_1", "anime_001", 24, 1, 1, "TV"),
+        ("2025-06-05 20:00", "U1", "USER_1", "001", 24, 1, 2, "TV"),  # 近傍なし → 履歴 or 人気で復元
+    ])
+    assert recover_title_ids(log, FILMS, mode="full").iloc[1] == "anime_001"
+    assert pd.isna(recover_title_ids(log, FILMS, mode="neighbor").iloc[1])
+    with pytest.raises(ValueError):
+        recover_title_ids(log, FILMS, mode="bogus")
+
+
+def test_event_tokens_and_extra_features_have_no_missing():
+    from features import event_tokens, extra_features
+    log = make_log([
+        ("2025-06-01 20:00", "U1", "USER_1", "anime_001", 24, 1, 40, "TV"),  # 話数が総話数超え
+        ("2025-06-02 01:00", "U1", "USER_2", np.nan, 30, 2, np.nan, None),
+        ("2025-06-05 08:00", "U2", "USER_1", "jd_001", 10, 1, 1, "PC"),
+    ])
+    c = clean_log(log, FILMS)
+    tok = event_tokens(c, FILMS)
+    assert set(tok.index) == {"U1", "U2"} and tok.str.len().gt(0).all()
+    E = extra_features(c, FILMS)
+    assert np.isfinite(E.to_numpy(dtype=float)).all()
