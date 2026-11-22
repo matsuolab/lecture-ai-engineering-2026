@@ -126,7 +126,7 @@ def main():
             pB = fit_pred(GLOBAL, XB.iloc[tr], ytr, XB.iloc[va], seeds)
             lA = -(yva.to_numpy() * np.log(np.clip(pA, 1e-6, 1)) + (1 - yva.to_numpy()) * np.log(np.clip(1 - pA, 1e-6, 1)))
             lB = -(yva.to_numpy() * np.log(np.clip(pB, 1e-6, 1)) + (1 - yva.to_numpy()) * np.log(np.clip(1 - pB, 1e-6, 1)))
-            rows.append(dict(seed=s, fold=k, C=C_sel, subset=S_sel, inner_best=st.best_value,
+            rows.append(dict(seed=s, fold=k, C=C_sel, subset=S_sel, inner_best=st.best_value, params=P_sel,
                              outer_A=float(lA.mean()), outer_B=float(lB.mean()), n=len(va),
                              diff_sum=float((lA - lB).sum()), diff_sq=float(((lA - lB) ** 2).sum())))
             print(f"s{s}f{k} C={C_sel} subset={S_sel} inner_best={st.best_value:.4f} "
@@ -139,6 +139,8 @@ def main():
     d = df.diff_sum.sum() / n
     se = np.sqrt(df.diff_sq.sum() / n - d ** 2) / np.sqrt(n)
     res = dict(outer_A=mA, outer_B=mB, A_minus_B=d, se=se, folds=rows)
+    # 利用者単位の差（他の実行と合算して SE を下げるため保存）
+    res["per_user_diff_sum"], res["per_user_diff_sq"], res["n"] = float(df.diff_sum.sum()), float(df.diff_sq.sum()), int(n)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(res, ensure_ascii=False, indent=2, default=float))
     print(f"\nA(入れ子) {mA:.5f}  B(全データ選択) {mB:.5f}  A−B {d:+.5f} ± {se:.5f}")
