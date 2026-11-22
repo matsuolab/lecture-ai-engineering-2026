@@ -21,6 +21,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OneHotEncoder, QuantileTransformer
 
 from bag import bag_matrix, nested_bag_score
+from external import ExternalScores
 from pfn import nested_pfn_score, pfn_matrix
 from clean import RECOVER_MODES, USER, clean_log, read_csv
 from features import (USER_COLS, event_tokens, extra_features, title_text_features, user_log_features,
@@ -139,21 +140,33 @@ def to_category(X: pd.DataFrame, ref: pd.DataFrame) -> pd.DataFrame:
 MODELS = {"lgb": fit_lgb, "cat": fit_cat, "lr": fit_lr}
 
 
-def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=20.0, verbose=True, pfn_Z=None):
+def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=20.0, verbose=True, pfn_Z=None,
+           split_seeds=None, ext: ExternalScores | None = None):
     """Repeated Stratified K-fold。
 
     bag=(行列, index) を渡すと、各 fold で袋モデルの入れ子スコア（学習側は内側 OOF）を
     列 bag_score として全モデルの入力に加える（検証レポート v19 の手法）。
     pfn_Z（TabPFN 入力行列, train+test）を渡すと、同様に TabPFN の入れ子予測を列 pfn_score として加える。
     pfn_Z はクレンジング違いの実行間で共通にすること（キャッシュを分割単位で共有するため）。
+    split_seeds を渡すと StratifiedKFold(n_splits, shuffle=True, random_state=s) を各 s で使う
+    （外部の入れ子予測 ext と分割をそろえるため。ext を使う場合は必須）。
     返り値: oof(各 repeat の平均), test 予測(全 fold 平均), fold ごとの損失 {model: [..]}
     """
     allX = pd.concat([X, Xte])
+    fold_loss = {k: [] for k in models}
+    if split_seeds is not None:
+        from sklearn.model_selection import StratifiedKFold
+        n_repeats = len(split_seeds)
+        splits = [(s_, k_, tr_, va_) for s_ in split_seeds
+                  for k_, (tr_, va_) in enumerate(StratifiedKFold(n_splits, shuffle=True, random_state=s_).split(X, y))]
+    else:
+        if ext is not None:
+            raise ValueError("ext を使うときは split_seeds を指定してください")
+        rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=seed)
+        splits = [(None, None, tr_, va_) for tr_, va_ in rskf.split(X, y)]
     oof = {k: np.zeros(len(X)) for k in models}
     test = {k: np.zeros(len(Xte)) for k in models}
-    fold_loss = {k: [] for k in models}
-    rskf = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats, random_state=seed)
-    for i, (tr, va) in enumerate(rskf.split(X, y)):
+    for i, (s_, k_, tr, va) in enumerate(splits):
         A, B = X, Xte
         if bag is not None:
             M, idx = bag
@@ -170,6 +183,13 @@ def run_cv(X, y, Xte, models, n_splits=5, n_repeats=3, seed=42, bag=None, bag_C=
             B = B.assign(pfn_score=ps.reindex(Xte.index).to_numpy())
             if A["pfn_score"].iloc[np.r_[tr, va]].isna().any() or B["pfn_score"].isna().any():
                 raise RuntimeError("pfn_score に欠損があります")
+        if ext is not None:
+            A, B = A.copy(), B.copy()
+            for name, (vtr, vva, vte) in ext.fold(s_, k_, tr, va, len(Xte)).items():
+                col = np.full(len(X), np.nan)
+                col[tr], col[va] = vtr, vva
+                A[f"ext_{name}"] = col
+                B[f"ext_{name}"] = vte
         for k in models:
             if k == "lgb":
                 A2, B2 = to_category(A, allX), to_category(B, allX)
@@ -230,6 +250,9 @@ def main():
     ap.add_argument("--models", default="lgb,lr")  # CatBoost はブレンド重みがほぼ 0 のため既定では外す
     ap.add_argument("--repeats", type=int, default=10)
     ap.add_argument("--variants", default=",".join(RECOVER_MODES))
+    ap.add_argument("--ext", default="", help="外部の入れ子予測を特徴量に（例: tabpfn,tabfm,limix,ftfm）")
+    ap.add_argument("--ext-dir", type=Path, default=Path("external"))
+    ap.add_argument("--split-seeds", default="", help="分割 seed の範囲（例: 0-14）。--ext 使用時の既定は 0-14")
     ap.add_argument("--pfn", action="store_true", help="TabPFN の入れ子予測を特徴量に加える（要: 重みファイル）")
     ap.add_argument("--params", type=Path, default=Path("config/params.json"))
     ap.add_argument("--seed", type=int, default=2025)
@@ -240,6 +263,13 @@ def main():
     models = args.models.split(",")
     modes = args.variants.split(",")
     oofs, tests = [], []
+    ext = ExternalScores(args.ext_dir, args.ext.split(",")) if args.ext else None
+    split_seeds = None
+    if args.split_seeds:
+        a, b = (int(v) for v in args.split_seeds.split("-"))
+        split_seeds = list(range(a, b + 1))
+    elif ext is not None:
+        split_seeds = list(range(15))  # 外部予測は seed 0〜14 の分割で計算されている
     pfn_Z = None
     if args.pfn:
         # TabPFN の入力は基本クレンジング版で固定（分割単位のキャッシュをクレンジング違いで共有）
@@ -248,7 +278,8 @@ def main():
     for mode in modes:
         X, y, Xte, sub, bag = build_features(args.input, recover_mode=mode)
         print(f"[{mode}] train={X.shape} test={Xte.shape} pos_rate={y.mean():.4f}")
-        o, t, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag, pfn_Z=pfn_Z)
+        o, t, _ = run_cv(X, y, Xte, models, n_repeats=args.repeats, seed=args.seed, bag=bag, pfn_Z=pfn_Z,
+                         split_seeds=split_seeds, ext=ext)
         oofs.append(o)
         tests.append(t)
     # 復元方法の異なるクレンジングごとの予測を logit 平均（復元の不確かさを打ち消す）
