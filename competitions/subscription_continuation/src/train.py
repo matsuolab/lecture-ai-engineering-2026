@@ -95,7 +95,12 @@ def load_params(path: Path) -> None:
 
 def fit_lgb(Xtr, ytr, Xva, Xte, seed):
     import lightgbm as lgb
-    params = dict(objective="binary", subsample_freq=1, verbose=-1, random_state=seed, n_jobs=4, **PARAMS["lgb"])
+    cfg = dict(PARAMS["lgb"])
+    mono = cfg.pop("monotone", None)  # {列名: +1/-1}（存在しない列は無視）
+    params = dict(objective="binary", subsample_freq=1, verbose=-1, random_state=seed, n_jobs=4, **cfg)
+    if mono:
+        params["monotone_constraints"] = [int(mono.get(c, 0)) for c in Xtr.columns]
+        params["monotone_constraints_method"] = "advanced"
     # LightGBM は特殊文字（全角記号など）を含む列名を受け付けないので連番に置換
     names = [f"f{i}" for i in range(Xtr.shape[1])]
     ren = lambda X: X.set_axis(names, axis=1)  # noqa: E731
@@ -190,6 +195,19 @@ def blend(oof: dict, y: np.ndarray):
     return dict(zip(keys + ["bias"], w.tolist())), res.fun
 
 
+def crossfit_blend_loss(oof: dict, y: np.ndarray, n_rounds: int = 20) -> float:
+    """ブレンド重み・校正を別の利用者で決めた場合の LogLoss（同じ OOF で決める楽観を除いた正直な見積もり）。"""
+    from sklearn.model_selection import StratifiedKFold
+    losses = []
+    for r in range(n_rounds):
+        pred = np.zeros(len(y))
+        for a, b in StratifiedKFold(5, shuffle=True, random_state=r).split(y, y):
+            wa, _ = blend({k: v[a] for k, v in oof.items()}, y[a])
+            pred[b] = apply_blend({k: v[b] for k, v in oof.items()}, wa)
+        losses.append(log_loss(y, np.clip(pred, EPS, 1 - EPS)))
+    return float(np.mean(losses))
+
+
 def apply_blend(preds: dict, w: dict):
     z = sum(w[k] * logit(preds[k]) for k in preds) + w["bias"]
     return 1 / (1 + np.exp(-z))
@@ -224,7 +242,8 @@ def main():
     for k in models:
         print(f"  [avg] {k:5s} logloss={log_loss(y, np.clip(oof[k], EPS, 1 - EPS)):.5f}")
     w, cv = blend(oof, y.to_numpy())
-    print(f"blend weights={w}\n  blend logloss(OOF, 重み最適化込み)={cv:.5f}")
+    honest = crossfit_blend_loss(oof, y.to_numpy())
+    print(f"blend weights={w}\n  blend logloss(OOF, 重み最適化込み)={cv:.5f}  交差フィット(正直な見積もり)={honest:.5f}")
 
     p = np.clip(apply_blend(test, w), CLIP, 1 - CLIP)
     if not np.isfinite(p).all():
@@ -232,7 +251,7 @@ def main():
     out = pd.DataFrame({USER: sub[USER].to_numpy(), "p": p})
     out.to_csv(args.out / "submission.csv", header=False, index=False)
     pd.DataFrame(oof, index=X.index).assign(y=y).to_csv(args.out / "oof.csv")
-    json.dump({"weights": w, "cv_blend_logloss": cv}, open(args.out / "cv.json", "w"), ensure_ascii=False, indent=2)
+    json.dump({"weights": w, "cv_blend_logloss": cv, "cv_crossfit_logloss": honest}, open(args.out / "cv.json", "w"), ensure_ascii=False, indent=2)
     print(f"saved {args.out/'submission.csv'} rows={len(out)} mean_p={p.mean():.4f}")
 
 

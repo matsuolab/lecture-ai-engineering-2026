@@ -267,3 +267,4 @@ def event_tokens(log: pd.DataFrame, films: pd.DataFrame) -> pd.Series:
     if bad.any():
         raise ValueError(f"トークン生成で欠損が {int(bad.sum())} 行発生しました")
     return tok.groupby(d[USER]).agg(" ".join)
+
