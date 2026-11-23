@@ -1,0 +1,2440 @@
+{
+  "meta": {
+    "executed_at": "2026-11-23T05:39:22+00:00",
+    "model": "gemini-3.5-flash-lite",
+    "embedding_model": "gemini-embedding-001",
+    "embedding_dimensions": 768
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "kind": "単一ページ",
+      "question": "第2回の説明では、LoRAは何を固定し何を学習しますか？ QLoRAは何を加えますか？",
+      "evidence": [
+        "lec02-main-p052"
+      ],
+      "expected": "LoRAは元の重みWを固定し、小さな行列A・B（低ランクの差分）だけを学習する。QLoRAは元の重みを4bitに圧縮する"
+    },
+    {
+      "id": "q2",
+      "kind": "複数ページ",
+      "question": "コンパクションとセッションをまたぐメモリの違いは？ 日々のメモは全部長期メモリになりますか？",
+      "evidence": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "expected": "コンパクションは同じセッション内で古い履歴を要約に置き換える。メモリは外の保存先に書き出し次のセッションで戻す。日々のメモは全部は残らず、基準を超えたものだけMEMORY.mdに移る"
+    },
+    {
+      "id": "q3",
+      "kind": "資料にない",
+      "question": "今回作ったRAGの実測平均応答時間と正答率は？",
+      "evidence": [],
+      "expected": "講義資料には今回の実測ログがないので、確認できないと答える"
+    },
+    {
+      "id": "q4",
+      "kind": "前後ページが要る",
+      "question": "第1回で説明された最終課題の概要と、お題の例を教えてください。",
+      "evidence": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "expected": "p.61：候補から選んでアプリ開発、第6回予告→第13回詳細、提出物は説明資料＋コード。p.62（「テーマ例は次のページ」）：講義の質問応答を支援するシステムのPoC"
+    },
+    {
+      "id": "q5",
+      "kind": "前後ページが要る",
+      "question": "第2回のクイズ3（1日1万件の問い合わせの振り分け）の答えと、その理由は？",
+      "evidence": [
+        "lec02-main-p043"
+      ],
+      "expected": "答えはB（小さなモデルで分類し、評価セットで精度とコストを確かめる）。決まった判断を大量にこなすなら小さなモデルがコスト＜効果を満たしやすい"
+    }
+  ],
+  "retrieval_only": [
+    {
+      "question_id": "q1",
+      "query": "第2回の説明では、LoRAは何を固定し何を学習しますか？ QLoRAは何を加えますか？",
+      "rag": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "distance": 0.209
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "distance": 0.2315
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "distance": 0.2501
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "distance": 0.2872
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "distance": 0.3017
+          }
+        ],
+        "chars": 2956,
+        "evidence_found": [
+          "lec02-main-p052"
+        ]
+      },
+      "topk10": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "distance": 0.209
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "distance": 0.2315
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "distance": 0.2501
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "distance": 0.2872
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "distance": 0.3017
+          },
+          {
+            "page_id": "lec02-main-p006",
+            "role": "hit",
+            "distance": 0.3037
+          },
+          {
+            "page_id": "lec02-main-p054",
+            "role": "hit",
+            "distance": 0.3202
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "distance": 0.3202
+          },
+          {
+            "page_id": "lec02-main-p023",
+            "role": "hit",
+            "distance": 0.3226
+          },
+          {
+            "page_id": "lec02-main-p046",
+            "role": "hit",
+            "distance": 0.3228
+          }
+        ],
+        "chars": 5589,
+        "evidence_found": [
+          "lec02-main-p052"
+        ]
+      },
+      "neighbors": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "distance": 0.2315
+          },
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "distance": 0.209
+          },
+          {
+            "page_id": "lec02-main-p053",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p050",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p059",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "distance": 0.2501
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "distance": 0.2872
+          },
+          {
+            "page_id": "lec02-main-p062",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p046",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "distance": 0.3017
+          },
+          {
+            "page_id": "lec02-main-p048",
+            "role": "neighbor",
+            "distance": null
+          }
+        ],
+        "chars": 5561,
+        "evidence_found": [
+          "lec02-main-p052"
+        ]
+      }
+    },
+    {
+      "question_id": "q2",
+      "query": "コンパクションとセッションをまたぐメモリの違いは？ 日々のメモは全部長期メモリになりますか？",
+      "rag": {
+        "pages": [
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "distance": 0.3008
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "distance": 0.307
+          },
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "distance": 0.308
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "distance": 0.3256
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "distance": 0.3443
+          }
+        ],
+        "chars": 2382,
+        "evidence_found": [
+          "lec03-main-p013",
+          "lec03-main-p039",
+          "lec03-main-p040"
+        ]
+      },
+      "topk10": {
+        "pages": [
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "distance": 0.3008
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "distance": 0.307
+          },
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "distance": 0.308
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "distance": 0.3256
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "distance": 0.3443
+          },
+          {
+            "page_id": "lec03-main-p041",
+            "role": "hit",
+            "distance": 0.3585
+          },
+          {
+            "page_id": "lec03-main-p037",
+            "role": "hit",
+            "distance": 0.3825
+          },
+          {
+            "page_id": "lec03-main-p008",
+            "role": "hit",
+            "distance": 0.411
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "hit",
+            "distance": 0.4132
+          },
+          {
+            "page_id": "lec03-main-p016",
+            "role": "hit",
+            "distance": 0.42
+          }
+        ],
+        "chars": 4518,
+        "evidence_found": [
+          "lec03-main-p013",
+          "lec03-main-p039",
+          "lec03-main-p040"
+        ]
+      },
+      "neighbors": {
+        "pages": [
+          {
+            "page_id": "lec03-main-p064",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "distance": 0.3008
+          },
+          {
+            "page_id": "lec03-main-p066",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p037",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "distance": 0.307
+          },
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "distance": 0.308
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "distance": 0.3256
+          },
+          {
+            "page_id": "lec03-main-p041",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p012",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "distance": 0.3443
+          },
+          {
+            "page_id": "lec03-main-p014",
+            "role": "neighbor",
+            "distance": null
+          }
+        ],
+        "chars": 5054,
+        "evidence_found": [
+          "lec03-main-p013",
+          "lec03-main-p039",
+          "lec03-main-p040"
+        ]
+      }
+    },
+    {
+      "question_id": "q3",
+      "query": "今回作ったRAGの実測平均応答時間と正答率は？",
+      "rag": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "distance": 0.2728
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "distance": 0.3044
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "distance": 0.3065
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "distance": 0.3096
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.3099
+          }
+        ],
+        "chars": 3498,
+        "evidence_found": []
+      },
+      "topk10": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "distance": 0.2728
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "distance": 0.3044
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "distance": 0.3065
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "distance": 0.3096
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.3099
+          },
+          {
+            "page_id": "lec01-main-p049",
+            "role": "hit",
+            "distance": 0.3101
+          },
+          {
+            "page_id": "lec02-main-p003",
+            "role": "hit",
+            "distance": 0.3107
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "distance": 0.3189
+          },
+          {
+            "page_id": "lec02-main-p057",
+            "role": "hit",
+            "distance": 0.3193
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "hit",
+            "distance": 0.3256
+          }
+        ],
+        "chars": 5772,
+        "evidence_found": []
+      },
+      "neighbors": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p012",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "distance": 0.2728
+          },
+          {
+            "page_id": "lec02-main-p014",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p063",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "distance": 0.3044
+          },
+          {
+            "page_id": "lec03-main-p065",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p018",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "distance": 0.3065
+          },
+          {
+            "page_id": "lec01-main-p020",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p023",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "distance": 0.3096
+          },
+          {
+            "page_id": "lec02-main-p025",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.3099
+          },
+          {
+            "page_id": "lec02-main-p028",
+            "role": "neighbor",
+            "distance": null
+          }
+        ],
+        "chars": 8941,
+        "evidence_found": []
+      }
+    },
+    {
+      "question_id": "q4",
+      "query": "第1回で説明された最終課題の概要と、お題の例を教えてください。",
+      "rag": {
+        "pages": [
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "distance": 0.2127
+          },
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "distance": 0.2195
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "distance": 0.2681
+          },
+          {
+            "page_id": "lec01-main-p039",
+            "role": "hit",
+            "distance": 0.2756
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "distance": 0.2943
+          }
+        ],
+        "chars": 1143,
+        "evidence_found": [
+          "lec01-main-p061",
+          "lec01-main-p062"
+        ]
+      },
+      "topk10": {
+        "pages": [
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "distance": 0.2127
+          },
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "distance": 0.2195
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "distance": 0.2681
+          },
+          {
+            "page_id": "lec01-main-p039",
+            "role": "hit",
+            "distance": 0.2756
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "distance": 0.2943
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "distance": 0.2959
+          },
+          {
+            "page_id": "lec01-main-p058",
+            "role": "hit",
+            "distance": 0.2979
+          },
+          {
+            "page_id": "lec01-main-p038",
+            "role": "hit",
+            "distance": 0.3016
+          },
+          {
+            "page_id": "lec01-main-p031",
+            "role": "hit",
+            "distance": 0.3077
+          },
+          {
+            "page_id": "lec01-main-p063",
+            "role": "hit",
+            "distance": 0.309
+          }
+        ],
+        "chars": 3174,
+        "evidence_found": [
+          "lec01-main-p061",
+          "lec01-main-p062"
+        ]
+      },
+      "neighbors": {
+        "pages": [
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "distance": 0.2195
+          },
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "distance": 0.2127
+          },
+          {
+            "page_id": "lec01-main-p063",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "distance": 0.2681
+          },
+          {
+            "page_id": "lec01-main-p059",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p038",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p039",
+            "role": "hit",
+            "distance": 0.2756
+          },
+          {
+            "page_id": "lec01-main-p040",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p035",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "distance": 0.2943
+          },
+          {
+            "page_id": "lec01-main-p037",
+            "role": "neighbor",
+            "distance": null
+          }
+        ],
+        "chars": 3016,
+        "evidence_found": [
+          "lec01-main-p061",
+          "lec01-main-p062"
+        ]
+      }
+    },
+    {
+      "question_id": "q5",
+      "query": "第2回のクイズ3（1日1万件の問い合わせの振り分け）の答えと、その理由は？",
+      "rag": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "distance": 0.2009
+          },
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "distance": 0.2053
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.2911
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "distance": 0.3032
+          },
+          {
+            "page_id": "lec02-main-p016",
+            "role": "hit",
+            "distance": 0.3141
+          }
+        ],
+        "chars": 1756,
+        "evidence_found": [
+          "lec02-main-p043"
+        ]
+      },
+      "topk10": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "distance": 0.2009
+          },
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "distance": 0.2053
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.2911
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "distance": 0.3032
+          },
+          {
+            "page_id": "lec02-main-p016",
+            "role": "hit",
+            "distance": 0.3141
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "hit",
+            "distance": 0.3156
+          },
+          {
+            "page_id": "lec02-main-p057",
+            "role": "hit",
+            "distance": 0.3258
+          },
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "distance": 0.3441
+          },
+          {
+            "page_id": "lec02-main-p056",
+            "role": "hit",
+            "distance": 0.3443
+          },
+          {
+            "page_id": "lec02-main-p019",
+            "role": "hit",
+            "distance": 0.3482
+          }
+        ],
+        "chars": 3311,
+        "evidence_found": [
+          "lec02-main-p043"
+        ]
+      },
+      "neighbors": {
+        "pages": [
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "distance": 0.2053
+          },
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "distance": 0.2009
+          },
+          {
+            "page_id": "lec02-main-p044",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p041",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "distance": 0.2911
+          },
+          {
+            "page_id": "lec02-main-p028",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p016",
+            "role": "hit",
+            "distance": 0.3141
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "distance": 0.3032
+          },
+          {
+            "page_id": "lec02-main-p018",
+            "role": "neighbor",
+            "distance": null
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "neighbor",
+            "distance": null
+          }
+        ],
+        "chars": 4966,
+        "evidence_found": [
+          "lec02-main-p043"
+        ]
+      }
+    }
+  ],
+  "runs": [
+    {
+      "question_id": "q1",
+      "mode": "rag",
+      "output": "第2回の講義資料によると、LoRAおよびQLoRAに関して以下の説明がなされています。\n\n* **LoRAが固定するものと学習するもの**\n  * **固定するもの**：元の重み（本体）は固定し、学習はしません（第2回・PDF p.52）。\n  * **学習するもの**：細長い2つの小さな行列の積（低ランク）で表される変化分（追加部分の小さな行列 A・B）だけを学習します（第2回・PDF p.51, p.52）。\n\n* **QLoRAが加えるもの**\n  * LoRAの手法に加え、**元の重みを4bitに圧縮（数値を粗く保存）すること**を加えます（第2回・PDF p.52）。これにより、さらに少ないメモリで大きなモデルの調整が可能になります（第2回・PDF p.51）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "LoRA QLoRA 固定 学習 第2回"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "chars": 717
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "chars": 357
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "chars": 771
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          },
+          {
+            "page_id": "lec02-main-p054",
+            "role": "hit",
+            "chars": 716
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p052",
+        "lec02-main-p060",
+        "lec02-main-p051",
+        "lec02-main-p061",
+        "lec02-main-p054"
+      ],
+      "retrieved_chars": 3032,
+      "evidence_retrieved": [
+        "lec02-main-p052"
+      ],
+      "cited": [
+        "lec02-main-p052",
+        "lec02-main-p051"
+      ],
+      "evidence_cited": [
+        "lec02-main-p052"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.92,
+      "input_tokens": 3037,
+      "output_tokens": 218,
+      "requests": 2,
+      "cost_usd": 0.0014561,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'LoRA QLoRA 固定 学習 第2回'})\n[tool return] search_materials -> 5ページ・本文3,032文字: 第2回 p.52、第2回 p.60、第2回 p.51、第2回 p.61、第2回 p.54\n[time] 回答完了まで 2.92 秒（検索・埋め込みを含む）\n[usage] 入力 3,037 tokens / 出力 218 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001456 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q1",
+      "mode": "topk10",
+      "output": "第2回の資料によると、LoRAおよびQLoRAの仕組みについて以下のように説明されています。\n\n* **LoRAが固定するものと学習するもの**\n  * **固定するもの：** 元の重み（本体）は固定して学習しません（第2回・PDF p.52）。\n  * **学習するもの：** 細長い2つの小さな行列の積（低ランク）で表される変化分（追加部分の小さな行列 A・B）だけを学習します（第2回・PDF p.51, p.52）。\n\n* **QLoRAが加えるもの**\n  * LoRAの手法に加え、**元の重みを 4bit に圧縮（数値を粗く保存）すること**を加えます（第2回・PDF p.51, p.52）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "LoRA QLoRA 固定 学習 第2回"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "chars": 717
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "chars": 357
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "chars": 771
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          },
+          {
+            "page_id": "lec02-main-p054",
+            "role": "hit",
+            "chars": 716
+          },
+          {
+            "page_id": "lec02-main-p023",
+            "role": "hit",
+            "chars": 472
+          },
+          {
+            "page_id": "lec02-main-p006",
+            "role": "hit",
+            "chars": 368
+          },
+          {
+            "page_id": "lec02-main-p058",
+            "role": "hit",
+            "chars": 549
+          },
+          {
+            "page_id": "lec02-main-p046",
+            "role": "hit",
+            "chars": 268
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "chars": 640
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p052",
+        "lec02-main-p060",
+        "lec02-main-p051",
+        "lec02-main-p061",
+        "lec02-main-p054",
+        "lec02-main-p023",
+        "lec02-main-p006",
+        "lec02-main-p058",
+        "lec02-main-p046",
+        "lec02-main-p047"
+      ],
+      "retrieved_chars": 5329,
+      "evidence_retrieved": [
+        "lec02-main-p052"
+      ],
+      "cited": [
+        "lec02-main-p052",
+        "lec02-main-p051"
+      ],
+      "evidence_cited": [
+        "lec02-main-p052"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.91,
+      "input_tokens": 5096,
+      "output_tokens": 199,
+      "requests": 2,
+      "cost_usd": 0.0020263,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'LoRA QLoRA 固定 学習 第2回'})\n[tool return] search_materials -> 10ページ・本文5,329文字: 第2回 p.52、第2回 p.60、第2回 p.51、第2回 p.61、第2回 p.54、第2回 p.23、第2回 p.6、第2回 p.58、第2回 p.46、第2回 p.47\n[time] 回答完了まで 2.91 秒（検索・埋め込みを含む）\n[usage] 入力 5,096 tokens / 出力 199 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002026 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q1",
+      "mode": "neighbors",
+      "output": "第2回の講義資料によると、LoRAとQLoRAにおける固定・学習・追加の仕様は以下の通りです。\n\n- **LoRA**\n  - **固定するもの**：モデル本体（元の重み $W$）は固定し、学習しない（第2回・PDF p.51, p.52）。\n  - **学習するもの**：重みの変化分を表す、細長い2つの小さな行列（低ランク）の積（小さな追加部分である行列 $A$・$B$）だけを学習する（第2回・PDF p.51, p.52）。\n- **QLoRA**\n  - **加えること（特徴）**：LoRAの手法に加えて、元の重みを4bit（数値を粗く保存）に圧縮することで、さらに省メモリでモデルの調整を行えるようにする（第2回・PDF p.51, p.52）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "LoRA QLoRA 固定 学習 追加"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "chars": 771
+          },
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "chars": 717
+          },
+          {
+            "page_id": "lec02-main-p053",
+            "role": "neighbor",
+            "chars": 468
+          },
+          {
+            "page_id": "lec02-main-p050",
+            "role": "neighbor",
+            "chars": 311
+          },
+          {
+            "page_id": "lec02-main-p059",
+            "role": "neighbor",
+            "chars": 492
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "chars": 357
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          },
+          {
+            "page_id": "lec02-main-p046",
+            "role": "neighbor",
+            "chars": 268
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "chars": 640
+          },
+          {
+            "page_id": "lec02-main-p048",
+            "role": "neighbor",
+            "chars": 548
+          },
+          {
+            "page_id": "lec02-main-p062",
+            "role": "neighbor",
+            "chars": 518
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p051",
+        "lec02-main-p052",
+        "lec02-main-p053",
+        "lec02-main-p050",
+        "lec02-main-p059",
+        "lec02-main-p060",
+        "lec02-main-p061",
+        "lec02-main-p046",
+        "lec02-main-p047",
+        "lec02-main-p048",
+        "lec02-main-p062"
+      ],
+      "retrieved_chars": 5561,
+      "evidence_retrieved": [
+        "lec02-main-p052"
+      ],
+      "cited": [
+        "lec02-main-p051",
+        "lec02-main-p052"
+      ],
+      "evidence_cited": [
+        "lec02-main-p052"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.55,
+      "input_tokens": 5479,
+      "output_tokens": 226,
+      "requests": 2,
+      "cost_usd": 0.0022087,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'LoRA QLoRA 固定 学習 追加'})\n[tool return] search_materials -> 11ページ・本文5,561文字: 第2回 p.51、第2回 p.52、第2回 p.53（前後）、第2回 p.50（前後）、第2回 p.59（前後）、第2回 p.60、第2回 p.61、第2回 p.46（前後）、第2回 p.47、第2回 p.48（前後）、第2回 p.62（前後）\n[time] 回答完了まで 2.55 秒（検索・埋め込みを含む）\n[usage] 入力 5,479 tokens / 出力 226 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002209 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q2",
+      "mode": "rag",
+      "output": "講義資料に基づき、コンパクションとセッションをまたぐメモリの違い、および日々のメモの扱いについて解説します。\n\n### 1. コンパクションとセッションをまたぐメモリの違い\n\n* **コンパクション（コンテキストの中 / 同じセッション）**\n  * **仕組み**: 1つのセッションやループの中で、コンテキストの上限に達しないように古い履歴を要約して詰める仕組みです（第3回・PDF p.39, 65）。\n  * **特徴**: あくまで「同じセッション内」のコンテキスト管理であり、要約に置き換えた範囲の古い詳細なデータ（画像や文書など）は失われます（第3回・PDF p.39, 65）。\n\n* **セッションをまたぐメモリ（外の保存先）**\n  * **仕組み**: メモリツールや自動メモリなどを用いて、セッションやチャットが終了した後も外の保存先（ファイルやデータベースなど）に情報を残し、次回の会話の最初に読み戻す仕組みです（第3回・PDF p.39, 40）。\n  * **特徴**: 別のセッション（別の日など）に移行しても、過去の重要なやり取りや決定事項（テストの実行方法やコーディング規約など）を引き継ぐことができます（第3回・PDF p.13, 39）。\n\n---\n\n### 2. 日々のメモは全部長期メモリになりますか？\n\n* **すべてが長期メモリになるわけではありません**\n  * 資料のOpenClawの実装例（第3回・PDF p.40）では、日々のメモ（`memory/日付.md`）がそのまますべて長期メモリ（`MEMORY.md`）になるわけではないとされています。\n  * 毎晩自動で見直し（dreaming）が行われ、「集める・見比べる・移す」というステップを経て、基準を超えたもの（何度も出てくるテーマなど）だけが長期メモリに残されます（第3回・PDF p.40）。\n  * そのため、一度きりの調べものなどは日々のメモに残るだけで終わり、長期メモリが膨らまないように設計されています（第3回・PDF p.40）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "コンパクション セッション メモリ 長期メモリ 日々のメモ"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "chars": 538
+          },
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "chars": 633
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "chars": 467
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "chars": 383
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "chars": 361
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec03-main-p039",
+        "lec03-main-p065",
+        "lec03-main-p038",
+        "lec03-main-p040",
+        "lec03-main-p013"
+      ],
+      "retrieved_chars": 2382,
+      "evidence_retrieved": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited": [
+        "lec03-main-p039",
+        "lec03-main-p065",
+        "lec03-main-p040",
+        "lec03-main-p013"
+      ],
+      "evidence_cited": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.98,
+      "input_tokens": 2484,
+      "output_tokens": 511,
+      "requests": 2,
+      "cost_usd": 0.0020227,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'コンパクション セッション メモリ 長期メモリ 日々のメモ'})\n[tool return] search_materials -> 5ページ・本文2,382文字: 第3回 p.39、第3回 p.65、第3回 p.38、第3回 p.40、第3回 p.13\n[time] 回答完了まで 3.98 秒（検索・埋め込みを含む）\n[usage] 入力 2,484 tokens / 出力 511 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002023 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q2",
+      "mode": "topk10",
+      "output": "ご質問ありがとうございます。第3回の講義資料を基に、それぞれの仕組みや扱いについて確認してみましょう。\n\n### 1. コンパクションとセッションをまたぐメモリの違い\n* **コンパクション（履歴の要約）**\n  * **対象範囲:** 1つのセッション（ループの中の履歴）の中でおこなわれます（第3回・PDF p.39、p.65）。\n  * **仕組み:** コンテキストの上限に近づいたときや任意の間隔で、古い履歴を要約に置き換えて情報を詰め直します（第3回・PDF p.39、p.65）。\n* **セッションをまたぐメモリ（メモリツール等）**\n  * **対象範囲:** セッション（チャットの単位）をまたいで外の保存先（ファイルやデータベースなど）に記録されます（第3回・PDF p.13、p.39）。\n  * **仕組み:** 前回の会話や過去の作業で得た重要な情報（「テストはpytestで実行する」「コメントは日本語で」など）を外の保存先に書き出し、新しいセッションや次の会話の最初に読み戻して活用します（第3回・PDF p.13、p.39）。\n\n---\n\n### 2. 日々のメモは全部長期メモリになりますか？\n* 資料で紹介されている実装例（OpenClawなど）では、日々のメモをそのまますべて長期メモリ（`MEMORY.md`など）として残すわけではありません（第3回・PDF p.40）。\n* 毎晩の見直し（dreaming）などのプロセスを通じて、次のようなステップで取捨選択が行われます（第3回・PDF p.40）。\n  1. **集める:** 重複を除いて候補を並べる\n  2. **見比べる:** 何度も出てくるテーマを探す\n  3. **移す:** 基準を超えたものだけを残す\n* そのため、一度きりの調べものなどは日々のメモに残るだけであり、すべてが長期メモリに格上げされるわけではなく、長期メモリが膨らまないように設計されています（第3回・PDF p.40）。すべてを蓄積すると古い情報や誤りも戻ってしまうため、「何を残し、何を消すか」の設計が重要になります（第3回・PDF p.38、p.40）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "コンパクション セッション メモリ 長期メモリ"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "chars": 633
+          },
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "chars": 538
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "chars": 467
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "chars": 383
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "chars": 361
+          },
+          {
+            "page_id": "lec03-main-p041",
+            "role": "hit",
+            "chars": 506
+          },
+          {
+            "page_id": "lec03-main-p037",
+            "role": "hit",
+            "chars": 66
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "chars": 802
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "hit",
+            "chars": 623
+          },
+          {
+            "page_id": "lec03-main-p016",
+            "role": "hit",
+            "chars": 706
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec03-main-p065",
+        "lec03-main-p039",
+        "lec03-main-p038",
+        "lec03-main-p040",
+        "lec03-main-p013",
+        "lec03-main-p041",
+        "lec03-main-p037",
+        "lec03-main-p064",
+        "lec02-main-p015",
+        "lec03-main-p016"
+      ],
+      "retrieved_chars": 5085,
+      "evidence_retrieved": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited": [
+        "lec03-main-p039",
+        "lec03-main-p065",
+        "lec03-main-p013",
+        "lec03-main-p040",
+        "lec03-main-p038"
+      ],
+      "evidence_cited": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 4.0,
+      "input_tokens": 4518,
+      "output_tokens": 543,
+      "requests": 2,
+      "cost_usd": 0.0027129,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'コンパクション セッション メモリ 長期メモリ'})\n[tool return] search_materials -> 10ページ・本文5,085文字: 第3回 p.65、第3回 p.39、第3回 p.38、第3回 p.40、第3回 p.13、第3回 p.41、第3回 p.37、第3回 p.64、第2回 p.15、第3回 p.16\n[time] 回答完了まで 4.00 秒（検索・埋め込みを含む）\n[usage] 入力 4,518 tokens / 出力 543 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002713 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q2",
+      "mode": "neighbors",
+      "output": "ご質問ありがとうございます。コンパクションとセッションをまたぐメモリの違い、および日々のメモの扱いについて、講義資料の記載を基に整理します。\n\n### 1. コンパクションとセッションをまたぐメモリの違い\n\n講義資料では、それぞれ働く場所や役割が明確に区別されています。\n\n* **コンパクション（履歴の要約）**\n  * **働く場所：** コンテキストの中（**同じセッション内**）（第3回・PDF p.39）\n  * **役割：** 長い作業などでコンテキストの上限に近づいた際、古い履歴を要約して詰める仕組みです（第3回・PDF p.38, p.39）。これにより、同じセッションの中で途中のやり取りが溢れてしまうのを防ぎます（第3回・PDF p.38）。ただし、要約に置き換えられた範囲の細かい情報や画像などは失われます（第3回・PDF p.65）。\n* **セッションをまたぐメモリ（メモリツールなど）**\n  * **働く場所：** 外の保存先（**セッションをまたぐ**）（第3回・PDF p.39）\n  * **役割：** 異なるチャットや作業セッションを超えて、重要な情報（「テストはpytestで実行する」「コメントは日本語で」など）を残し、次の新しいコンテキストに呼び戻すための仕組みです（第3回・PDF p.13, p.39）。\n\n---\n\n### 2. 日々のメモは全部長期メモリになりますか？\n\n日々のメモがすべてそのまま長期メモリになるわけではありません。\n\n講義資料（OpenClawの実装例など）では、日々の作業記録（`memory/日付.md`）は一旦その日のメモとして残りますが、その後に**「毎晩、自動で見直し（dreaming）を行うプロセス」**が挟まります（第3回・PDF p.40）。\n\n* **集める：** 重複を除いて候補を並べる（第3回・PDF p.40）\n* **見比べる：** 何度も出てくるテーマを探す（第3回・PDF p.40）\n* **移す：** **基準を超えたものだけ**を長期メモリ（`MEMORY.md`）に残す（第3回・PDF p.40）\n\nこのように、一度きりの調べものや一時的な情報は日々のメモに残るだけで終わり、**「全部は残さない」**設計になっています（第3回・PDF p.40）。これにより、長期メモリが不要に膨らんでしまうのを防ぐことができます（第3回・PDF p.40）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "コンパクション セッション メモリ 長期メモリ"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec03-main-p064",
+            "role": "neighbor",
+            "chars": 802
+          },
+          {
+            "page_id": "lec03-main-p065",
+            "role": "hit",
+            "chars": 633
+          },
+          {
+            "page_id": "lec03-main-p066",
+            "role": "neighbor",
+            "chars": 816
+          },
+          {
+            "page_id": "lec03-main-p038",
+            "role": "hit",
+            "chars": 467
+          },
+          {
+            "page_id": "lec03-main-p039",
+            "role": "hit",
+            "chars": 538
+          },
+          {
+            "page_id": "lec03-main-p040",
+            "role": "hit",
+            "chars": 383
+          },
+          {
+            "page_id": "lec03-main-p037",
+            "role": "neighbor",
+            "chars": 66
+          },
+          {
+            "page_id": "lec03-main-p041",
+            "role": "neighbor",
+            "chars": 506
+          },
+          {
+            "page_id": "lec03-main-p012",
+            "role": "neighbor",
+            "chars": 213
+          },
+          {
+            "page_id": "lec03-main-p013",
+            "role": "hit",
+            "chars": 361
+          },
+          {
+            "page_id": "lec03-main-p014",
+            "role": "neighbor",
+            "chars": 269
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec03-main-p064",
+        "lec03-main-p065",
+        "lec03-main-p066",
+        "lec03-main-p038",
+        "lec03-main-p039",
+        "lec03-main-p040",
+        "lec03-main-p037",
+        "lec03-main-p041",
+        "lec03-main-p012",
+        "lec03-main-p013",
+        "lec03-main-p014"
+      ],
+      "retrieved_chars": 5054,
+      "evidence_retrieved": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited": [
+        "lec03-main-p039",
+        "lec03-main-p038",
+        "lec03-main-p065",
+        "lec03-main-p013",
+        "lec03-main-p040"
+      ],
+      "evidence_cited": [
+        "lec03-main-p013",
+        "lec03-main-p039",
+        "lec03-main-p040"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.9,
+      "input_tokens": 4660,
+      "output_tokens": 608,
+      "requests": 2,
+      "cost_usd": 0.002918,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'コンパクション セッション メモリ 長期メモリ'})\n[tool return] search_materials -> 11ページ・本文5,054文字: 第3回 p.64（前後）、第3回 p.65、第3回 p.66（前後）、第3回 p.38、第3回 p.39、第3回 p.40、第3回 p.37（前後）、第3回 p.41（前後）、第3回 p.12（前後）、第3回 p.13、第3回 p.14（前後）\n[time] 回答完了まで 3.90 秒（検索・埋め込みを含む）\n[usage] 入力 4,660 tokens / 出力 608 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002918 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q3",
+      "mode": "rag",
+      "output": "ご提示いただいた第1〜3回の講義資料を確認しましたが、今回作成されたRAGシステムの「実測平均応答時間」や「正答率」についての具体的な数値データは記載されていませんでした。\n\n講義資料（第2回・PDF p.13）では、LLMの確率的な性質や評価に関して以下のように述べられています。\n- 1回試して動いたことは評価にならず、同じ質問を複数回聞いて平均やばらつきを見る必要があること（例として「RAGって何ですか？」を5回聞いて正答数を確認する説明があります）。\n- 実際の正答率を知るためには、1回目だけでなく複数回での評価が必要であること。\n\nご自身で作られたRAGのパフォーマンスを正確に把握するために、まずは同じ質問を複数回（例えば5回など）投げ、それぞれの応答時間や正答の割合（ばらつき）を実際に計測・集計してみてはいかがでしょうか。どのように測定・評価すればよいか、考え方で迷う点があればいつでもご相談ください。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "実測平均応答時間 正答率 RAG"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "chars": 445
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "chars": 802
+          },
+          {
+            "page_id": "lec03-main-p019",
+            "role": "hit",
+            "chars": 493
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "chars": 1087
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "chars": 809
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p013",
+        "lec03-main-p064",
+        "lec03-main-p019",
+        "lec01-main-p019",
+        "lec02-main-p024"
+      ],
+      "retrieved_chars": 3636,
+      "evidence_retrieved": [],
+      "cited": [
+        "lec02-main-p013"
+      ],
+      "evidence_cited": [],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.31,
+      "input_tokens": 3201,
+      "output_tokens": 245,
+      "requests": 2,
+      "cost_usd": 0.0015728,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '実測平均応答時間 正答率 RAG'})\n[tool return] search_materials -> 5ページ・本文3,636文字: 第2回 p.13、第3回 p.64、第3回 p.19、第1回 p.19、第2回 p.24\n[time] 回答完了まで 3.31 秒（検索・埋め込みを含む）\n[usage] 入力 3,201 tokens / 出力 245 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001573 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q3",
+      "mode": "topk10",
+      "output": "ご質問の「今回作ったRAGの実測平均応答時間と正答率」についてですが、第1〜3回の講義資料内には、あなたが実際に作成したRAGの具体的な実測値（平均応答時間や正答率の数値）は記載されていません。\n\n講義資料では、LLMやRAGの評価に関して以下のような考え方が解説されています。\n\n* LLMは確率で次の言葉を選ぶため、同じ質問でも答えが毎回変わります。そのため、1回試して動いたことを評価にするのではなく、同じ質問を複数回聞いて平均やばらつきを見ることが重要です（第2回・PDF p.13）。\n* 評価を行う際は、入力の長さを変えて正答率が落ちないかなどを確認する必要があります（第2回・PDF p.15）。\n\n実際に構築したRAGの性能を評価・測定する際には、同じ質問を複数回投げ、その出力のばらつきや正答率、応答時間を計測してみてください。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "RAG 実測平均応答時間 正答率"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "chars": 445
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "chars": 802
+          },
+          {
+            "page_id": "lec03-main-p019",
+            "role": "hit",
+            "chars": 493
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "chars": 809
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "chars": 640
+          },
+          {
+            "page_id": "lec01-main-p049",
+            "role": "hit",
+            "chars": 334
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "chars": 1087
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "chars": 355
+          },
+          {
+            "page_id": "lec02-main-p003",
+            "role": "hit",
+            "chars": 320
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "hit",
+            "chars": 623
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p013",
+        "lec03-main-p064",
+        "lec03-main-p019",
+        "lec02-main-p024",
+        "lec02-main-p047",
+        "lec01-main-p049",
+        "lec01-main-p019",
+        "lec02-main-p027",
+        "lec02-main-p003",
+        "lec02-main-p015"
+      ],
+      "retrieved_chars": 5908,
+      "evidence_retrieved": [],
+      "cited": [
+        "lec02-main-p013",
+        "lec02-main-p015"
+      ],
+      "evidence_cited": [],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.04,
+      "input_tokens": 5137,
+      "output_tokens": 237,
+      "requests": 2,
+      "cost_usd": 0.0021336,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'RAG 実測平均応答時間 正答率'})\n[tool return] search_materials -> 10ページ・本文5,908文字: 第2回 p.13、第3回 p.64、第3回 p.19、第2回 p.24、第2回 p.47、第1回 p.49、第1回 p.19、第2回 p.27、第2回 p.3、第2回 p.15\n[time] 回答完了まで 3.04 秒（検索・埋め込みを含む）\n[usage] 入力 5,137 tokens / 出力 237 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002134 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q3",
+      "mode": "neighbors",
+      "output": "第1〜3回の講義資料を確認しましたが、今回作成したRAGの「実測平均応答時間」や「正答率」に関する具体的な数値やデータは記載されていません。\n\n講義資料（第2回・PDF p.13）では、同じ質問に対して「5回中3回正しい」といった評価の例や、評価を行う際には「1回試して『動いた』は評価にならない。同じ質問を複数回聞いて、ばらつきごと測る」という考え方が紹介されています。\n\nご自身で作成されたRAGシステムの応答時間や正答率を評価するためには、どのようなテストデータ（評価セット）を用いて複数回測定を行ったかを確認し、その結果を集計する必要があります。測定方法や評価の進め方について、どのような点で悩まれているか教えていただければ、考え方のヒントをご案内できます。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "実測平均応答時間 正答率 RAG"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p012",
+            "role": "neighbor",
+            "chars": 341
+          },
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "chars": 445
+          },
+          {
+            "page_id": "lec02-main-p014",
+            "role": "neighbor",
+            "chars": 421
+          },
+          {
+            "page_id": "lec03-main-p063",
+            "role": "neighbor",
+            "chars": 732
+          },
+          {
+            "page_id": "lec03-main-p064",
+            "role": "hit",
+            "chars": 802
+          },
+          {
+            "page_id": "lec03-main-p065",
+            "role": "neighbor",
+            "chars": 633
+          },
+          {
+            "page_id": "lec03-main-p018",
+            "role": "neighbor",
+            "chars": 61
+          },
+          {
+            "page_id": "lec03-main-p019",
+            "role": "hit",
+            "chars": 493
+          },
+          {
+            "page_id": "lec03-main-p020",
+            "role": "neighbor",
+            "chars": 544
+          },
+          {
+            "page_id": "lec01-main-p018",
+            "role": "neighbor",
+            "chars": 456
+          },
+          {
+            "page_id": "lec01-main-p019",
+            "role": "hit",
+            "chars": 1087
+          },
+          {
+            "page_id": "lec01-main-p020",
+            "role": "neighbor",
+            "chars": 160
+          },
+          {
+            "page_id": "lec02-main-p023",
+            "role": "neighbor",
+            "chars": 472
+          },
+          {
+            "page_id": "lec02-main-p024",
+            "role": "hit",
+            "chars": 809
+          },
+          {
+            "page_id": "lec02-main-p025",
+            "role": "neighbor",
+            "chars": 1396
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p012",
+        "lec02-main-p013",
+        "lec02-main-p014",
+        "lec03-main-p063",
+        "lec03-main-p064",
+        "lec03-main-p065",
+        "lec03-main-p018",
+        "lec03-main-p019",
+        "lec03-main-p020",
+        "lec01-main-p018",
+        "lec01-main-p019",
+        "lec01-main-p020",
+        "lec02-main-p023",
+        "lec02-main-p024",
+        "lec02-main-p025"
+      ],
+      "retrieved_chars": 8852,
+      "evidence_retrieved": [],
+      "cited": [
+        "lec02-main-p013"
+      ],
+      "evidence_cited": [],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.03,
+      "input_tokens": 7255,
+      "output_tokens": 205,
+      "requests": 2,
+      "cost_usd": 0.002689,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '実測平均応答時間 正答率 RAG'})\n[tool return] search_materials -> 15ページ・本文8,852文字: 第2回 p.12（前後）、第2回 p.13、第2回 p.14（前後）、第3回 p.63（前後）、第3回 p.64、第3回 p.65（前後）、第3回 p.18（前後）、第3回 p.19、第3回 p.20（前後）、第1回 p.18（前後）、第1回 p.19、第1回 p.20（前後）、第2回 p.23（前後）、第2回 p.24、第2回 p.25（前後）\n[time] 回答完了まで 3.03 秒（検索・埋め込みを含む）\n[usage] 入力 7,255 tokens / 出力 205 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002689 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q4",
+      "mode": "rag",
+      "output": "第1回講義資料によると、最終課題の概要とお題の例は以下の通りです。\n\n### 最終課題の概要\n* **概要**: アプリケーション開発（第1回・PDF p.61）\n* **詳細**: 約10程度準備予定のプロジェクト候補から選択してアプリケーションを開発する。お題の例は次のページ（PDF p.62）に記載されている（第1回・PDF p.61）。\n* **期間**: 第6回で予告され、第13回で詳細が説明される（第1回・PDF p.61）。\n* **評価基準・修了基準**: \n  * 提出物：説明資料（PPT）＋コード（第1回・PDF p.61）\n  * 修了基準：最終課題の提出（第1回・PDF p.61）\n  * 優秀生：優れた創意工夫が見られるものや、開発レベルが高いものを選定する（第1回・PDF p.61）。\n\n### お題の例\n* **タイトル**: 質問応答のAI補助機能のPoC（実現性を確かめる試作）（第1回・PDF p.62）\n* **背景・問題**: 講義中に受講生の疑問に回答することは重要だが、1講義で200件ほど質問が来ることもあり、全てに回答するには限界がある（第1回・PDF p.62）。\n* **やること**: \n  * 解決方法・評価方法の検討（第1回・PDF p.62）\n  * Webアプリケーションの開発（第1回・PDF p.62）\n  * 継続的な開発体制のための工夫・運用を考慮したシステム構成（第1回・PDF p.62）",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "最終課題"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "chars": 231
+          },
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "chars": 281
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "chars": 186
+          },
+          {
+            "page_id": "lec02-main-p062",
+            "role": "hit",
+            "chars": 518
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec01-main-p061",
+        "lec01-main-p062",
+        "lec01-main-p060",
+        "lec02-main-p062",
+        "lec02-main-p061"
+      ],
+      "retrieved_chars": 1687,
+      "evidence_retrieved": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "evidence_cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.15,
+      "input_tokens": 2255,
+      "output_tokens": 404,
+      "requests": 2,
+      "cost_usd": 0.0016865,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '最終課題'})\n[tool return] search_materials -> 5ページ・本文1,687文字: 第1回 p.61、第1回 p.62、第1回 p.60、第2回 p.62、第2回 p.61\n[time] 回答完了まで 3.15 秒（検索・埋め込みを含む）\n[usage] 入力 2,255 tokens / 出力 404 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001686 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q4",
+      "mode": "topk10",
+      "output": "第1回講義資料に基づく最終課題の概要とお題の例は以下の通りです。\n\n### 最終課題の概要\n* **概要**: アプリケーション開発（第1回・PDF p.61）\n* **詳細**: 10個程度を予定しているプロジェクト候補から選択してアプリケーションを開発します（第1回・PDF p.61）。\n* **期間**: 第6回で予告され、第13回で詳細が説明されます（第1回・PDF p.61）。\n* **評価基準**: \n  * 提出物：説明資料（PPT）＋コード（第1回・PDF p.61）\n  * 修了基準：最終課題の提出（第1回・PDF p.61）\n  * 優秀生：優れた創意工夫が見られるものや開発レベルが高いものを選定（第1回・PDF p.61）\n\n### お題の例\n* **講義の質問応答を支援するシステム**（タイトル：質問応答のAI補助機能のPoC / 実現性を確かめる試作）（第1回・PDF p.62）\n  * **背景（問題）**: 講義中に受講生の疑問に回答することは重要ですが、1講義で200件ほど質問が来ることもあり、全てに回答するには限界があるという課題があります（第1回・PDF p.62）。\n  * **やること**: 解決方法・評価方法の検討、Webアプリケーションの開発、継続的な開発体制のための工夫・運用を考慮したシステム構成を行います（第1回・PDF p.62）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "最終課題 概要 お題 例"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "chars": 281
+          },
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "chars": 231
+          },
+          {
+            "page_id": "lec01-main-p039",
+            "role": "hit",
+            "chars": 260
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "chars": 185
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "chars": 186
+          },
+          {
+            "page_id": "lec01-main-p038",
+            "role": "hit",
+            "chars": 139
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          },
+          {
+            "page_id": "lec02-main-p062",
+            "role": "hit",
+            "chars": 518
+          },
+          {
+            "page_id": "lec02-main-p003",
+            "role": "hit",
+            "chars": 320
+          },
+          {
+            "page_id": "lec01-main-p031",
+            "role": "hit",
+            "chars": 273
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec01-main-p062",
+        "lec01-main-p061",
+        "lec01-main-p039",
+        "lec01-main-p036",
+        "lec01-main-p060",
+        "lec01-main-p038",
+        "lec02-main-p061",
+        "lec02-main-p062",
+        "lec02-main-p003",
+        "lec01-main-p031"
+      ],
+      "retrieved_chars": 2864,
+      "evidence_retrieved": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "evidence_cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.35,
+      "input_tokens": 3558,
+      "output_tokens": 372,
+      "requests": 2,
+      "cost_usd": 0.0019974,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '最終課題 概要 お題 例'})\n[tool return] search_materials -> 10ページ・本文2,864文字: 第1回 p.62、第1回 p.61、第1回 p.39、第1回 p.36、第1回 p.60、第1回 p.38、第2回 p.61、第2回 p.62、第2回 p.3、第1回 p.31\n[time] 回答完了まで 3.35 秒（検索・埋め込みを含む）\n[usage] 入力 3,558 tokens / 出力 372 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001997 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q4",
+      "mode": "neighbors",
+      "output": "第1回講義資料に記載されている最終課題の概要と、お題の例は以下の通りです。\n\n### 最終課題の概要\n* **概要**: アプリケーション開発（第1回・PDF p.61）\n* **詳細**: 約10個程度準備されるプロジェクト候補の中から選択し、アプリケーションを開発します（第1回・PDF p.61）。\n* **期間**: 第6回で予告され、第13回で詳細が説明されます（第1回・PDF p.61, p.62）。\n* **評価基準**: \n  * 提出物：説明資料（PPT）＋コード（第1回・PDF p.61）\n  * 修了基準：最終課題の提出（第1回・PDF p.61）\n  * 優秀生：優れた創意工夫が見られるものや開発レベルが高いものを選定（第1回・PDF p.61）\n\n### お題の例\n* **タイトル**: 質問応答のAI補助機能のPoC（実現性を確かめる試作）（第1回・PDF p.62）\n* **問題背景**: 講義中に受講生の疑問に回答するのは重要ですが、1講義で200件ほど質問が来ることもあり、全てに回答するには限界があるという課題があります（第1回・PDF p.62）。\n* **やること**: \n  * 解決方法・評価方法の検討（第1回・PDF p.62）\n  * Webアプリケーションの開発（第1回・PDF p.62）\n  * 継続的な開発体制のための工夫・運用を考慮したシステム構成（第1回・PDF p.62）",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "最終課題 概要 お題 例"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec01-main-p061",
+            "role": "hit",
+            "chars": 231
+          },
+          {
+            "page_id": "lec01-main-p062",
+            "role": "hit",
+            "chars": 281
+          },
+          {
+            "page_id": "lec01-main-p063",
+            "role": "neighbor",
+            "chars": 344
+          },
+          {
+            "page_id": "lec01-main-p060",
+            "role": "hit",
+            "chars": 186
+          },
+          {
+            "page_id": "lec01-main-p038",
+            "role": "neighbor",
+            "chars": 139
+          },
+          {
+            "page_id": "lec01-main-p039",
+            "role": "hit",
+            "chars": 260
+          },
+          {
+            "page_id": "lec01-main-p040",
+            "role": "neighbor",
+            "chars": 357
+          },
+          {
+            "page_id": "lec01-main-p035",
+            "role": "neighbor",
+            "chars": 411
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "chars": 185
+          },
+          {
+            "page_id": "lec01-main-p037",
+            "role": "neighbor",
+            "chars": 293
+          },
+          {
+            "page_id": "lec01-main-p059",
+            "role": "neighbor",
+            "chars": 329
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec01-main-p061",
+        "lec01-main-p062",
+        "lec01-main-p063",
+        "lec01-main-p060",
+        "lec01-main-p038",
+        "lec01-main-p039",
+        "lec01-main-p040",
+        "lec01-main-p035",
+        "lec01-main-p036",
+        "lec01-main-p037",
+        "lec01-main-p059"
+      ],
+      "retrieved_chars": 3016,
+      "evidence_retrieved": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "evidence_cited": [
+        "lec01-main-p061",
+        "lec01-main-p062"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.2,
+      "input_tokens": 3867,
+      "output_tokens": 396,
+      "requests": 2,
+      "cost_usd": 0.0021501,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '最終課題 概要 お題 例'})\n[tool return] search_materials -> 11ページ・本文3,016文字: 第1回 p.61、第1回 p.62、第1回 p.63（前後）、第1回 p.60、第1回 p.38（前後）、第1回 p.39、第1回 p.40（前後）、第1回 p.35（前後）、第1回 p.36、第1回 p.37（前後）、第1回 p.59（前後）\n[time] 回答完了まで 3.20 秒（検索・埋め込みを含む）\n[usage] 入力 3,867 tokens / 出力 396 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002150 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q5",
+      "mode": "rag",
+      "output": "第2回のクイズ3の答えとその理由は以下の通りです。\n\n- **答え**：B（小さなモデル（特化モデルやFT済み）で分類し、評価セットで精度とコストを確かめる）\n- **理由**：決まった判断を大量にこなす用途においては、用途に足りる小さなモデルを選ぶほうが「コスト＜効果」を満たしやすいためです。また、どのモデルで足りるかは自身の評価セットで決める必要があるためです。\n\n（根拠：第2回・PDF p.42-43）",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "第2回 クイズ3 1日1万件 問い合わせ 振り分け"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "chars": 359
+          },
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "chars": 374
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "chars": 355
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "hit",
+            "chars": 310
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "chars": 349
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p042",
+        "lec02-main-p043",
+        "lec02-main-p027",
+        "lec02-main-p026",
+        "lec02-main-p017"
+      ],
+      "retrieved_chars": 1747,
+      "evidence_retrieved": [
+        "lec02-main-p043"
+      ],
+      "cited": [
+        "lec02-main-p042",
+        "lec02-main-p043"
+      ],
+      "evidence_cited": [
+        "lec02-main-p043"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.73,
+      "input_tokens": 2263,
+      "output_tokens": 151,
+      "requests": 2,
+      "cost_usd": 0.0010564,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '第2回 クイズ3 1日1万件 問い合わせ 振り分け'})\n[tool return] search_materials -> 5ページ・本文1,747文字: 第2回 p.42、第2回 p.43、第2回 p.27、第2回 p.26、第2回 p.17\n[time] 回答完了まで 2.73 秒（検索・埋め込みを含む）\n[usage] 入力 2,263 tokens / 出力 151 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001056 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q5",
+      "mode": "topk10",
+      "output": "第2回のクイズ3の答えとその理由は以下の通りです。\n\n* **答え**: B（小さなモデル（特化モデルやFT済み）で分類し、評価セットで精度とコストを確かめる）\n* **理由**: 決まった判断を大量にこなす用途においては、用途に足りる小さなモデルを選ぶほうが「コスト＜効果」を満たしやすいため。（第2回・PDF p.43）",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "第2回 クイズ3 1日1万件の問い合わせ"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "chars": 374
+          },
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "chars": 359
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "chars": 355
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "chars": 349
+          },
+          {
+            "page_id": "lec02-main-p016",
+            "role": "hit",
+            "chars": 319
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "hit",
+            "chars": 310
+          },
+          {
+            "page_id": "lec01-main-p036",
+            "role": "hit",
+            "chars": 185
+          },
+          {
+            "page_id": "lec02-main-p070",
+            "role": "hit",
+            "chars": 467
+          },
+          {
+            "page_id": "lec02-main-p057",
+            "role": "hit",
+            "chars": 357
+          },
+          {
+            "page_id": "lec02-main-p013",
+            "role": "hit",
+            "chars": 445
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p043",
+        "lec02-main-p042",
+        "lec02-main-p027",
+        "lec02-main-p017",
+        "lec02-main-p016",
+        "lec02-main-p026",
+        "lec01-main-p036",
+        "lec02-main-p070",
+        "lec02-main-p057",
+        "lec02-main-p013"
+      ],
+      "retrieved_chars": 3520,
+      "evidence_retrieved": [
+        "lec02-main-p043"
+      ],
+      "cited": [
+        "lec02-main-p043"
+      ],
+      "evidence_cited": [
+        "lec02-main-p043"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.48,
+      "input_tokens": 3973,
+      "output_tokens": 120,
+      "requests": 2,
+      "cost_usd": 0.0014919,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': '第2回 クイズ3 1日1万件の問い合わせ'})\n[tool return] search_materials -> 10ページ・本文3,520文字: 第2回 p.43、第2回 p.42、第2回 p.27、第2回 p.17、第2回 p.16、第2回 p.26、第1回 p.36、第2回 p.70、第2回 p.57、第2回 p.13\n[time] 回答完了まで 2.48 秒（検索・埋め込みを含む）\n[usage] 入力 3,973 tokens / 出力 120 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001492 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q5",
+      "mode": "neighbors",
+      "output": "第2回のクイズ3（1日1万件の問い合わせの振り分け）の答えと理由は以下の通りです。\n\n### 答え\n* **B：小さなモデル（特化モデルやFT済み）で分類し、評価セットで精度とコストを確かめる**\n（第2回・PDF p.42, p.43）\n\n### 理由\n* 1日1万件という大量の問い合わせを処理するような「決まった判断（分類）」をこなす場合、用途に足りる小さなモデルを使う方が「コスト＜効果」を満たしやすいためです（第2回・PDF p.41, p.43）。\n* ベンチマーク1位の最大のモデルを使って毎回じっくり考えさせるとコストが高くなりすぎるため、まずは自分の評価セットで精度とコストを確かめるのが適切なアプローチとなります（第2回・PDF p.42, p.43, p.44）。",
+      "tool_calls": [
+        {
+          "tool": "search_materials",
+          "args": {
+            "query": "クイズ3 1日1万件の問い合わせ"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p041",
+            "role": "neighbor",
+            "chars": 644
+          },
+          {
+            "page_id": "lec02-main-p042",
+            "role": "hit",
+            "chars": 359
+          },
+          {
+            "page_id": "lec02-main-p043",
+            "role": "hit",
+            "chars": 374
+          },
+          {
+            "page_id": "lec02-main-p044",
+            "role": "neighbor",
+            "chars": 529
+          },
+          {
+            "page_id": "lec02-main-p026",
+            "role": "neighbor",
+            "chars": 310
+          },
+          {
+            "page_id": "lec02-main-p027",
+            "role": "hit",
+            "chars": 355
+          },
+          {
+            "page_id": "lec02-main-p028",
+            "role": "neighbor",
+            "chars": 522
+          },
+          {
+            "page_id": "lec02-main-p016",
+            "role": "hit",
+            "chars": 319
+          },
+          {
+            "page_id": "lec02-main-p017",
+            "role": "hit",
+            "chars": 349
+          },
+          {
+            "page_id": "lec02-main-p018",
+            "role": "neighbor",
+            "chars": 582
+          },
+          {
+            "page_id": "lec02-main-p015",
+            "role": "neighbor",
+            "chars": 623
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p041",
+        "lec02-main-p042",
+        "lec02-main-p043",
+        "lec02-main-p044",
+        "lec02-main-p026",
+        "lec02-main-p027",
+        "lec02-main-p028",
+        "lec02-main-p016",
+        "lec02-main-p017",
+        "lec02-main-p018",
+        "lec02-main-p015"
+      ],
+      "retrieved_chars": 4966,
+      "evidence_retrieved": [
+        "lec02-main-p043"
+      ],
+      "cited": [
+        "lec02-main-p042",
+        "lec02-main-p043",
+        "lec02-main-p041",
+        "lec02-main-p044"
+      ],
+      "evidence_cited": [
+        "lec02-main-p043"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.05,
+      "input_tokens": 5073,
+      "output_tokens": 230,
+      "requests": 2,
+      "cost_usd": 0.0020969,
+      "trace": "\n--- trace ---\n[tool call]   search_materials({'query': 'クイズ3 1日1万件の問い合わせ'})\n[tool return] search_materials -> 11ページ・本文4,966文字: 第2回 p.41（前後）、第2回 p.42、第2回 p.43、第2回 p.44（前後）、第2回 p.26（前後）、第2回 p.27、第2回 p.28（前後）、第2回 p.16、第2回 p.17、第2回 p.18（前後）、第2回 p.15（前後）\n[time] 回答完了まで 3.05 秒（検索・埋め込みを含む）\n[usage] 入力 5,073 tokens / 出力 230 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.002097 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q1",
+      "mode": "full",
+      "output": "ご質問ありがとうございます。\n\nLoRAとQLoRAの学習対象および仕組みの違いについては、以下の資料に記載されています。\n\n- **資料:** `lec02-main / 基盤モデルの仕組み`\n- **PDFページ番号:** p.51、p.52\n\n具体的な考え方のヒントは以下の通りです。\n* **LoRA:** 基盤モデル全体のパラメータをどう扱うか、そしてどの部分（行列）だけを新しく学習対象とするのかを確認してみましょう。\n* **QLoRA:** LoRAの仕組みに加えて、基盤モデルの重み自体に対してどのような「圧縮」処理を加えるのかを確認してみましょう。\n\n資料の該当箇所を読み比べて、LoRAとQLoRAそれぞれが何を固定し、何を学習・追加しているのか整理してみてください。",
+      "tool_calls": [],
+      "returned_pages": [],
+      "retrieved": [],
+      "retrieved_chars": 0,
+      "evidence_retrieved": [],
+      "cited": [],
+      "evidence_cited": [],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 2.04,
+      "input_tokens": 117025,
+      "output_tokens": 168,
+      "requests": 1,
+      "cost_usd": 0.00457146,
+      "trace": "\n--- trace ---\n[time] 回答完了まで 2.04 秒（検索・埋め込みを含む）\n[usage] 入力 117,025 tokens / 出力 168 tokens / モデル応答 1 回\n[cost] 生成APIの推定コスト: $0.004571 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q1",
+      "mode": "tree",
+      "output": "第2回の講義資料によると、LoRAとQLOARの仕組みは以下のようになっています。\n\n- **LoRAが固定するもの**：元のモデルの重み（$W$）は固定し、学習させません（第2回・PDF p.52）。\n- **LoRAが学習するもの**：元の重みに対する小さな「差分」（細長い2つの行列 $A$ と $B$）だけを学習します（第2回・PDF p.52）。イメージとして、本体には触れずに薄い付箋を書き足すように、全体の1%未満のパラメータだけを調整します。\n- **QLoRAが加えるもの**：LoRAの手法に加えて、元の重みを **4bit（数値を粗く保存する形式）に量子化・圧縮** してメモリ消費量を抑える点を加えます（第2回・PDF p.52）。これにより、数十億パラメータ規模の大きなモデルでも、ColabなどのGPU1台で調整できるようになります。",
+      "tool_calls": [
+        {
+          "tool": "browse_tree",
+          "args": {}
+        },
+        {
+          "tool": "browse_tree",
+          "args": {
+            "node_id": "lec02-main"
+          }
+        },
+        {
+          "tool": "browse_tree",
+          "args": {
+            "node_id": "lec02-main-s045"
+          }
+        },
+        {
+          "tool": "browse_tree",
+          "args": {
+            "node_id": "lec02-main-p052"
+          }
+        }
+      ],
+      "returned_pages": [
+        [],
+        [],
+        [],
+        [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "chars": 717
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p052"
+      ],
+      "retrieved_chars": 717,
+      "evidence_retrieved": [
+        "lec02-main-p052"
+      ],
+      "cited": [
+        "lec02-main-p052"
+      ],
+      "evidence_cited": [
+        "lec02-main-p052"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 5.82,
+      "input_tokens": 9214,
+      "output_tokens": 304,
+      "requests": 5,
+      "cost_usd": 0.0035242,
+      "trace": "\n--- trace ---\n[tool call]   browse_tree({})\n[目次を開く] AIエンジニアリング実践講座2026 資料\n  直下の候補（ページは先頭文のみ）:\n    - lec01-main · AIエンジニアリング概論とAIコーディング\n    - lec02-main · 基盤モデルの仕組み\n    - lec03-main · AIエージェント\n[tool call]   browse_tree({'node_id': 'lec02-main'})\n[目次を開く] AIエンジニアリング実践講座2026 資料 → 基盤モデルの仕組み\n  直下の候補（ページは先頭文のみ）:\n    - lec02-main-p001 · PDF p.1 · 基盤モデルの仕組み\n      AI エンジニアリング講座 第 2 回\n    - lec02-main-p002 · PDF p.2 · 今日は「 [3] モデル学習」の中身、基盤モデルそのものを扱う\n      前回の振り返り\n    - lec02-main-p003 · PDF p.3 · チャットボットを作ると、すぐにこんな「厄介さ」に出会う\n      今日の問い\n    - lec02-main-p004 · PDF p.4 · 今日の 4 つの問い（各 15 分）\n      今日の構成\n    - lec02-main-p005 · PDF p.5 · 今日扱うのは「モデル」そのもの\n      今日の構成\n    - lec02-main-p006 · PDF p.6 · 今日の用語：先に 6 つだけ押さえる\n      今日の構成\n    - lec02-main-s007 · LLM は、確率で次の言葉を選ぶ\n    - lec02-main-s019 · 渡す・選ぶ／直す／考えさせる\n    - lec02-main-s030 · 基盤モデルの地図と選び方\n    - lec02-main-s045 · 選んだモデルを、いつ・どう直すか\n    - lec02-main-s063 · 補足：最新動向と詳しい説明\n[tool call]   browse_tree({'node_id': 'lec02-main-s045'})\n[目次を開く] AIエンジニアリング実践講座2026 資料 → 基盤モデルの仕組み → 選んだモデルを、いつ・どう直すか\n  直下の候補（ページは先頭文のみ）:\n    - lec02-main-p045 · PDF p.45 · 選んだモデルを、いつ・どう直すか\n      第 2 回　 4/4 （約 15 分）\n    - lec02-main-p046 · PDF p.46 · 小規模な FT は振る舞いに強く、知識の追加は苦手\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p047 · PDF p.47 · 根拠と諸説：知識の追加は RAG が効きやすい\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p048 · PDF p.48 · 継続事前学習（ CPT ）：知識・言語を足す追加学習\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p049 · PDF p.49 · FT は「コストを下げる」ためにも使う\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p050 · PDF p.50 · 判断の順番：測る → 分ける → プロンプト → Fine-Tuning\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p051 · PDF p.51 · PEFT ：モデル全体ではなく、一部だけを学習する\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p052 · PDF p.52 · LoRA と QLoRA ：大きなモデルも GPU 1 台で調整できる\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p053 · PDF p.53 · チャットボットの場合：何を FT し、何を FT しないか\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p054 · PDF p.54 · 手本データの作り方：質問と、理想の回答の組を用意する\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p055 · PDF p.55 · FT の落とし穴：直したところ以外が、壊れていないか\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p056 · PDF p.56 · クイズ 4 ： Fine-Tuning が一番向いているのは？\n      クイズ 4/4\n    - lec02-main-p057 · PDF p.57 · クイズ 4 ： Fine-Tuning が一番向いているのは？（答え）\n      クイズ 4/4\n    - lec02-main-p058 · PDF p.58 · Fine-Tuning する前のチェックリスト\n      4/4 　選んだモデルを、いつ・どう直すか\n    - lec02-main-p059 · PDF p.59 · 第 2 回のまとめ： 4 つの芯と、明日やること\n      まとめ\n    - lec02-main-p060 · PDF p.60 · 今日の演習： QLoRA で出力形式を矯正し、効果を測る\n      演習\n    - lec02-main-p061 · PDF p.61 · 演習の進め方と提出物（仮）\n      演習\n    - lec02-main-p062 · PDF p.62 · 次回： AI エージェント。今日の性質が設計の前提になる\n      次回予告\n[tool call]   browse_tree({'node_id': 'lec02-main-p052'})\n[目次を開く] AIエンジニアリング実践講座2026 資料 → 基盤モデルの仕組み → 選んだモデルを、いつ・どう直すか → LoRA と QLoRA ：大きなモデルも GPU 1 台で調整できる\n    （末端ページ・本文717文字を取得）\n[time] 回答完了まで 5.82 秒（検索・埋め込みを含む）\n[usage] 入力 9,214 tokens / 出力 304 tokens / モデル応答 5 回\n[cost] 生成APIの推定コスト: $0.003524 USD（埋め込み・索引構築分は含まない）\n"
+    },
+    {
+      "question_id": "q1",
+      "mode": "graph",
+      "output": "第2回の資料では、LoRAとQLoRAについてそれぞれ次のように説明されています。\n\n* **LoRA**\n  * **何を固定するか：** 元の重み（本体）は固定し、学習しないようにします（第2回・PDF p.52）。\n  * **何を学習するか：** 変化分を表す小さな行列（細長い2つの行列の積である「低ランク」の追加部分、図の行列A・B）だけを学習します（第2回・PDF p.51, 52）。\n\n* **QLoRA**\n  * **何を加えるか：** LoRAの仕組みに加え、**元の重みを4bit（数値を粗く保存する形式）に圧縮**するという工夫を加えます（第2回・PDF p.52）。\n\nこのように、LoRAは本体を固定して小さな差分だけを学習し、QLoRAはさらにその本体の重みを4bitに量子化（圧縮）することで、より少ないメモリ（GPU 1台など）での調整を可能にしています（第2回・PDF p.51, 52）。",
+      "tool_calls": [
+        {
+          "tool": "search_graph",
+          "args": {
+            "query": "LoRA QLoRA 固定 学習 第2回"
+          }
+        }
+      ],
+      "returned_pages": [
+        [
+          {
+            "page_id": "lec02-main-p052",
+            "role": "hit",
+            "chars": 717
+          },
+          {
+            "page_id": "lec02-main-p060",
+            "role": "hit",
+            "chars": 357
+          },
+          {
+            "page_id": "lec02-main-p051",
+            "role": "hit",
+            "chars": 771
+          },
+          {
+            "page_id": "lec02-main-p053",
+            "role": "hit",
+            "chars": 468
+          },
+          {
+            "page_id": "lec02-main-p059",
+            "role": "hit",
+            "chars": 492
+          },
+          {
+            "page_id": "lec02-main-p061",
+            "role": "hit",
+            "chars": 471
+          },
+          {
+            "page_id": "lec02-main-p050",
+            "role": "hit",
+            "chars": 311
+          },
+          {
+            "page_id": "lec02-main-p062",
+            "role": "hit",
+            "chars": 518
+          },
+          {
+            "page_id": "lec02-main-p049",
+            "role": "hit",
+            "chars": 637
+          },
+          {
+            "page_id": "lec02-main-p047",
+            "role": "hit",
+            "chars": 640
+          }
+        ]
+      ],
+      "retrieved": [
+        "lec02-main-p052",
+        "lec02-main-p060",
+        "lec02-main-p051",
+        "lec02-main-p053",
+        "lec02-main-p059",
+        "lec02-main-p061",
+        "lec02-main-p050",
+        "lec02-main-p062",
+        "lec02-main-p049",
+        "lec02-main-p047"
+      ],
+      "retrieved_chars": 5382,
+      "evidence_retrieved": [
+        "lec02-main-p052"
+      ],
+      "cited": [
+        "lec02-main-p052",
+        "lec02-main-p051"
+      ],
+      "evidence_cited": [
+        "lec02-main-p052"
+      ],
+      "cited_not_retrieved": [],
+      "tool_errors": [],
+      "seconds": 3.19,
+      "input_tokens": 5776,
+      "output_tokens": 269,
+      "requests": 2,
+      "cost_usd": 0.00185747,
+      "trace": "\n--- trace ---\n[tool call]   search_graph({'query': 'LoRA QLoRA 固定 学習 第2回'})\n[tool return] search_graph -> {\"seeds\": [{\"page_id\": \"lec02-main-p052\", \"document_id\": \"lec02-main\", \"lecture\": 2, \"document_title\": \"基盤モデルの仕組み\", \"sec…\n[time] 回答完了まで 3.19 秒（検索・埋め込みを含む）\n[usage] 入力 5,776 tokens / 出力 269 tokens / モデル応答 2 回\n[cost] 生成APIの推定コスト: $0.001857 USD（埋め込み・索引構築分は含まない）\n"
+    }
+  ]
+}
