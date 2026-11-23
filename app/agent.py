@@ -30,7 +30,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.test import TestModel
 from pydantic_ai.providers.google import GoogleProvider
 
-from app import tools
+from app import retrieval, tools
 from app.retrieval import run_full_context
 from app.config import MODEL, api_error_message, get_api_key
 
@@ -163,6 +163,18 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
                                 print(f"      {child['content']}")
                         if not data["children"]:
                             print(f"    （末端ページ・本文{len(node.get('content', ''))}文字を取得）")
+                elif part.tool_name == "search_materials":
+                    data = json.loads(part.content)
+                    if data.get("error"):
+                        print(f"[tool return] {part.tool_name} -> {data['error']}")
+                    else:
+                        print(f"[tool return] {part.tool_name} -> {len(data['results'])} ページ")
+                    for hit in data["results"]:
+                        if hit.get("retrieved_by", "search") == "search":
+                            how = f"距離{hit['distance']:.4f}"
+                        else:
+                            how = f"前後ページ（{hit['neighbor_of']} の隣）"
+                        print(f"    - 第{hit['lecture']}回・PDF p.{hit['page']} · {hit['title']} [{how}]")
                 else:
                     print(f"[tool return] {part.tool_name} -> {str(part.content)[:120]}…")
     usage = result.usage
@@ -182,9 +194,13 @@ def main() -> None:
     modes.add_argument("--graph", action="store_true", help="検索結果からグラフをたどり、候補ページを読んで答える")
     modes.add_argument("--tree", action="store_true", help="目次をたどり、必要なページを読んで答える")
     modes.add_argument("--full-context", action="store_true", help="検索せず、lectures.jsonの全資料を一度に渡す")
+    parser.add_argument("--neighbors", type=int, default=None,
+                        help="第5回 宿題: search_materials の検索結果に、同じ資料の前後Nページの本文を加える（既定: AIE_RAG_NEIGHBORS、未設定なら0）")
     parser.add_argument("--list-tools", action="store_true", help="モデルに見えるツール一覧を表示して終了する（APIキー不要）")
     args = parser.parse_args()
 
+    if args.neighbors is not None:
+        retrieval.RAG_NEIGHBORS = args.neighbors
     target = build_mcp_agent() if args.mcp else agent
     mode = nullcontext()
     if args.tree:
@@ -203,6 +219,8 @@ def main() -> None:
             parser.error("質問を指定してください")
 
         print(f"[model] {MODEL}")
+        if retrieval.RAG_NEIGHBORS and not (args.tree or args.graph or args.full_context or args.mcp):
+            print(f"[retrieval] 検索結果に前後 {retrieval.RAG_NEIGHBORS} ページを追加")
         if args.mcp:
             print("[tools] MCP サーバー（app/mcp_servers.json）")
 

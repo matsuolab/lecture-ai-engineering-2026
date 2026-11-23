@@ -1,0 +1,19 @@
+$ uv run python -m app.agent --graph --trace "第2回の説明では、LoRAは何を固定し何を学習しますか？ QLoRAは何を加えますか？"
+[model] gemini-3.5-flash-lite
+第2回の講義資料によると、LoRAとQLoRAの仕組みについて以下のように説明されています。
+
+- **LoRAが固定するものと学習するもの**
+  - **固定するもの：** 元の重み（本体）は固定して学習しません（第2回・PDF p.52）。
+  - **学習するもの：** 細長い2つの小さな行列の積（低ランクの差分を表す小さな行列 A・B）だけを学習します（第2回・PDF p.52）。
+
+- **QLoRAが加えるもの**
+  - **加えるもの：** LoRAの仕組みに加え、元の重みを **4bit（数値を粗く保存する形）に圧縮** する要素を加えます（第2回・PDF p.51, p.52）。
+
+これにより、大きなモデルであってもGPU1台で効率的に微調整（Fine-Tuning）できるようになります（第2回・PDF p.52）。
+
+--- trace ---
+[tool call]   search_graph({'query': 'LoRA QLoRA 固定 学習'})
+[tool return] search_graph -> {"seeds": [{"page_id": "lec02-main-p052", "document_id": "lec02-main", "lecture": 2, "document_title": "基盤モデルの仕組み", "sec…
+[time] 回答完了まで 2.29 秒（検索・埋め込みを含む）
+[usage] 入力 5,771 tokens / 出力 230 tokens / モデル応答 2 回
+[cost] 生成APIの推定コスト: $0.002306 USD（埋め込み・索引構築分は含まない）
