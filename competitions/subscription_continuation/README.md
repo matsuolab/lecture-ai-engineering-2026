@@ -92,6 +92,14 @@ python -m pytest tests -q            # 単体テスト
 - v51 系列（fmlmx_alz）は漏れがあるため `series_blend.py` で使用不可にしている。
 - 結論: 残りの改善余地は 0.0005 程度で、検出限界（SE ≈0.0005）に近い。手元で取れる改善はほぼ出尽くした。
 
+### 追加の事前学習モデル（EXAONE-Tabular / TabPFN-3）の検証手順
+
+1. 手元: `python src/export_fm_inputs.py` → `output/fm_inputs_ours.npz`（145列, 欠損なし）
+2. Colab（GPU）: `colab/fm_nested_colab.py` の `MODEL` を `exaone` / `tabpfn3` / `tabpfn35` にして実行
+   → `{MODEL}_nested_s0-14.npz`（分割は手元と同じ、1 fold ごとに Drive 保存・再開可）
+3. 手元: npz を `external/` に置き `python src/fm_check.py --new exaone`
+   → 単体 OOF・既存とのロジット相関・最終形（4種クレンジング + v52, 交差フィット）での対差と提出ファイル
+
 ## 手法
 
 1. **クレンジング** (`src/clean.py`)

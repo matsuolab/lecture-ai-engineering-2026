@@ -17,6 +17,9 @@ KNOWN = {
     "tabfm": "tabfm_nested",         # TabFM
     "limix": "limix_nested",         # LimiX-2（重みは非商用ライセンス）
     "ftfm": "ftfm_nested",           # FTFM-1（重みは CC BY-NC 4.0）
+    "exaone": "exaone_nested",       # EXAONE-Tabular（colab/fm_nested_colab.py, 重みは非商用）
+    "tabpfn3": "tabpfn3_nested",     # TabPFN-3（同上, gated・非商用）
+    "tabpfn35": "tabpfn35_nested",   # TabPFN-3.5（同上）
 }
 
 
