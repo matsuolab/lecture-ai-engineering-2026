@@ -7,6 +7,7 @@
 import json
 from functools import cache
 from pathlib import Path
+import random
 
 from app.config import api_error_message
 
@@ -21,7 +22,7 @@ def load_glossary() -> list[dict]:
 
 
 def _normalize(text: str) -> str:
-    return text.casefold().replace(" ", "").replace("　", "")
+    return text.casefold().replace(" ", "").replace(" ", "")
 
 
 def _names(entry: dict) -> list[str]:
@@ -79,6 +80,30 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+
+
+def make_quiz(lecture: int) -> str:
+    """ユーザーが確認問題や復習問題を求めたときに、
+    指定した講義回の用語から、用語の意味を問う問題と答えを作成する。
+    """
+    glossary = load_glossary()
+    terms = [item for item in glossary if item["lecture"] == lecture]
+
+    if not terms:
+        return json.dumps(
+            {"error": f"講義{lecture}回の用語が見つかりません。"},
+            ensure_ascii=False
+        )
+
+    item = random.choice(terms)
+
+    return json.dumps(
+        {
+            "question": f"「{item['term']}」の意味は？",
+            "answer": item["definition"],
+        },
+        ensure_ascii=False,
+    )
 
 
 def search_materials(query: str) -> str:
