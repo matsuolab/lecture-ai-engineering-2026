@@ -39,6 +39,28 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_search_materials_adds_neighbors_without_crossing_document_boundary(monkeypatch):
+    hit = {"page_id": "doc-a-2", "document_id": "doc-a", "page": 2, "content": "hit"}
+    pages = [
+        {"page_id": "doc-a-1", "document_id": "doc-a", "page": 1},
+        {"page_id": "doc-a-2", "document_id": "doc-a", "page": 2},
+        {"page_id": "doc-a-3", "document_id": "doc-a", "page": 3},
+        {"page_id": "doc-b-1", "document_id": "doc-b", "page": 1},
+    ]
+    search_results = [hit]
+    monkeypatch.setattr("app.retrieval.search", lambda query: search_results)
+    monkeypatch.setattr("app.retrieval.load_pages", lambda: pages)
+
+    results = json.loads(tools.search_materials("query"))["results"]
+
+    assert [page["page_id"] for page in results] == ["doc-a-2", "doc-a-1", "doc-a-3"]
+    assert [page["context"] for page in results] == ["match", "previous", "next"]
+
+    search_results[:] = [pages[2]]
+    results = json.loads(tools.search_materials("query"))["results"]
+    assert [page["page_id"] for page in results] == ["doc-a-3", "doc-a-2"]
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION

@@ -82,16 +82,48 @@ def get_lecture_summary(lecture: int) -> str:
 
 
 def search_materials(query: str) -> str:
-    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
+    """第1〜3回の本講義資料を検索し、該当ページと前後ページの本文等を返す。
 
     queryに調べたい内容を指定する。
     """
     from google.genai.errors import APIError
     import sqlite3
-    from app.retrieval import search
+    from app.retrieval import load_pages, search
 
     try:
-        return json.dumps({"results": search(query)}, ensure_ascii=False)
+        hits = search(query)
+        if not hits:
+            return json.dumps({"results": []}, ensure_ascii=False)
+        pages = load_pages()
+        page_indices = {page["page_id"]: i for i, page in enumerate(pages)}
+        hit_ids = {hit["page_id"] for hit in hits}
+        results, included = [], set()
+
+        for hit in hits:
+            page_id = hit["page_id"]
+            if page_id not in included:
+                results.append({**hit, "context": "match"})
+                included.add(page_id)
+
+            index = page_indices.get(page_id)
+            if index is None:
+                continue
+            for neighbor_index, context in (
+                (index - 1, "previous"),
+                (index + 1, "next"),
+            ):
+                if not 0 <= neighbor_index < len(pages):
+                    continue
+                neighbor = pages[neighbor_index]
+                if neighbor["document_id"] != pages[index]["document_id"]:
+                    continue
+                neighbor_id = neighbor["page_id"]
+                if neighbor_id in included or neighbor_id in hit_ids:
+                    continue
+                results.append({**neighbor, "context": context})
+                included.add(neighbor_id)
+
+        return json.dumps({"results": results}, ensure_ascii=False)
     except (ValueError, FileNotFoundError, sqlite3.Error) as e:
         return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
     except APIError as e:
