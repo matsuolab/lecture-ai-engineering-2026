@@ -5,13 +5,29 @@
 """
 
 import json
+import re
+from datetime import datetime
 from functools import cache
 from pathlib import Path
 
 from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
+
+
+# 宿題（実装編）: 保存前に利用者の承認を求める学習記録ツール。
+def save_learning_log(title: str, content: str) -> str:
+    """学習記録を learning_log/ に Markdown で保存する。保存には利用者の承認が必要。"""
+    safe_title = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "-", title).strip(" .-_")[:80]
+    if not safe_title:
+        safe_title = "learning-log"
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    path = LEARNING_LOG_DIR / f"{timestamp}-{safe_title}.md"
+    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_text(f"# {title}\n\n{content}\n", encoding="utf-8")
+    return f"学習記録を保存しました: {path.relative_to(LEARNING_LOG_DIR.parent)}"
 
 
 @cache

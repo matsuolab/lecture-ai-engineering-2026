@@ -138,7 +138,6 @@ git push -u origin lec03
 
    ```python
    from pydantic_ai import Agent, DeferredToolRequests
-
    agent = Agent(instructions=INSTRUCTIONS,
                  output_type=[str, DeferredToolRequests])
    ```
