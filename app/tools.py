@@ -7,10 +7,10 @@
 import json
 from functools import cache
 from pathlib import Path
-from datetime import datetime
+
+from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -80,21 +80,49 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
-def save_learning_log(topic: str, summary: str) -> str:
-    """学習の記録を learning_log/ フォルダにファイルとして保存する。
 
-    「今日の学習を記録して」「ログに残して」のように、利用者が学習内容の
-    保存を明示的に求めたときだけ使う。保存の前に利用者の承認が入る。
-    topic には学んだ用語やテーマ、summary には学んだ内容の要約を入れる。
+def search_materials(query: str) -> str:
+    """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
+
+    queryに調べたい内容を指定する。
     """
-    if not topic.strip() or not summary.strip():
-        return "topic と summary は空にできません。保存しませんでした。"
-    LOG_DIR.mkdir(exist_ok=True)
-    now = datetime.now()
-    # ファイル名はモデルに決めさせず、日時から作る（任意のパスに書かせないため）
-    path = LOG_DIR / f"{now:%Y%m%d_%H%M%S}.md"
-    path.write_text(
-        f"# {topic}\n\n{now:%Y-%m-%d %H:%M}\n\n{summary}\n",
-        encoding="utf-8",
-    )
-    return f"{path.name} に保存しました。"
+    from google.genai.errors import APIError
+    import sqlite3
+    from app.retrieval import search
+
+    try:
+        return json.dumps({"results": search(query)}, ensure_ascii=False)
+    except (ValueError, FileNotFoundError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code), "results": []}, ensure_ascii=False)
+
+
+def browse_tree(node_id: str | None = None) -> str:
+    """目次とページの先頭文を返す。ページIDを指定すると全文を返す。
+
+    最初はnode_idを省略する。続いて返されたIDを指定して目次をたどる。
+    """
+    from app.retrieval import browse_tree as browse
+
+    try:
+        return json.dumps(browse(node_id), ensure_ascii=False)
+    except (ValueError, OSError) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+
+
+def search_graph(query: str) -> str:
+    """資料を検索し、前後ページ・共通用語をたどって関連ページの本文と引用情報を返す。
+
+    queryに調べたい内容を指定する。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.retrieval import search_graph as search
+
+    try:
+        return json.dumps(search(query), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
