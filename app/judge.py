@@ -47,6 +47,7 @@ ALL_CRITERIA = LLM_CRITERIA + [CODE_CRITERION]
 NAMES = dict(ALL_CRITERIA)
 # 総合（合格／不合格）を決める必須の基準。「分かりやすさ」は参考で、総合には入れない
 REQUIRED = ["grounding", "scope", "hint", "lecture_mark"]
+GENERATE_RETRY_DELAYS = (5, 10, 20)
 
 Verdict = Literal["pass", "fail", "unsure"]
 
@@ -308,7 +309,16 @@ def generate_answers(cases: list[dict], wait: float = 1.0) -> list[dict]:
     model = build_model()
     print(f"回答を生成中 {len(cases)} 件 ", end="", flush=True)
     for case in cases:
-        result = agent.run_sync(case["question"], model=model)
+        for retry_number in range(len(GENERATE_RETRY_DELAYS) + 1):
+            try:
+                result = agent.run_sync(case["question"], model=model)
+                break
+            except ModelHTTPError as e:
+                if e.status_code != 503 or retry_number == len(GENERATE_RETRY_DELAYS):
+                    raise
+                delay = GENERATE_RETRY_DELAYS[retry_number]
+                print(f"\n一時的な503エラーです。{delay}秒後に再試行します（{retry_number + 1}/{len(GENERATE_RETRY_DELAYS)}）", flush=True)
+                time.sleep(delay)
         case["answer"] = str(result.output)
         print(".", end="", flush=True)
         time.sleep(wait)

@@ -4,7 +4,13 @@
 「採点 → 人のラベルとの比較 → 要確認・不一致の集計」が通ることを確かめる。
 """
 
+from types import SimpleNamespace
+
+import pytest
+from pydantic_ai.exceptions import ModelHTTPError
+
 from app import judge
+from app import agent as agent_module
 from app.judge import (
     ALL_CRITERIA,
     DEFAULT_CASES,
@@ -68,3 +74,46 @@ def test_judge_pipeline_with_fake_model():
     assert summary["coverage"]["covered"] + len({r["id"] for r in summary["review"]}) == 10
     for m in summary["mismatches"]:
         assert m["kind"] in ("見逃し", "過検出")
+
+
+def test_generate_answers_retries_503(monkeypatch):
+    class FlakyAgent:
+        def __init__(self):
+            self.calls = 0
+
+        def run_sync(self, question, *, model):
+            assert question == "質問"
+            assert model is not None
+            self.calls += 1
+            if self.calls < 3:
+                raise ModelHTTPError(503, "test", "busy")
+            return SimpleNamespace(output="回答")
+
+    fake_agent = FlakyAgent()
+    delays = []
+    monkeypatch.setattr(agent_module, "agent", fake_agent)
+    monkeypatch.setattr(agent_module, "build_model", lambda: object())
+    monkeypatch.setattr(judge.time, "sleep", delays.append)
+
+    cases = [{"id": "01", "question": "質問", "answer": ""}]
+    result = judge.generate_answers(cases, wait=0)
+
+    assert fake_agent.calls == 3
+    assert delays == [5, 10, 0]
+    assert result[0]["answer"] == "回答"
+
+
+def test_generate_answers_does_not_retry_non_503(monkeypatch):
+    class FailingAgent:
+        def run_sync(self, question, *, model):
+            assert question == "質問"
+            assert model is not None
+            raise ModelHTTPError(400, "test", "bad request")
+
+    monkeypatch.setattr(agent_module, "agent", FailingAgent())
+    monkeypatch.setattr(agent_module, "build_model", lambda: object())
+
+    with pytest.raises(ModelHTTPError) as error:
+        judge.generate_answers([{"id": "01", "question": "質問", "answer": ""}], wait=0)
+
+    assert error.value.status_code == 400
