@@ -1,0 +1,3 @@
+$ uv run python -m app.agent --graph --trace "今回作ったRAGの実測平均応答時間と正答率を教えてください"
+[model] gemini-3.5-flash-lite
+モデルが混み合っています（503）。少し待ってから再実行してください。
