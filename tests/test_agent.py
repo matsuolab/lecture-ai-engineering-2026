@@ -7,16 +7,11 @@ TestModel は実際のLLMを呼ばない偽モデルで、登録されたツー�
 
 import json
 
-<<<<<<< HEAD
-from pydantic_ai import DeferredToolRequests, DeferredToolResults
-=======
 from pydantic_ai import DeferredToolRequests
->>>>>>> upstream/main
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
 from app.agent import agent
-from app import tools
 
 BASE_TOOLS = {"search_materials"}
 
@@ -49,55 +44,5 @@ def test_material_result_reaches_the_model(monkeypatch):
     with agent.override(model=model):
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
-<<<<<<< HEAD
-    assert returns and returns[0].tool_name == "search_glossary"
-
-
-def test_save_learning_log_runs_only_after_approval(tmp_path, monkeypatch):
-    monkeypatch.setattr(tools, "LOG_DIR", tmp_path)
-    model = TestModel(call_tools=["save_learning_log"])
-    with agent.override(model=model):
-        pending = agent.run_sync("学習ログを保存して")
-
-    assert isinstance(pending.output, DeferredToolRequests)
-    assert len(pending.output.approvals) == 1
-    assert list(tmp_path.iterdir()) == []
-
-    request = pending.output.approvals[0]
-    completed = agent.run_sync(
-        None,
-        model=TestModel(call_tools=[]),
-        message_history=pending.all_messages(),
-        deferred_tool_results=DeferredToolResults(
-            approvals={request.tool_call_id: True}
-        ),
-    )
-
-    saved_files = list(tmp_path.glob("*.json"))
-    assert len(saved_files) == 1
-    saved = json.loads(saved_files[0].read_text(encoding="utf-8"))
-    assert set(saved) == {"topic", "note", "saved_at"}
-    assert completed.output
-
-
-def test_save_learning_log_is_skipped_when_rejected(tmp_path, monkeypatch):
-    monkeypatch.setattr(tools, "LOG_DIR", tmp_path)
-    model = TestModel(call_tools=["save_learning_log"])
-    with agent.override(model=model):
-        pending = agent.run_sync("学習ログを保存して")
-
-    request = pending.output.approvals[0]
-    agent.run_sync(
-        None,
-        model=TestModel(call_tools=[]),
-        message_history=pending.all_messages(),
-        deferred_tool_results=DeferredToolResults(
-            approvals={request.tool_call_id: False}
-        ),
-    )
-
-    assert list(tmp_path.iterdir()) == []
-=======
     assert returns and returns[0].tool_name == "search_materials"
     assert json.loads(returns[0].content)["results"] == [hit]
->>>>>>> upstream/main
