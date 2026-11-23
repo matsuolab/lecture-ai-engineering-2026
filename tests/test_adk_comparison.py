@@ -49,7 +49,7 @@ def test_pydantic_worker_serializes_actual_sdk_result(monkeypatch, capsys):
     pydantic_worker('SDK result serialization test')
     result = json.loads(capsys.readouterr().out)
     assert result['requests'] >= 1
-    assert {c['name'] for c in result['calls']} == {'search_glossary', 'get_lecture_summary', 'make_quiz'}
+    assert {c['name'] for c in result['calls']} == {'search_materials', 'make_quiz'}
     assert len(result['calls']) == len(result['returns'])
 
 

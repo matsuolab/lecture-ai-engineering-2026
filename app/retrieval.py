@@ -185,6 +185,99 @@ def search_graph(query: str) -> dict:
             "max_hops": GRAPH_HOPS}
 
 
+def search_graph_multiquery(queries: list[str]) -> dict:
+    """複数の論点を別々に検索し、各入口からグラフをたどって候補ページを統合する。
+
+    論点ごとに上位 GRAPH_START_K 件を入口にするため、1つの広い質問のベクトル順位で
+    一方の論点が押し出されるのを抑える。ページは重複排除し、どの検索論点から得たかを残す。
+    """
+    if not isinstance(queries, list) or not queries:
+        raise ValueError("queriesには1〜3個の検索論点を指定してください。")
+    if len(queries) > 3:
+        raise ValueError("検索論点は最大3個まで指定できます。")
+    normalized_queries = []
+    for query in queries:
+        if not isinstance(query, str) or not query.strip():
+            raise ValueError("検索論点は空でない文字列にしてください。")
+        query = query.strip()
+        if query not in normalized_queries:
+            normalized_queries.append(query)
+
+    pages = {page["page_id"]: page for page in load_pages(RAG_SOURCE)}
+    graph = json.loads(RAG_GRAPH.read_text(encoding="utf-8"))
+    nodes = {node["id"]: node for node in graph["nodes"]
+             if node["kind"] == "term" or node["id"] in pages}
+    adjacent = defaultdict(set)
+    for edge in graph["edges"]:
+        a, b = edge["source"], edge["target"]
+        if edge["relation"] in ("next_page", "mentions") and a in nodes and b in nodes:
+            adjacent[a].add(b)
+            adjacent[b].add(a)
+
+    seeds_by_page = {}
+    for query_index, query in enumerate(normalized_queries):
+        hits = [hit for hit in search(query) if hit["page_id"] in pages]
+        for rank, hit in enumerate(hits[:GRAPH_START_K]):
+            page_id = hit["page_id"]
+            seed = seeds_by_page.setdefault(page_id, {
+                **pages[page_id], "distance": hit["distance"], "facets": [],
+                "_rank": (query_index, rank),
+            })
+            seed["distance"] = min(seed["distance"], hit["distance"])
+            seed["_rank"] = min(seed["_rank"], (query_index, rank))
+            if query not in seed["facets"]:
+                seed["facets"].append(query)
+
+    seed_items = sorted(seeds_by_page.values(), key=lambda item: (item["_rank"], item["page_id"]))
+    seed_items = seed_items[:GRAPH_MAX_RESULTS]
+    seed_ids = {seed["page_id"] for seed in seed_items}
+    results = []
+    candidates = {}
+    for seed in seed_items:
+        root = seed["page_id"]
+        results.append({key: value for key, value in seed.items() if not key.startswith("_")}
+                       | {"hops": 0,
+                          "path": [{"id": root, "title": pages[root]["title"]}]})
+        queue = deque([(root, [root])])
+        visited = {root}
+        while queue:
+            current, path = queue.popleft()
+            if len(path) - 1 >= GRAPH_HOPS:
+                continue
+            neighbors = sorted(adjacent[current], key=lambda n: (len(adjacent[n]), n))
+            for neighbor in neighbors:
+                if neighbor in visited:
+                    continue
+                visited.add(neighbor)
+                route = path + [neighbor]
+                queue.append((neighbor, route))
+                if neighbor not in pages or neighbor in seed_ids:
+                    continue
+                frequency = max((len(adjacent[n]) for n in route
+                                 if nodes[n]["kind"] == "term"), default=0)
+                priority = (len(route) - 1, frequency, seed["_rank"], neighbor)
+                candidate = {**pages[neighbor], "hops": len(route) - 1,
+                             "facets": list(seed["facets"]),
+                             "path": [{"id": n, "title": nodes[n]["title"]} for n in route]}
+                if neighbor not in candidates:
+                    candidates[neighbor] = {"priority": priority, "page": candidate}
+                else:
+                    current_candidate = candidates[neighbor]
+                    if priority < current_candidate["priority"]:
+                        current_candidate["priority"] = priority
+                        current_candidate["page"].update(candidate)
+                    for facet in seed["facets"]:
+                        if facet not in current_candidate["page"]["facets"]:
+                            current_candidate["page"]["facets"].append(facet)
+
+    expanded = [item["page"] for item in sorted(
+        candidates.values(), key=lambda item: item["priority"]
+    )]
+    return {"queries": normalized_queries, "seeds": results,
+            "expanded": expanded[:max(0, GRAPH_MAX_RESULTS - len(results))],
+            "max_hops": GRAPH_HOPS}
+
+
 
 def run_full_context(agent, question: str, model, instructions: str, prompt_template: str):
     """全資料を一括投入し、検索ツールを使わずに回答する。"""

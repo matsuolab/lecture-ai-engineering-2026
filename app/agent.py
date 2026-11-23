@@ -57,8 +57,10 @@ TREE_INSTRUCTIONS = """\
 
 GRAPH_INSTRUCTIONS = """\
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
-- 対象は第1〜3回の本講義資料。まず search_graph で関連ページの候補を探す。
-- seedsは検索で見つかった入口、expandedはグラフをたどって追加された候補。
+- 対象は第1〜3回の本講義資料。複数論点や比較を含む質問では、質問を独立した2〜3個の検索論点に分け、まず search_graph_multiquery を使う。
+- 1つの論点だけの質問では search_graph を使う。
+- seedsは各論点のベクトル検索で見つかった入口、expandedはグラフをたどって追加された候補。
+- facetsで、ページがどの検索論点から取得されたか確認する。
 - seedsとexpandedに含まれるページ本文を確認し、質問の根拠となる内容を使って回答する。
 - 用語が共通していても、質問の答えがあるとは限らない。必要なら別の検索語で探す。
 - 取得した本文に根拠がなければ確認できないと伝え、根拠ごとに「第N回・PDF p.N」を付ける。
@@ -190,7 +192,8 @@ def main() -> None:
     if args.tree:
         mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])
     elif args.graph:
-        mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[tools.search_graph])
+        mode = target.override(instructions=GRAPH_INSTRUCTIONS,
+                               tools=[tools.search_graph, tools.search_graph_multiquery])
     with mode:
         if args.list_tools:
             if args.full_context:

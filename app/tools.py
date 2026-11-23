@@ -128,6 +128,24 @@ def search_graph(query: str) -> str:
         return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
 
 
+def search_graph_multiquery(queries: list[str]) -> str:
+    """複数論点の質問を、それぞれ別に検索してグラフで関連ページを広げる。
+
+    章をまたぐ比較や複数の概念を同時に尋ねる場合に使う。queriesには独立した検索論点を
+    2〜3個指定する。各論点の上位ページを入口にし、重複を除いて本文と引用情報を返す。
+    """
+    import sqlite3
+    from google.genai.errors import APIError
+    from app.retrieval import search_graph_multiquery as search
+
+    try:
+        return json.dumps(search(queries), ensure_ascii=False)
+    except (ValueError, OSError, sqlite3.Error) as e:
+        return json.dumps({"error": str(e)}, ensure_ascii=False)
+    except APIError as e:
+        return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
+
+
 def make_quiz(lecture: int) -> str:
     """指定した回の用語から、復習用の確認問題と模範解答を1問返す。
 
