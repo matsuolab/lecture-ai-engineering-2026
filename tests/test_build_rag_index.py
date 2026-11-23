@@ -54,3 +54,19 @@ def test_existing_index_survives_failed_rebuild(materials):
         build_index(source, database, rebuild=True, embedder=embed)
     assert database.read_bytes() == before
     assert not list(database.parent.glob(".rag-build-*"))
+
+
+def test_neighbor_pages_are_added_without_duplicates():
+    pages = [{"page_id": f"lec03-main-p{n:03d}", "document_id": "lec03-main", "page": n}
+             for n in range(1, 6)]
+    pages.append({"page_id": "lec02-main-p004", "document_id": "lec02-main", "page": 4})
+    hits = [{"page_id": "lec03-main-p003", "document_id": "lec03-main", "page": 3, "distance": 0.1},
+            {"page_id": "lec03-main-p004", "document_id": "lec03-main", "page": 4, "distance": 0.2},
+            {"page_id": "lec03-main-p001", "document_id": "lec03-main", "page": 1, "distance": 0.3}]
+    results = retrieval.add_neighbor_pages(hits, pages, window=1)
+    # 検索で見つかったp.4・p.1は前後ページとして重ねず、他の資料（lec02）のp.4も混ぜない
+    assert [r["page_id"] for r in results] == [
+        "lec03-main-p003", "lec03-main-p002", "lec03-main-p004", "lec03-main-p005", "lec03-main-p001"]
+    assert [r["retrieved_by"] for r in results] == ["ベクトル検索", "前後ページ", "ベクトル検索", "前後ページ", "ベクトル検索"]
+    assert results[1]["neighbor_of"] == "lec03-main-p003" and results[1]["distance"] is None
+    assert results[3]["neighbor_of"] == "lec03-main-p004"
