@@ -83,40 +83,6 @@ def get_lecture_summary(lecture: int) -> str:
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
 
-<<<<<<< HEAD
-def make_quize(lecture: int) -> str:
-    """ 指定した回の用語から１つを選び、確認問題と答えを返す。
-
-    「第２回の確認問題を出して」のように、復習用の問題を求められたときに使う。
-    """
-    lecture_terms = [term for term in load_glossary() if term["lecture"] == lecture]
-    if not lecture_terms:
-        return f"第{lecture}回の用語は用語集にありません。"
-
-    term = random.choice(lecture_terms)
-    return json.dumps(
-        {
-            "question": f"「{term['definition']}」に当てはまる用語は何でしょう？",
-            "answer": term["term"],
-        },
-        ensure_ascii=False,
-    )
-
-def save_learning_log(content: str) -> str:
-    """学習した内容を記録として保存する。
-
-    ユーザーから学習記録の保存を明示的に頼まれたときに使う。
-    content には保存する要点をそのまま入れる。
-    """
-    if not content.strip():
-        return "保存する学習記録が空です。内容を指定してください。"
-
-    filename = datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ.md")
-    log_path = LEARNING_LOG_DIR / filename
-    LEARNING_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_path.write_text(content.rstrip() + "\n", encoding="utf-8")
-    return f"学習記録を learning_log/{filename} に保存しました。"
-=======
 
 def search_materials(query: str) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
@@ -163,4 +129,3 @@ def search_graph(query: str) -> str:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
     except APIError as e:
         return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
->>>>>>> 1ce722c2816b70ef62891a6378b2478af555e3fd

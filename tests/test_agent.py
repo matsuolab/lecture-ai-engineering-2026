@@ -44,59 +44,5 @@ def test_material_result_reaches_the_model(monkeypatch):
     with agent.override(model=model):
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
-<<<<<<< HEAD
-    assert returns and returns[0].tool_name == "search_glossary"
-
-
-def test_approval_decision_resumes_tool_call(monkeypatch, tmp_path):
-    log_dir = tmp_path / "learning_log"
-    monkeypatch.setattr("app.tools.LEARNING_LOG_DIR", log_dir)
-    monkeypatch.setattr("builtins.input", lambda _: "y")
-
-    first_result = agent.run_sync(
-        "学習記録を保存してください",
-        model=TestModel(call_tools=["save_learning_log"]),
-    )
-
-    assert isinstance(first_result.output, DeferredToolRequests)
-    approval_call = first_result.output.approvals[0]
-    deferred_results = request_tool_approvals(first_result.output)
-    assert deferred_results.approvals[approval_call.tool_call_id] is True
-
-    resumed_result = agent.run_sync(
-        message_history=first_result.all_messages(),
-        deferred_tool_results=deferred_results,
-        model=TestModel(call_tools=[]),
-    )
-
-    assert isinstance(resumed_result.output, str)
-    assert len(list(log_dir.glob("*.md"))) == 1
-
-
-def test_denied_tool_call_resumes_without_running_tool(monkeypatch, tmp_path):
-    log_dir = tmp_path / "learning_log"
-    monkeypatch.setattr("app.tools.LEARNING_LOG_DIR", log_dir)
-    monkeypatch.setattr("builtins.input", lambda _: "n")
-
-    first_result = agent.run_sync(
-        "学習記録を保存してください",
-        model=TestModel(call_tools=["save_learning_log"]),
-    )
-
-    assert isinstance(first_result.output, DeferredToolRequests)
-    approval_call = first_result.output.approvals[0]
-    deferred_results = request_tool_approvals(first_result.output)
-    assert deferred_results.approvals[approval_call.tool_call_id] is False
-
-    resumed_result = agent.run_sync(
-        message_history=first_result.all_messages(),
-        deferred_tool_results=deferred_results,
-        model=TestModel(call_tools=[]),
-    )
-
-    assert isinstance(resumed_result.output, str)
-    assert not log_dir.exists()
-=======
     assert returns and returns[0].tool_name == "search_materials"
     assert json.loads(returns[0].content)["results"] == [hit]
->>>>>>> 1ce722c2816b70ef62891a6378b2478af555e3fd
