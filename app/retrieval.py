@@ -16,7 +16,7 @@ import sqlite_vec
 
 from app.config import (
     EMBEDDING_DIMENSIONS, EMBEDDING_MAX_TOKENS, EMBEDDING_MODEL,
-    RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
+    RAG_DB, RAG_DOCUMENT_IDS, RAG_NEIGHBOR_PAGES, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
     RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
 
@@ -135,7 +135,31 @@ def search(query: str) -> list[dict]:
                    vec_distance_cosine(embedding, ?) AS distance
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
-        return [dict(row) for row in rows]
+        hits = [dict(row) for row in rows]
+    if RAG_NEIGHBOR_PAGES > 0:
+        return add_neighbor_pages(hits, load_pages(RAG_SOURCE), RAG_NEIGHBOR_PAGES)
+    return hits
+
+
+def add_neighbor_pages(hits: list[dict], pages: list[dict], window: int = 1) -> list[dict]:
+    """検索で見つかった各ページの直後に、同じ資料の前後window枚のページを足す。
+
+    検索で見つかったページそのものや、すでに足したページは重複して返さない。
+    足したページには、どのページの前後かを neighbor_of に記録する。
+    """
+    by_position = {(page["document_id"], page["page"]): page for page in pages}
+    seen = {hit["page_id"] for hit in hits}
+    results = []
+    for hit in hits:
+        results.append({**hit, "retrieved_by": "ベクトル検索"})
+        for offset in [-d for d in range(window, 0, -1)] + list(range(1, window + 1)):
+            neighbor = by_position.get((hit["document_id"], hit["page"] + offset))
+            if neighbor is None or neighbor["page_id"] in seen:
+                continue
+            seen.add(neighbor["page_id"])
+            results.append({**neighbor, "distance": None, "retrieved_by": "前後ページ",
+                            "neighbor_of": hit["page_id"]})
+    return results
 
 
 def search_graph(query: str) -> dict:
@@ -208,4 +232,6 @@ if __name__ == "__main__":
         print(f"章: {result['section']}")
         print(f"タイトル: {result['title']}")
         print(f"ページ: {result['page']}")
+        if result.get("neighbor_of"):
+            print(f"追加理由: {result['neighbor_of']} の前後ページ")
         print(f"\n{result['content']}")
