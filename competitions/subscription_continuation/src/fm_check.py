@@ -29,13 +29,13 @@ SEEDS = list(range(15))
 VARIANTS = ["full", "no_history", "neighbor", "production"]
 
 
-def diagnose(names, y):
-    ext = ExternalScores(Path("external"), sorted(set(names) | set(BASE_EXT)))
+def diagnose(names, y, base_ext=BASE_EXT):
+    ext = ExternalScores(Path("external"), sorted(set(names) | set(base_ext)))
     res = {}
     for name in names:
-        lls, cors = [], {b: [] for b in BASE_EXT}
+        lls, cors = [], {b: [] for b in base_ext}
         for s in SEEDS:
-            z = {m: np.zeros(len(y)) for m in [name] + BASE_EXT}
+            z = {m: np.zeros(len(y)) for m in [name] + list(base_ext)}
             for k in range(5):
                 d = ext.data[name]
                 va = d[f"s{s}f{k}_va_idx"].astype(int)
@@ -44,7 +44,7 @@ def diagnose(names, y):
                     pos = {r: i for i, r in enumerate(dm[f"s{s}f{k}_va_idx"].astype(int))}
                     z[m][va] = [dm[f"s{s}f{k}_va"][pos[r]] for r in va]
             lls.append(log_loss(y, 1 / (1 + np.exp(-z[name]))))
-            for b in BASE_EXT:
+            for b in base_ext:
                 cors[b].append(np.corrcoef(z[name], z[b])[0, 1])
         res[name] = dict(oof_logloss=float(np.mean(lls)), logit_corr={b: round(float(np.mean(v)), 3) for b, v in cors.items()})
         print(f"{name}: 単体 OOF LogLoss {res[name]['oof_logloss']:.4f}  既存とのロジット相関 {res[name]['logit_corr']}", flush=True)
@@ -78,6 +78,7 @@ def main():
     ap.add_argument("--new", required=True, help="追加するモデル（例: exaone,tabpfn3）")
     ap.add_argument("--mode", choices=["add", "replace"], default="add")
     ap.add_argument("--drop", default="tabpfn", help="--mode replace で外す既存モデル")
+    ap.add_argument("--base", default=",".join(BASE_EXT), help="基準の外部予測の組（既定は当初の4本。improve_cache を再利用）")
     ap.add_argument("--diag-only", action="store_true")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
@@ -88,12 +89,17 @@ def main():
     T.load_params(Path("config/params.json"))
     tr = pd.read_csv("input/train.csv", encoding="utf-8-sig")
     y = tr["継続フラグ"].to_numpy()
-    res = dict(diagnose=diagnose(new, y))
+    base_ext = [s for s in args.base.split(",") if s]
+    if set(base_ext) - set(KNOWN) or set(new) & set(base_ext):
+        raise ValueError(f"--base が不正: {base_ext}")
+    res = dict(diagnose=diagnose(new, y, base_ext))
     if args.diag_only:
         print(json.dumps(res, ensure_ascii=False))
         return
 
-    cand_ext = BASE_EXT + new if args.mode == "add" else [e for e in BASE_EXT if e != args.drop] + new
+    if args.mode == "replace" and args.drop not in base_ext:
+        raise ValueError(f"--drop {args.drop} が基準にありません")
+    cand_ext = base_ext + new if args.mode == "add" else [e for e in base_ext if e != args.drop] + new
     d = np.load("external/series_logits.npz", allow_pickle=True)
     sub = pd.read_csv("input/sample_submit.csv", header=None)
     if not ((d["user_id"][:1419] == tr["ユーザーID"].to_numpy()).all() and (d["user_id"][1419:] == sub[0].to_numpy()).all()):
@@ -101,7 +107,10 @@ def main():
     sig = lambda z: 1 / (1 + np.exp(-z))  # noqa: E731
     v52 = sig(d["fmlmxft_oof"].reshape(-1, 1419).mean(0)), sig(d["fmlmxft_test"].reshape(-1, 1414).mean(0))
 
-    base = {"lgb": SB.ours(VARIANTS, "lgb"), "lr": SB.ours(VARIANTS, "lr")}   # 既存4本（improve_cache）
+    if base_ext == BASE_EXT:
+        base = {"lgb": SB.ours(VARIANTS, "lgb"), "lr": SB.ours(VARIANTS, "lr")}   # 当初の4本（improve_cache）
+    else:
+        base = run_set(base_ext, VARIANTS)
     cand = run_set(cand_ext, VARIANTS)
 
     def ll(p):
@@ -118,9 +127,9 @@ def main():
     p = np.clip(T.apply_blend(out["cand"][2], w), T.CLIP, 1 - T.CLIP)
     if not (np.isfinite(p).all() and len(p) == len(sub)):
         raise RuntimeError("予測が不正です")
-    fn = args.out or Path(f"output/submission_fm_{'_'.join(new)}_{args.mode}.csv")
+    fn = args.out or Path(f"output/submission_fm_{'_'.join(new)}_{args.mode}_on_{'+'.join(base_ext)}.csv")
     pd.DataFrame({0: sub[0], 1: p}).to_csv(fn, header=False, index=False)
-    res.update(ext=cand_ext, base=float(out["base"][0].mean()), cand=float(out["cand"][0].mean()),
+    res.update(base_ext=base_ext, ext=cand_ext, base=float(out["base"][0].mean()), cand=float(out["cand"][0].mean()),
                diff=float(dl.mean()), se=float(dl.std(ddof=1) / np.sqrt(len(dl))), weights=w, submission=str(fn))
     print(f"基準 {res['base']:.5f}  候補 {res['cand']:.5f}  Δ {res['diff']:+.5f} ± {res['se']:.5f}  → {fn}")
     fn.with_suffix(".json").write_text(json.dumps(res, ensure_ascii=False, indent=2))
