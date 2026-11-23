@@ -7,21 +7,26 @@ TestModel は実際のLLMを呼ばない偽モデルで、登録されたツー�
 
 import json
 
+<<<<<<< HEAD
 from pydantic_ai import DeferredToolRequests, DeferredToolResults
+=======
+from pydantic_ai import DeferredToolRequests
+>>>>>>> upstream/main
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
 from app.agent import agent
 from app import tools
 
-BASE_TOOLS = {"search_glossary", "get_lecture_summary"}
+BASE_TOOLS = {"search_materials"}
 
 
 def _parts(result, kind):
     return [p for m in result.all_messages() for p in m.parts if isinstance(p, kind)]
 
 
-def test_base_tools_are_registered_and_called():
+def test_base_tools_are_registered_and_called(monkeypatch):
+    monkeypatch.setattr("app.retrieval.search", lambda *args, **kwargs: [])
     model = TestModel()
     with agent.override(model=model):
         result = agent.run_sync("LoRAとは？")
@@ -37,11 +42,14 @@ def test_base_tools_are_registered_and_called():
     assert result.output
 
 
-def test_glossary_result_reaches_the_model():
-    model = TestModel(call_tools=["search_glossary"])
+def test_material_result_reaches_the_model(monkeypatch):
+    hit = {"page_id": "lec02-main-p052", "lecture": 2, "page": 52, "content": "元の重みは固定"}
+    monkeypatch.setattr("app.retrieval.search", lambda *args, **kwargs: [hit])
+    model = TestModel(call_tools=["search_materials"])
     with agent.override(model=model):
         result = agent.run_sync("RAGとは？")
     returns = _parts(result, ToolReturnPart)
+<<<<<<< HEAD
     assert returns and returns[0].tool_name == "search_glossary"
 
 
@@ -89,3 +97,7 @@ def test_save_learning_log_is_skipped_when_rejected(tmp_path, monkeypatch):
     )
 
     assert list(tmp_path.iterdir()) == []
+=======
+    assert returns and returns[0].tool_name == "search_materials"
+    assert json.loads(returns[0].content)["results"] == [hit]
+>>>>>>> upstream/main
