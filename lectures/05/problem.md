@@ -132,6 +132,8 @@ TreeとGraphで、回答・引用根拠・時間・入力トークン数がど�
 
 演習の結果を`lectures/05/answer.md`に書き、作業ブランチから自分のforkの`main`へPRを出します。**base repositoryが自分のforkになっていることを確認してください。**
 
+
+
 ```bash
 git add lectures/05/answer.md
 # コードを変更した場合は、そのファイルも git add する
