@@ -17,32 +17,44 @@ from google.genai import errors
 
 from app.config import MODEL, api_error_message, get_api_key
 
-# 講座に固有の質問。正しい答えは data/glossary.json の homework-levels にある
 DEFAULT_QUESTION = "AIE2026の講座の宿題にある「3レベル」とは何ですか？"
 
 
-def ask(question: str) -> str:
-    client = genai.Client(api_key=get_api_key())
-    response = client.models.generate_content(model=MODEL, contents=question)
-
-    # TODO(第1回 演習): response.usage_metadata から
-    #   入力トークン数と出力トークン数を表示してみよう（Copilotに頼んでよい）
-
-    return response.text
-
-
 def main() -> None:
-    parser = argparse.ArgumentParser(description="素のLLMに質問する")
+    parser = argparse.ArgumentParser(description="LLMと連続して会話する")
     parser.add_argument("question", nargs="?", default=DEFAULT_QUESTION)
     args = parser.parse_args()
 
+    client = genai.Client(api_key=get_api_key())
+
+    # 会話履歴を保持するチャットを作成
+    chat = client.chats.create(model=MODEL)
+
     print(f"[model] {MODEL}")
-    print(f"[質問] {args.question}\n")
-    try:
-        print(ask(args.question))
-    except errors.APIError as e:
-        print(api_error_message(e.code, e.message))
-        raise SystemExit(1)
+    print("終了するには exit と入力してください。\n")
+
+    question = args.question
+
+    while True:
+        try:
+            # 質問を送信（過去の会話履歴も保持される）
+            response = chat.send_message(question)
+
+            print(f"[質問] {question}")
+            print(f"[回答] {response.text}\n")
+
+            # 次の質問を受け取る
+            question = input("You: ")
+
+            if question.strip().lower() == "exit":
+                break
+
+            if not question.strip():
+                continue
+
+        except errors.APIError as e:
+            print(api_error_message(e.code, e.message))
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,201 @@
+{
+  "summary": {
+    "label": "after",
+    "n": 21,
+    "format_rate": 1.0,
+    "content_rate": 0.9047619047619048,
+    "both_rate": 0.9047619047619048,
+    "seconds": 60.6
+  },
+  "rows": [
+    {
+      "question": "Git とは何ですか",
+      "raw": "{\"answer\": \"Git は、ソースコードの変更履歴を管理するためのバージョン管理システムです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "ソースコードの変更履歴を管理する仕組みを教えてください",
+      "raw": "{\"answer\": \"Git は、ソースコードの変更履歴を管理するためのバージョン管理システムです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Git を使うと何を記録できますか",
+      "raw": "{\"answer\": \"Git は、ソースコードの変更履歴を管理するためのバージョン管理システムです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub では何ができますか",
+      "raw": "{\"answer\": \"GitHub は、Git リポジトリをホスティングし、複数人での共同開発を支援するサービスです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "複数人で Git を使って開発する際に利用するサービスは何ですか",
+      "raw": "{\"answer\": \"GitHub は、Git リポジトリをホスティングし、複数人での共同開発を支援するサービスです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub が提供する主な機能を教えてください",
+      "raw": "{\"answer\": \"GitHub は、Git リポジトリをホスティングし、複数人での共同開発を支援するサービスです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Docker とは何ですか",
+      "raw": "{\"answer\": \"Docker は、コンテナ技術を利用してアプリケーションの実行環境を構築するプラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Docker ではどのような技術を使って環境を構築しますか",
+      "raw": "{\"answer\": \"Docker は、コンテナ技術を利用してアプリケーションの実行環境を構築するプラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "Docker はアプリケーションの何を構築するためのものですか",
+      "raw": "{\"answer\": \"Docker は、コンテナ技術を利用してアプリケーションの実行環境を構築するプラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub Actions とは何ですか",
+      "raw": "{\"answer\": \"GitHub Actions は、GitHub リポジトリ上のイベントをきっかけにワークフローを自動実行する CI/CD プラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub Actions で自動化できるものは何ですか",
+      "raw": "{\"answer\": \"GitHub Actions は、GitHub リポジトリ上のイベントをきっかけにワークフローを自動実行する CI/CD プラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub Actions は何をきっかけに動作しますか",
+      "raw": "{\"answer\": \"GitHub Actions は、GitHub リポジトリ上のイベントをきっかけにワークフローを自動実行する CI/CD プラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "LoRA とは何ですか",
+      "raw": "{\"answer\": \"LoRA は、基盤モデルの重みを固定し、追加した低ランク行列を学習することで、少ない学習パラメータでモデルを適応させる手法です。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "LoRA で更新するパラメータについて説明してください",
+      "raw": "{\"answer\": \"LoRA は、基盤モデルの重みを固定し、追加した低ランク行列を学習することで、少ない学習パラメータでモデルを適応させる手法です。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "LoRA はどのように基盤モデルを適応させますか",
+      "raw": "{\"answer\": \"LoRA は、基盤モデルの重みを固定し、追加した低ランク行列を学習することで、少ない学習パラメータでモデルを適応させる手法です。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": false
+    },
+    {
+      "question": "GitHub Actions の無料利用枠は月何分ですか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "LoRA を提案した研究者の名前は何ですか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "GitHub の有料プランの料金はいくらですか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    },
+    {
+      "question": "Docker の公式マスコットの名前は何ですか",
+      "raw": "{\"answer\": \"Docker は、コンテナ技術を利用してアプリケーションの実行環境を構築するプラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "GitHub Actions が対応しているプログラミング言語は何種類ですか",
+      "raw": "{\"answer\": \"GitHub Actions は、GitHub リポジトリ上のイベントをきっかけにワークフローを自動実行する CI/CD プラットフォームです。\", \"needs_review\": false}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": false,
+      "both_ok": false,
+      "gold_needs_review": true
+    },
+    {
+      "question": "LoRA の提案論文が掲載された学会はどこですか",
+      "raw": "{\"answer\": \"この FAQ には記載がありません。運営に確認が必要です。\", \"needs_review\": true}",
+      "format_ok": true,
+      "format_reason": "",
+      "content_ok": true,
+      "both_ok": true,
+      "gold_needs_review": true
+    }
+  ]
+}
