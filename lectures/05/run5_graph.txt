@@ -1,0 +1,16 @@
+[model] gemini-3.5-flash-lite
+第2回の講義資料によると、それぞれの特徴は以下のようになっています。
+
+* **LoRA（Low-Rank Adaptation）**
+  * **何を固定するか：** 元の重み（本体）は固定して学習しません（第2回・PDF p.52）。
+  * **何を学習するか：** 変化分を表す小さな行列（低ランクの追加部分。資料のイメージでは薄い「付箋」に例えられています）だけを学習します（第2回・PDF p.51, p.52）。
+
+* **QLoRA**
+  * **何を加えるか：** LoRAの手法に加えて、**元の重みを 4bit に圧縮**する仕組みを加えます（第2回・PDF p.51, p.52）。これにより、さらに少ないメモリ（GPU 1台など）で大きなモデルの調整が可能になります（第2回・PDF p.51, p.52）。
+
+--- trace ---
+[tool call]   search_graph({'query': 'LoRA QLoRA 固定 学習'})
+[tool return] search_graph -> {"seeds": [{"page_id": "lec02-main-p052", "document_id": "lec02-main", "lecture": 2, "document_title": "基盤モデルの仕組み", "sec…
+[time] 回答完了まで 3.19 秒（検索・埋め込みを含む）
+[usage] 入力 5,771 tokens / 出力 228 tokens / モデル応答 2 回
+[cost] 生成APIの推定コスト: $0.002301 USD（埋め込み・索引構築分は含まない）
