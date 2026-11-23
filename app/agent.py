@@ -6,6 +6,7 @@
     uv run python -m app.agent --graph --trace "LoRAとQLoRAの違いは？"  # 検索からグラフをたどって回答
     uv run python -m app.agent --tree --trace "LoRAとQLoRAの違いは？"  # 目次をたどって回答
     uv run python -m app.agent --full-context --trace "LoRAとQLoRAの違いは？"  # 全資料を一度に渡す
+    uv run python -m app.agent --neighbors --trace "LoRAとQLoRAの違いは？"  # 宿題（実装）：検索結果に前後ページも付ける
     uv run python -m app.agent --mcp --trace "LoRAとは？"        # 第5回: ツールを MCP サーバーから受け取る
     uv run python -m app.agent --mcp --list-tools               # 第5回: モデルに見えるツール一覧（APIキー不要）
 
@@ -21,7 +22,7 @@ from pathlib import Path
 from contextlib import nullcontext
 from time import perf_counter
 
-from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults, Tool
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -80,6 +81,10 @@ FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
 # モデルは実行時に渡す（テストではAPIを呼ばない TestModel に差し替えるため）
 agent = Agent(instructions=INSTRUCTIONS)
 agent.tool_plain(tools.search_materials)
+
+# 宿題（実装）：取得処理だけを差し替える。ツール名と INSTRUCTIONS は通常の検索と同じにして、
+# 変わるのは「返すページ（前後ページが付く）」と、その見分け方を書いた説明文の1行だけにする。
+NEIGHBOR_TOOL = Tool(tools.search_materials_with_neighbors, name="search_materials")
 
 # ---------------------------------------------------------------- 第3回宿題との互換
 # 第3回の宿題（承認付きの学習メモ保存）と第4回の回答生成で使う。第5回の agent とは別に残す。
@@ -190,6 +195,20 @@ def print_tools(target: Agent) -> None:
         print(f"  引数: {json.dumps(params, ensure_ascii=False)}")
 
 
+def summarize_pages(content: str) -> str:
+    """search_materials の戻り値を「第N回 p.N」の並びにする。前後として足したページには（前後）を付ける。"""
+    try:
+        data = json.loads(content)
+    except (TypeError, json.JSONDecodeError):
+        return f"{str(content)[:120]}…"
+    if data.get("error"):
+        return f"エラー: {data['error']}"
+    pages = [f"第{r['lecture']}回 p.{r['page']}" + ("（前後）" if r.get("role") == "neighbor" else "")
+             for r in data.get("results", [])]
+    chars = sum(len(r.get("content", "")) for r in data.get("results", []))
+    return f"{len(pages)}ページ・本文{chars:,}文字: " + "、".join(pages)
+
+
 def print_trace(result, elapsed_seconds: float | None = None) -> None:
     """どのツールが、どの引数で呼ばれ、何を返したかを表示する。"""
     print("\n--- trace ---")
@@ -217,6 +236,8 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
                                 print(f"      {child['content']}")
                         if not data["children"]:
                             print(f"    （末端ページ・本文{len(node.get('content', ''))}文字を取得）")
+                elif part.tool_name == "search_materials":
+                    print(f"[tool return] {part.tool_name} -> {summarize_pages(part.content)}")
                 else:
                     print(f"[tool return] {part.tool_name} -> {str(part.content)[:120]}…")
     usage = result.usage
@@ -236,6 +257,7 @@ def main() -> None:
     modes.add_argument("--graph", action="store_true", help="検索結果からグラフをたどり、候補ページを読んで答える")
     modes.add_argument("--tree", action="store_true", help="目次をたどり、必要なページを読んで答える")
     modes.add_argument("--full-context", action="store_true", help="検索せず、lectures.jsonの全資料を一度に渡す")
+    modes.add_argument("--neighbors", action="store_true", help="宿題（実装）：検索結果の各ページに前後1ページの本文も付ける")
     parser.add_argument("--list-tools", action="store_true", help="モデルに見えるツール一覧を表示して終了する（APIキー不要）")
     args = parser.parse_args()
 
@@ -245,6 +267,8 @@ def main() -> None:
         mode = target.override(instructions=TREE_INSTRUCTIONS, tools=[tools.browse_tree])
     elif args.graph:
         mode = target.override(instructions=GRAPH_INSTRUCTIONS, tools=[tools.search_graph])
+    elif args.neighbors:
+        mode = target.override(tools=[NEIGHBOR_TOOL])
     with mode:
         if args.list_tools:
             if args.full_context:
