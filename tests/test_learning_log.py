@@ -2,7 +2,7 @@ import pytest
 from pydantic_ai import DeferredToolRequests
 from pydantic_ai.models.test import TestModel
 from app import tools
-from app.agent import build_agent, run_with_approval, INSTRUCTIONS, SEARCH_RULE
+from app.agent import build_agent, run_with_approval, LEC03_INSTRUCTIONS as INSTRUCTIONS, SEARCH_RULE
 
 @pytest.mark.parametrize('answer, count', [('y', 1), ('n', 0), ('', 0)])
 def test_approval_boundary(tmp_path, monkeypatch, answer, count):
