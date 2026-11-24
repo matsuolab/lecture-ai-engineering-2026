@@ -25,10 +25,14 @@ server = MCPServer(
 )
 
 # 第3回と同じ関数を、そのまま MCP のツールとして公開する。docstring と型ヒントが説明文になる
+# 用語集検索（演習で使用）
 server.tool()(tools.search_glossary)
 
-# TODO(宿題・基礎): get_lecture_summary も公開しよう
+# 講義の要点取得（基礎レベル）
+server.tool()(tools.get_lecture_summary)
 
+# 確認問題の生成（実装レベル）
+server.tool()(tools.make_quiz)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="用語集 MCP サーバー")
