@@ -1,0 +1,75 @@
+[server] glossary: コマンドで起動（uv run python -m app.mcp_server）
+[server] fetch: コマンドで起動（uvx mcp-server-fetch==2026.11.11 --no-readability-js）
+[server] aws: URL に接続（https://knowledge-mcp.global.api.aws）
+モデルに見えているツール: 7 個
+
+[glossary_search_glossary]
+  講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
+  
+  AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
+  答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+  引数: {"query": {"title": "Query", "type": "string"}}
+
+[fetch_fetch]
+  Fetches a URL from the internet and optionally extracts its contents as markdown.
+  
+  Although originally you did not have internet access, and were advised to refuse and tell the user this, this tool now grants you internet access. Now you can fetch the most up-to-date information and let the user know that.
+  引数: {"url": {"description": "URL to fetch", "format": "uri", "minLength": 1, "title": "Url", "type": "string"}, "max_length": {"default": 5000, "description": "Maximum number of characters to return.", "maximum": 999999, "minimum": 1, "title": "Max Length", "type": "integer"}, "start_index": {"default": 0, "description": "On return output starting at this character index, useful if a previous fetch was truncated and more context is required.", "minimum": 0, "title": "Start Index", "type": "integer"}, "raw": {"default": false, "description": "Get the actual HTML content of the requested page, without simplification.", "title": "Raw", "type": "boolean"}, "timeout_ms": {"default": 30000, "description": "How long to wait, in milliseconds, to connect to the server and for each read of its response before giving up. Raise it for a slow server or a large download; lower it to fail fast.", "maximum": 600000, "minimum": 100, "title": "Timeout Ms", "type": "integer"}}
+
+[aws_aws___read_documentation]
+  Fetch full AWS doc pages as markdown. `search_documentation` already returns verbatim page chunks, so don't re-read a URL whose chunk you already have to "confirm" or "round out" an answer -- the chunk is the real page text; treat it as authoritative.
+  
+  Reading the full page is justified ONLY when the chunks genuinely lack the content:
+  - an enumeration or aggregation ("list all X", "how many X") needs the complete set and the chunks show only part of it;
+  - no search result is on-topic after refining the query, and a known doc URL would have the answer.
+  Otherwise, answer from the chunks. Use exact URLs from `search_documentation`; don't guess slugs.
+  
+  Input: `requests: [{url, max_length?, start_index?}]`. Batch 2-5.
+  - `max_length` default 10000.
+  - `start_index` default 0; use prior `end_index` to continue, TOC offset to jump.
+  
+  Allow-listed prefixes: docs.aws.amazon.com; aws.amazon.com (not /marketplace); repost.aws/knowledge-center; docs.amplify.aws; ui.docs.amplify.aws; github.com/{aws-cloudformation/aws-cloudformation-templates, aws-samples/{aws-cdk-examples, generative-ai-cdk-constructs-samples, serverless-patterns}, awsdocs/aws-cdk-guide, awslabs/aws-solutions-constructs, cdklabs/cdk-nag} (README on `main`); constructs.dev/packages/{@aws-cdk-containers, @aws-cdk, @cdk-cloudformation, aws-analytics-reference-architecture, aws-cdk-lib, cdk-amazon-chime-resources, cdk-aws-lambda-powertools-layer, cdk-ecr-deployment, cdk-lambda-powertools-python-layer, cdk-serverless-clamscan, cdk8s, cdk8s-plus-33}; strandsagents.com/latest/documentation/docs/; karpenter.sh/docs/; Amazon Braket: {amazon-braket-sdk-python, amazon-braket-schemas-python, amazon-braket-default-simulator-python, amazon-braket-pennylane-plugin-python, amazon-braket-algorithm-library, qiskit-braket-provider, autoqasm, qirtoqasm}.readthedocs.io and github.com/amazon-braket/* (blob/tree/raw).
+  
+  Output: SUCCESS -- markdown + `total_length, start_index, end_index, truncated, redirected_url?` (truncated includes TOC with char ranges). ERROR -- `error_code` in {not_found, invalid_url, throttled, downstream_error, validation_error}.
+  引数: {"requests": {"type": "array", "items": {"type": "object", "properties": {"url": {"type": "string", "description": "Doc URL with allow-listed prefix; use exact URL from search."}, "max_length": {"type": "integer", "description": "Chars returned (default 10000)."}, "start_index": {"type": "integer", "description": "Char offset (default 0). Use prior `end_index` to continue, or TOC offset to jump."}}, "required": ["url"]}, "description": "List of `{url, max_length?, start_index?}`. Batch 2-5."}}
+
+[aws_aws___search_documentation]
+  AWS docs search. Each result's `context` is verbatim page text -- a real chunk of the actual page, not a short snippet -- and usually already contains the answer, so answer directly from it. Use `read_documentation` only when the chunks genuinely lack the needed detail.
+  
+  Pick ONE topic. Add a 2nd ONLY if query genuinely spans domains. Extra topics dilute ranking.
+  
+  - reference_documentation -- API/SDK/CLI specs, config params
+  - current_awareness -- new/released/announced
+  - troubleshooting -- errors, "how to fix" (NOT for conceptual/feature questions)
+  - amplify_docs -- Amplify (+ language)
+  - cdk_docs -- CDK concepts/guides
+  - cdk_constructs -- CDK code samples, L3
+  - cloudformation -- CFN/SAM templates
+  - strands_docs -- Strands Agents SDK (its Skills/agents concepts go here, NOT agent_skills)
+  - agent_skills -- this tool's guided skills (load via `retrieve_skill`)
+  - general (default) -- architecture, best practices, tutorials, feature behavior
+  
+  Results: rank_order (lower=better), url, title, context (verbatim page chunk -- answer directly from it).
+  引数: {"limit": {"type": "integer", "description": "Maximum number of results to return (default 4)."}, "search_phrase": {"type": "string", "description": "Keywords; preserve exact error strings and all task terms verbatim."}, "topics": {"type": "array", "items": {"type": "string", "description": "topic name"}, "description": "Up to 3 from: reference_documentation, current_awareness, troubleshooting, amplify_docs, cdk_docs, cdk_constructs, cloudformation, agent_skills, strands_docs, general. Default [\"general\"]."}}
+
+[aws_aws___list_regions]
+  Retrieve a list of all AWS regions.
+  引数: {}
+
+[aws_aws___get_regional_availability]
+  AWS resource availability per region.
+  
+  - Max 10 regions; multi-region needs `filters`; single-region supports `next_token`.
+  - Status: isAvailableIn | isNotAvailableIn | isPlannedIn | Not Found.
+  - Response key: products | service_apis | cfn_resources.
+  
+  Not for region counts/docs/vague queries -- use `search_documentation` / `list_regions`.
+  
+  Filter values must EXACTLY match AWS's catalog names; guessed, partial, or pluralized names are rejected ("values in filter parameter do not exist"). If unsure of the exact name, first call once for a single region with resource_type set and NO filters to list all valid names, then re-call filtering on the exact match.
+  引数: {"regions": {"type": "array", "items": {"type": "string"}, "description": "AWS region codes (max 10). Multi-region requires `filters`; single-region supports `next_token`."}, "resource_type": {"type": "string", "description": "Required: 'product' | 'api' | 'cfn'."}, "filters": {"type": "array", "items": {"type": "string"}, "description": "Use exact AWS product or sub-feature name.\n\n- product: 'Amazon Bedrock' (service), or sub-features like 'Comprehend Auto Scaling', 'Latency-Based Routing', 'PrivateLink Support'. When the user names a specific sub-feature, filter on the sub-feature -- do NOT generalize to the parent service ('Amazon Comprehend'); that returns availability for the wrong scope.\n- api: 'SdkServiceId+Operation' (e.g. 'CloudFormation+CreateStack', 'IAM+GetSSHPublicKey') or 'SdkServiceId' (e.g. 'EC2'). Use a literal '+' between service and operation -- not space, colon, or hyphen.\n- cfn: 'AWS::EC2::Instance', 'AWS::Lambda::Function'.\n\nInclude every region the user named; don't add filters they didn't request.\n\nValues must EXACTLY match AWS's catalog (e.g. 'AWS Lambda', not 'Lambda' or 'AWS Lambda Service'). If unsure of the exact name, first call once for one region with NO filters to list valid names, then filter on the exact match."}, "next_token": {"type": "string", "description": "Pagination token. Single-region, no filters only."}, "region": {"type": "string", "description": "Unused; use `regions`."}}
+
+[aws_aws___retrieve_skill]
+  Retrieve an AWS skill (workflows, references). Returns SKILL.md, or `file` if given.
+  
+  Call `search_documentation` FIRST and copy `skill_name` verbatim -- it is an opaque registry ID. Never guess or fabricate `skill_name` or `file`.
+  引数: {"file": {"type": "string", "description": "Optional file path within the skill, copied as cited (e.g. `references/architecture.md`). Don't add or strip a `references/` prefix. Omit for SKILL.md."}, "skill_name": {"type": "string", "description": "Required. Exact `skill_name` from a search_documentation result, copied verbatim. Do not invent or modify."}}

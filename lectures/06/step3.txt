@@ -1,0 +1,18 @@
+HTTP Request: GET https://modelcontextprotocol.io/robots.txt "HTTP/1.1 200 OK"
+HTTP Request: GET https://modelcontextprotocol.io/ "HTTP/1.1 307 Temporary Redirect"
+HTTP Request: GET https://modelcontextprotocol.io/robots.txt "HTTP/1.1 200 OK"
+HTTP Request: GET https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro.md "HTTP/1.1 200 OK"
+[server] glossary: コマンドで起動（uv run python -m app.mcp_server）
+[server] fetch: コマンドで起動（uvx mcp-server-fetch==2026.11.11 --no-readability-js）
+[model] gemini-3.5-flash-lite
+[tools] MCP サーバー（app/mcp_servers.json）
+Model Context Protocol（MCP）は、AIアプリケーションを外部のデータソース、ツール、ワークフローに接続するためのオープンソースの標準規格です。
+AIにとっての「USB-Cポート」のような役割を果たし、様々なデータや機能への標準化されたアクセス手段を提供します。
+開発者、AIアプリケーション、エンドユーザーのそれぞれにメリットをもたらし、より強力で拡張性の高いAI活用を実現します。
+
+--- trace ---
+[tool call]   fetch_fetch({'url': 'https://modelcontextprotocol.io/'})
+[tool return] fetch_fetch -> Contents of https://modelcontextprotocol.io/:
+> ## Documentation Index
+> Fetch the complete documentation index at: http…
+[usage] 入力 2,230 tokens / 出力 109 tokens / モデル応答 2 回
