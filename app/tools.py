@@ -5,6 +5,7 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
@@ -67,6 +68,62 @@ def search_glossary(query: str) -> str:
         ],
         ensure_ascii=False,
     )
+
+
+# ---------------------------------------------------------------- 第6回 宿題（実装）
+COURSE_LECTURES = range(1, 14)  # この講座は第1〜13回
+MAX_QUIZ_COUNT = 5
+
+
+class QuizArgumentError(ValueError):
+    """make_quiz の引数が範囲外のときのエラー。メッセージは、そのままモデルが読む文にする。"""
+
+
+def quiz_lectures() -> dict[int, int]:
+    """用語集にある回と、その回の用語の数。"""
+    counts: dict[int, int] = {}
+    for entry in load_glossary():
+        counts[entry["lecture"]] = counts.get(entry["lecture"], 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def build_quiz(lecture: int, count: int = 1, rng: random.Random | None = None) -> dict:
+    """用語集から、指定した回の用語を count 個選んで問題にする。範囲外なら QuizArgumentError。
+
+    どこが範囲外か・次に何を指定すればよいかが、メッセージだけで分かるようにする。
+    """
+    available = quiz_lectures()
+    choices = "、".join(f"第{n}回（{c}語）" for n, c in available.items())
+    if lecture not in COURSE_LECTURES:
+        raise QuizArgumentError(
+            f"第{lecture}回はこの講座にありません。この講座は第1〜13回です。"
+            f"クイズを作れる回: {choices}。")
+    if lecture not in available:
+        raise QuizArgumentError(
+            f"第{lecture}回の用語はまだ用語集にありません。クイズを作れる回: {choices}。")
+    if not 1 <= count <= MAX_QUIZ_COUNT:
+        raise QuizArgumentError(
+            f"問題数 count は1〜{MAX_QUIZ_COUNT}で指定してください（指定された値: {count}）。"
+            f"第{lecture}回の用語は{available[lecture]}語あります。")
+    terms = [e for e in load_glossary() if e["lecture"] == lecture]
+    picked = (rng or random).sample(terms, min(count, len(terms)))
+    return {
+        "lecture": lecture,
+        "quizzes": [{"question": f"「{e['term']}」の意味は？", "answer": e["definition"]} for e in picked],
+    }
+
+
+def make_quiz(lecture: int, count: int = 1) -> str:
+    """講座の用語集から、指定した回（1始まりの整数）の確認問題を作り、問題と答えを返す。
+
+    「第2回のクイズを出して」「第3回の確認問題を3問」のように頼まれたときに使う。
+    count は問題数（1〜5、省略時は1）。答えはすぐに見せず、まず問題だけを出題すること。
+    引数が範囲外のときは、作れる回や指定できる値を説明する文を返す。
+    """
+    try:
+        return json.dumps(build_quiz(lecture, count), ensure_ascii=False)
+    except QuizArgumentError as e:
+        return f"クイズを作れません: {e}"
 
 
 def get_lecture_summary(lecture: int) -> str:
