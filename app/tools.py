@@ -5,12 +5,15 @@
 """
 
 import json
+import random
+from datetime import UTC, datetime
 from functools import cache
 from pathlib import Path
 
 from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -34,7 +37,7 @@ def search_glossary(query: str) -> str:
     """講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
 
     AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
-    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）
     """
     q = _normalize(query)
     if not q:

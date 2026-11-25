@@ -19,6 +19,7 @@ from app.mcp_agent import (
 )
 
 GLOSSARY_TOOL = "glossary_search_glossary"  # 設定ファイルのサーバー名 "glossary" が前に付く
+SAVE_LOG_TOOL = "glossary_save_learning_log"
 
 
 def _glossary_only_config(tmp_path):
@@ -41,7 +42,8 @@ def test_glossary_server_exposes_search_tool(tmp_path):
     build_mcp_agent(_glossary_only_config(tmp_path)).run_sync("ツール一覧", model=model)
 
     offered = {t.name for t in model.last_model_request_parameters.function_tools}
-    assert GLOSSARY_TOOL in offered  # 宿題でツールを足しても壊れないよう「含む」で判定
+    assert GLOSSARY_TOOL in offered  # 演習でツールを足しても壊れないよう「含む」で判定
+    assert SAVE_LOG_TOOL in offered
 
 
 def test_glossary_result_comes_back_through_mcp(tmp_path):
