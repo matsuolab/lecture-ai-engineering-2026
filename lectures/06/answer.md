@@ -17,7 +17,13 @@
 
 <!-- 基礎・実装・発展のどれか1つに取り組めば完了です。 -->
 
-- 取り組んだレベル：基礎 / 実装 / 発展
-- やったこと：
+- 取り組んだレベル：発展
+- やったこと：I completed all 3 levels.
+In basic level: I publish the function get_lecture_summary by adding server.tool()(tools.get_lecture_summary) to app/mcp_server.py
+In implementation level: I add the make_quiz function as an MCP tool in app/mcp_server.py by the code server.tool()(tools.make_quiz). Then I use the question Create a quiz for Lecture 99.
+In advanced level: I choose and research the VS code document at https://code.visualstudio.com/docs/agents/reference/mcp-configuration. Then I compare with app/mcp_servers.json and figure out the differences
 - 結果：
-- 気づき・疑問：
+In basic level: When I ask question What do we learn in Lecture 2, the trace show [tool call] glossary_get_lecture_summary({'lecture': 2}). It returned the lecture 2 summary on fine-tuning and LoRA which the agent use it to answer with the final result is 21 passed in 4.41s
+In implementation level: The trace show one call to `glossary_make_quiz` with `{"lecture": 99}`. The tool returned No glossary terms found for Lecture 99 and explain the reasson, then it ask for ask another lecture instead of hallucinate questions.
+In advanced level: VS Code use .mcp.json at the workspace root for project settings. For personal configuration shared across workspaces, the default file is ~/.copilot/mcp-config.json. Both use top key mcpServers. The course agent instead reads app/mcp_servers.json. Moreover, the 2 clients describe connections in the similar ways. For a local server, the clients starts a process use command and args. For homework, the glossary server starts with uv run python -m app.mcp_server. For a HTTP server, the client use URL. And the AWS server connected to `https://knowledge-mcp.global.api.aws`
+- 気づき・疑問：I realize that the trace was seeing lec02 that show it selected the right tool and pass the lecture number from the question. Moreover, I understand list tool show the tool was available and trace show the agent call it with the requested lecture number and use its result in the answer. Finally, when moving a server definition to another client, I need to check both connection settings and which configuration file the client read.
