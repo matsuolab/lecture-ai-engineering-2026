@@ -126,3 +126,39 @@ def search_graph(query: str) -> str:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
     except APIError as e:
         return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
+    
+def make_quiz(lecture: int) -> str:
+    """指定した回の講義要点をもとに、確認用クイズ作成のための材料と指示を返す。
+
+    lectureには対象となる講義番号（1以上の整数）を指定する。
+    """
+    if not isinstance(lecture, int) or isinstance(lecture, bool):
+        return (
+            f"Argument out of range / invalid: lecture={lecture!r} is not an integer. "
+            f"Please specify a valid lecture number (for example, 1 to 6)."
+        )
+
+    lecture_dir = DATA_DIR / "lectures"
+    available_files = sorted(lecture_dir.glob("*.md"))
+    available_nums = []
+    for p in available_files:
+        digits = "".join(ch for ch in p.stem if ch.isdigit())
+        if digits:
+            available_nums.append(int(digits))
+
+    min_lec = min(available_nums) if available_nums else 1
+    max_lec = max(available_nums) if available_nums else 6
+
+    if lecture < min_lec or lecture > max_lec:
+        avail_str = ", ".join(str(n) for n in available_nums) if available_nums else f"{min_lec}..{max_lec}"
+        return (
+            f"Out of range: Lecture {lecture} does not exist in the available course summaries "
+            f"(valid range: {min_lec}–{max_lec}; available lectures: {avail_str}). "
+            f"Please ask for a valid lecture number instead of guessing."
+        )
+
+    summary = get_lecture_summary(lecture)
+    return (
+        f"Create 3 practice quiz questions (with answers and brief explanations) based on "
+        f"Lecture {lecture}:\n\n{summary}"
+    )
