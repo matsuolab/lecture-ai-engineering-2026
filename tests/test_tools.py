@@ -39,6 +39,18 @@ def test_lecture_summary():
     assert "まだありません" in tools.get_lecture_summary(99)
 
 
+def test_make_quiz_returns_one_question_and_answer():
+    quiz = json.loads(tools.make_quiz(2))
+    assert quiz["question"]
+    assert quiz["answer"]
+
+
+def test_make_quiz_reports_out_of_range_lecture():
+    result = tools.make_quiz(99)
+    assert "第99回" in result
+    assert "用語が登録されている回" in result
+
+
 def test_default_question_of_lecture1_is_answerable_from_glossary():
     """第1回の既定の質問（app.ask）は、第3回のエージェントが用語集で正しく答えられること。"""
     from app.ask import DEFAULT_QUESTION
