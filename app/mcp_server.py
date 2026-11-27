@@ -28,7 +28,7 @@ server = MCPServer(
 server.tool()(tools.search_glossary)
 
 # TODO(宿題・基礎): get_lecture_summary も公開しよう
-
+server.tool()(tools.get_lecture_summary)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="用語集 MCP サーバー")
