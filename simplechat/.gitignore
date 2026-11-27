@@ -1,0 +1,31 @@
+# 第7回: simplechat 用（パスはこのフォルダからの相対パス）
+
+# Terraform
+# .terraform.lock.hcl（provider のバージョン固定）は Git で共有する
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+terraform/.build/
+# state バケットの設定（アカウント ID を含むため各自で作成する）
+terraform/backend.hcl
+
+# 画面（React）の依存関係とビルド結果
+# frontend/package-lock.json（依存パッケージの版の固定）は Git で共有する
+frontend/node_modules/
+frontend/build/
+# ローカル開発用の設定（VITE_ で始まる環境変数）
+frontend/.env*.local
+
+# Lambda のテスト結果など
+response.json
+*.log
