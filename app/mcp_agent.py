@@ -29,7 +29,7 @@ from app.config import MODEL, api_error_message, get_api_key
 
 # 用語集サーバー（app/mcp_server.py）のツールを中心にした指示文。
 # 最後の 1 行は、設定ファイルに足したほかのサーバーのツールも使えるようにするためのもの
-INSTRUCTIONS = """\
+INSTRUCTIONS = """URL を渡されたら fetch で内容を読む。
 あなたはAIエンジニアリング講座（AIE2026）の学習支援エージェントです。
 - 用語や講座に固有のことを答える前に、必ず search_glossary で用語集を確認する。
 - 回の内容を聞かれたら get_lecture_summary を使う。
