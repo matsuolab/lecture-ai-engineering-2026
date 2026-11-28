@@ -81,21 +81,38 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 
+
 def search_materials(query: str) -> str:
     """第1〜3回の本講義資料を検索し、関連ページの本文・タイトル・ページ番号を返す。
 
     queryに調べたい内容を指定する。
     """
-    from google.genai.errors import APIError
+    import os
     import sqlite3
-    from app.retrieval import search
+    from google.genai.errors import APIError
+    from app.retrieval import search, search_with_neighbors
 
     try:
-        return json.dumps({"results": search(query)}, ensure_ascii=False)
+        if os.getenv("AIE_RAG_NEIGHBORS", "0") == "1":
+            results = search_with_neighbors(query)
+        else:
+            results = search(query)
+
+        return json.dumps(
+            {"results": results},
+            ensure_ascii=False,
+        )
     except (ValueError, FileNotFoundError, sqlite3.Error) as e:
-        return json.dumps({"error": str(e), "results": []}, ensure_ascii=False)
+        return json.dumps(
+            {"error": str(e), "results": []},
+            ensure_ascii=False,
+        )
     except APIError as e:
-        return json.dumps({"error": api_error_message(e.code), "results": []}, ensure_ascii=False)
+        return json.dumps(
+            {"error": api_error_message(e.code), "results": []},
+            ensure_ascii=False,
+        )
+
 
 
 def browse_tree(node_id: str | None = None) -> str:
