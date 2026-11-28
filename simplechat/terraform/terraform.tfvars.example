@@ -1,0 +1,22 @@
+# このファイルを terraform.tfvars にコピーして値を変更する:
+#   cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars は自動で読み込まれる（.gitignore で Git 管理から除外済み）。
+
+# デプロイ先のリージョン
+aws_region = "us-east-1"
+
+# 想定外のアカウントへ適用しないよう、自分の AWS アカウント ID を指定する（推奨）
+# 確認方法: aws sts get-caller-identity --query Account --output text
+# allowed_account_ids = ["123456789012"]
+
+# ログインできるユーザーのメールアドレス（必須）。自分のメールアドレスに書き換える
+# apply すると、このアドレスに仮パスワードを書いた招待メールが届く。
+# ここにないアドレスでは、サインアップもログインもできない
+allowed_emails = ["you@example.com"]
+
+# リソース名の接頭辞（同じアカウントに複数デプロイする場合は変える）
+project_name = "simplechat"
+
+# 呼び出す Bedrock のモデル
+model_id = "us.amazon.nova-lite-v1:0"
+# model_id = "us.amazon.nova-micro-v1:0"
