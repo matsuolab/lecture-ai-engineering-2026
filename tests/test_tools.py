@@ -34,6 +34,30 @@ def test_search_reports_not_found():
     assert "見つかりませんでした" in tools.search_glossary("存在しない用語xyz")
 
 
+def test_make_quiz_selects_a_term_from_the_requested_lecture(monkeypatch):
+    selected_from = []
+
+    def choose(terms):
+        selected_from.extend(terms)
+        return terms[0]
+
+    monkeypatch.setattr(tools.random, "choice", choose)
+    result = json.loads(tools.make_quiz(2))
+    selected = selected_from[0]
+
+    assert selected_from
+    assert all(term["lecture"] == 2 for term in selected_from)
+    assert result == {
+        "question": f"{selected['term']}の意味は？",
+        "answer": selected["definition"],
+    }
+
+
+def test_make_quiz_reports_when_lecture_has_no_terms():
+    result = json.loads(tools.make_quiz(99))
+    assert "error" in result
+
+
 def test_lecture_summary():
     assert "エージェント" in tools.get_lecture_summary(3)
     assert "まだありません" in tools.get_lecture_summary(99)
