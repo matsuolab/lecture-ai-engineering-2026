@@ -87,11 +87,13 @@ node --version
 第7回の開始時点（`lec07-start` タグ）から始めます。次のコマンドを上から順に実行し、そのあと手順 3 の Rebuild を行います。
 
 ```bash
-git fetch https://github.com/matsuolab/lecture-ai-engineering-2026.git tag lec07-start
+git fetch -f https://github.com/matsuolab/lecture-ai-engineering-2026.git tag lec07-start
 git switch -c lec07 lec07-start
 ```
 
 Sync fork で衝突の表示が出た場合も、こちらで始めます。「Discard commits」は押しません（自分のコミットが消えます）。
+
+- `-f` は、前に取得した `lec07-start` が手元にあっても、最新の位置に付け直すためのものです（教材を更新したときに、タグを付け直すことがあります）
 
 ### STEP 1：AWS にログインし、実行先を確かめる（約3分）
 
