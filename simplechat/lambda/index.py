@@ -3,6 +3,8 @@ import json
 import os
 import boto3
 import re  # 正規表現モジュールをインポート
+from datetime import datetime, timedelta, timezone
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 
@@ -16,9 +18,71 @@ def extract_region_from_arn(arn):
 
 # グローバル変数としてクライアントを初期化（初期値）
 bedrock_client = None
+bedrock_region = None
 
 # モデルID
 MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
+
+# ------------------------------------------------------------
+# 共有の Bedrock への切り替え
+# 第 7 回の授業のための一時的な仕組み。最終課題などでは利用不可。
+# 共有のロールは宿題提出期限のあとに消える。
+#
+# 自分のアカウントで Bedrock がまだ使えない（アカウントの確認中、または 1 日の
+# トークン数の枠が 0）ときだけ、運営のアカウントにある共有のロールを引き受けて、
+# そちらの Bedrock を呼ぶ。使えるのは Amazon Nova のモデルだけ。
+# ------------------------------------------------------------
+SHARED_BEDROCK_ROLE_ARN = os.environ.get("SHARED_BEDROCK_ROLE_ARN", "")
+use_shared_bedrock = False   # 一度切り替えたら、この Lambda が動いている間は共有のほうを使う
+shared_bedrock_client = None
+shared_bedrock_expiration = None
+
+
+def cannot_use_own_bedrock(error):
+    # 自分のアカウントの Bedrock が使えないことを表すエラーかどうか
+    if not isinstance(error, ClientError):
+        return False
+    code = error.response.get("Error", {}).get("Code", "")
+    message = error.response.get("Error", {}).get("Message", "")
+    return ((code == "AccessDeniedException" and "being verified" in message)
+            or (code == "ThrottlingException" and "tokens per day" in message))
+
+
+def get_shared_bedrock_client():
+    # 共有のロールを引き受け、その一時的な認証情報で Bedrock のクライアントを作る。
+    # 認証情報は 1 時間で切れるので、残りが 5 分を切ったら作り直す
+    global shared_bedrock_client, shared_bedrock_expiration
+    now = datetime.now(timezone.utc)
+    if shared_bedrock_client is None or shared_bedrock_expiration - now < timedelta(minutes=5):
+        sts = boto3.client('sts', region_name=bedrock_region)
+        credentials = sts.assume_role(
+            RoleArn=SHARED_BEDROCK_ROLE_ARN,
+            RoleSessionName="simplechat-shared-bedrock"
+        )["Credentials"]
+        shared_bedrock_client = boto3.client(
+            'bedrock-runtime',
+            region_name=bedrock_region,
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"]
+        )
+        shared_bedrock_expiration = credentials["Expiration"]
+    return shared_bedrock_client
+
+
+def invoke_bedrock(**kwargs):
+    # まず自分のアカウントの Bedrock を呼び、使えないときだけ共有のほうに切り替える
+    global use_shared_bedrock
+    if not use_shared_bedrock:
+        try:
+            return bedrock_client.invoke_model(**kwargs)
+        except ClientError as error:
+            if not SHARED_BEDROCK_ROLE_ARN or not cannot_use_own_bedrock(error):
+                raise
+            print("This account cannot use Bedrock yet:", error.response["Error"]["Code"])
+            print("Switching to the shared Bedrock role (temporary, for lecture 7):", SHARED_BEDROCK_ROLE_ARN)
+            use_shared_bedrock = True
+    return get_shared_bedrock_client().invoke_model(**kwargs)
 
 # 1 回のリクエストで受け付ける量の上限（Bedrock の料金が増えすぎないようにする）
 MAX_MESSAGE_CHARS = 4000     # 1 つのメッセージの文字数
@@ -83,11 +147,13 @@ def parse_request(event):
 def lambda_handler(event, context):
     try:
         # コンテキストから実行リージョンを取得し、クライアントを初期化
-        global bedrock_client
+        global bedrock_client, bedrock_region
         if bedrock_client is None:
-            region = extract_region_from_arn(context.invoked_function_arn)
-            bedrock_client = boto3.client('bedrock-runtime', region_name=region)
-            print(f"Initialized Bedrock client in region: {region}")
+            bedrock_region = extract_region_from_arn(context.invoked_function_arn)
+            # 再試行は 1 回まで（共有の Bedrock に切り替えるまでに、長く待たせないため）
+            bedrock_client = boto3.client('bedrock-runtime', region_name=bedrock_region,
+                                          config=Config(retries={"mode": "standard", "max_attempts": 2}))
+            print(f"Initialized Bedrock client in region: {bedrock_region}")
 
         # event には、ログインのトークン（Authorization ヘッダー）やメールアドレスが
         # 含まれるため、ログにはそのまま書かない
@@ -136,8 +202,8 @@ def lambda_handler(event, context):
         # ensure_ascii=False：日本語を \uXXXX ではなく、読める文字のままログに書く
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload, ensure_ascii=False))
 
-        # invoke_model APIを呼び出し
-        response = bedrock_client.invoke_model(
+        # invoke_model APIを呼び出し（自分のアカウントで使えないときは、共有の Bedrock を使う）
+        response = invoke_bedrock(
             modelId=MODEL_ID,
             body=json.dumps(request_payload),
             contentType="application/json"
