@@ -37,6 +37,15 @@ data "aws_iam_policy_document" "chat_lambda_bedrock" {
     ]
     resources = ["*"]
   }
+
+  # 共有の Bedrock のロールを引き受ける権限（第 7 回の授業のための一時的な仕組み）
+  dynamic "statement" {
+    for_each = var.shared_bedrock_role_arn == "" ? [] : [var.shared_bedrock_role_arn]
+    content {
+      actions   = ["sts:AssumeRole"]
+      resources = [statement.value]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "chat_lambda_bedrock" {
@@ -74,7 +83,8 @@ resource "aws_lambda_function" "chat" {
 
   environment {
     variables = {
-      MODEL_ID = var.model_id
+      MODEL_ID                = var.model_id
+      SHARED_BEDROCK_ROLE_ARN = var.shared_bedrock_role_arn
     }
   }
 

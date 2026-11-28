@@ -52,6 +52,14 @@ variable "model_id" {
   default     = "us.amazon.nova-lite-v1:0"
 }
 
+# 第 7 回の授業のための一時的な仕組み。最終課題などでは利用不可。
+# 共有のロールは宿題提出期限のあとに消える。
+variable "shared_bedrock_role_arn" {
+  description = "このアカウントで Bedrock がまだ使えないときに Lambda が使う、共有の Bedrock のロール（空にすると使わない）"
+  type        = string
+  default     = "arn:aws:iam::801829805030:role/simplechat-shared-bedrock"
+}
+
 variable "lambda_timeout_seconds" {
   description = "チャット用 Lambda のタイムアウト（秒）"
   type        = number

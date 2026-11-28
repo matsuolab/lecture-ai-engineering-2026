@@ -64,6 +64,7 @@ simplechat/
 | `allowed_emails` | なし（必須） | ログインできるユーザーのメールアドレス。ここにないアドレスでは、サインアップもログインもできない。例のまま（`@example.com`）だとエラーになる |
 | `project_name` | `simplechat` | リソース名の先頭に付ける名前。同じアカウントに 2 つ目を作るときは変える |
 | `model_id` | `us.amazon.nova-lite-v1:0` | Lambda から呼び出す Bedrock のモデル |
+| `shared_bedrock_role_arn` | 運営の共有ロール | 自分のアカウントで Bedrock がまだ使えないときに使う、共有の Bedrock のロール。第 7 回の授業のための一時的な仕組みで、最終課題などでは利用不可。共有のロールは宿題提出期限のあとに消える（[problem.md の「共有の Bedrock について」](../lectures/07/problem.md#共有の-bedrock-について)） |
 | `lambda_timeout_seconds` | `30` | Lambda のタイムアウト（秒） |
 | `log_retention_days` | `7` | Lambda のログの保存日数 |
 

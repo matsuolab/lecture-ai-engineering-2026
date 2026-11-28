@@ -2,7 +2,7 @@
 
 ## 演習
 
-<!-- アカウント ID・メールアドレス・トークン・パスワード・画面の URL は書かないでください。`aws sts get-caller-identity` の `Arn` にはメールアドレスが含まれるので貼りません。終わらなかった STEP は、空欄のままでかまいません。 -->
+<!-- アカウント ID・メールアドレス・トークン・パスワード・画面の URL は書かないでください。`aws sts get-caller-identity` の `Arn` にはメールアドレスが含まれるので貼りません。plan は、problem.md の STEP 3 の手順 5 のコマンド（`terraform show -no-color day7.tfplan | sed ...`）の結果から貼ります。終わらなかった STEP は、空欄のままでかまいません。 -->
 
 - STEP 3 の plan の最後の行：
 - STEP 3 の plan のうち、`aws_lambda_function.chat` のブロック（`# aws_lambda_function.chat will be created` の行から、対応する `}` まで）：
@@ -53,7 +53,7 @@
 
 ### 発展2 の記録
 
-<!-- 発展2 に取り組んだ場合だけ書きます。plan やログは、必要な部分を貼り付けてかまいません（アカウント ID・メールアドレスは伏せます）。 -->
+<!-- 発展2 に取り組んだ場合だけ書きます。plan やログは、必要な部分を貼り付けてかまいません（アカウント ID・メールアドレスは伏せます。plan は STEP 3 の手順 5 のコマンドの結果から貼ります）。 -->
 
 - 2-1 判断の基準（Green を出す前に決めたもの）：
 - 2-1 Green の変更：

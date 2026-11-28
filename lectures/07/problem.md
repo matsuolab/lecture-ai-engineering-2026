@@ -144,6 +144,7 @@ aws bedrock-runtime converse \
 
 - `Arn` の末尾には、ログインした人のメールアドレスが含まれます。`aws sts get-caller-identity` の結果は、`answer.md` やチャットに貼らないでください
 - `export AWS_PROFILE=...` は、ターミナルを開き直すと消えます。新しいターミナルでは、もう一度実行します
+- 手順 5 で `AccessDeniedException`（`Your account is currently being verified`）か `ThrottlingException`（`Too many tokens per day`）が出ても、そのまま STEP 2 に進みます。今年度に作ったアカウントでは、AWS 側の確認が終わっておらず、まだ Bedrock を使えないことがあります。その場合は、アプリの Lambda が運営の共有の Bedrock に自動で切り替えます（[共有の Bedrock について](#共有の-bedrock-について)）
 
 ### STEP 2：state の保存先を作り、画面をビルドする（約3分）
 
@@ -200,15 +201,19 @@ terraform plan -out=day7.tfplan
 4. plan の表示で、次の 3 つを確かめます
    - 最後の行が `Plan: 36 to add, 0 to change, 0 to destroy.` で、**作成（add）だけ** であること（`allowed_emails` にアドレスを 1 つ書いた場合。1 つ増やすごとに 1 増えます）
    - `aws_cloudfront_distribution`、`aws_cognito_user_pool`、`aws_cognito_user`（`allowed_emails` のユーザー）、`aws_lambda_function` などが作られること
-   - `aws_iam_role_policy.chat_lambda_bedrock` で、Lambda に許可される操作が `bedrock:InvokeModel` と `bedrock:InvokeModelWithResponseStream` であること
-5. plan の表示から、`# aws_lambda_function.chat will be created` の行を探し、そこから対応する `}` までを `answer.md` に貼り付けます。関数名・実行環境（`runtime`）・環境変数（`MODEL_ID`）・タイムアウトなど、作られる Lambda の設定を目で確かめます
+   - `aws_iam_role_policy.chat_lambda_bedrock` で、Lambda に許可される操作が `bedrock:InvokeModel` と `bedrock:InvokeModelWithResponseStream` であること（[共有の Bedrock](#共有の-bedrock-について) のロールを引き受ける `sts:AssumeRole` も含まれます）
+5. 保存した計画を、アカウント ID とメールアドレスを伏せて表示します。表示から `# aws_lambda_function.chat will be created` の行を探し、そこから対応する `}` までを `answer.md` に貼り付けます。関数名・実行環境（`runtime`）・環境変数（`MODEL_ID`、`SHARED_BEDROCK_ROLE_ARN`）・タイムアウトなど、作られる Lambda の設定を目で確かめます
+
+```bash
+terraform show -no-color day7.tfplan | sed -E 's/[0-9]{12}/<ACCOUNT_ID>/g; s/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+/<EMAIL>/g'
+```
 
 - `terraform init` は、provider（AWS を操作する部品）をダウンロードし、state の保存先として STEP 2 のバケットを設定します。provider の版は `.terraform.lock.hcl` で固定しています
 - `terraform fmt -check` は、何も表示されなければ問題ありません
-- plan の表示が流れて見えなくなったときは、`terraform show day7.tfplan` で、保存した計画をもう一度表示できます
 - 想定外の削除（destroy）や置き換え（replace）、広すぎる権限、別のアカウントが表示されたら、その場で止めて確認します
 - `allowed_emails` を例のまま（`@example.com`）にしていると、plan がエラーで止まります
-- plan の表示の `aws_cognito_user` の部分には、メールアドレスが出ます。`answer.md` に貼るのは、手順 5 の Lambda の部分だけにします
+- **`answer.md` に plan を貼るときは、宿題も含めて、いつも手順 5 のコマンドの結果からコピーします。** `terraform plan` の画面の表示には、冒頭の読み込みの行（`Read complete`、`Refreshing state...`）や最後の出力欄（`aws_account_id`）、`aws_cognito_user` の部分に、アカウント ID やメールアドレスが出ます。`terraform show` の表示には読み込みの行が出ず、残りの ID とアドレスは `sed` で `<ACCOUNT_ID>`・`<EMAIL>` に置き換わります。貼る前に、置き換わっていることを目で確かめます
+- `answer.md` に貼るのは、手順 5 の Lambda の部分だけにします
 
 ### STEP 4：適用（apply）して、公開 URL を得る（約5分）
 
@@ -342,6 +347,23 @@ terraform plan
 - `terraform.tfvars` は Git に入れていないので、前回変えた値（`allowed_account_ids`、`allowed_emails`、`model_id` など）を書き直します
 - 何も変えていなければ、`terraform plan` は `No changes.` になります
 
+### 共有の Bedrock について
+
+**第 7 回の授業のための一時的な仕組みです。最終課題などでは利用不可。共有のロールは宿題提出期限のあとに消えます。**
+
+今年度に作ったアカウントでは、AWS 側の確認が終わっておらず、まだ Bedrock を使えないことがあります。そのため、アプリの Lambda（`simplechat/lambda/index.py`）は次のように動きます。
+
+- まず、自分のアカウントの Bedrock を呼びます。使えれば、今までどおり自分のアカウントで動きます
+- `AccessDeniedException`（アカウントの確認中）か `ThrottlingException`（1 日のトークン数の枠が 0）が返ったときだけ、運営のアカウントにある共有のロール（`terraform.tfvars` の `shared_bedrock_role_arn`。既定値のままで使えます）を引き受けて、そちらの Bedrock を呼びます
+- 切り替えたときは、Lambda のログに `Switching to the shared Bedrock role` の行が出ます。STEP 5 の手順 7 のコマンドの `--filter-pattern` に `?Switching` を加えると表示されます
+- 一度切り替えると、その Lambda が動いている間は共有のほうを使い続けます
+
+注意すること：
+
+- 共有の Bedrock で使えるのは、Amazon Nova のモデル（`us.amazon.nova-lite-v1:0`、`us.amazon.nova-micro-v1:0` など）だけです。ほかのモデルに変えると、`AccessDeniedException` で 500 になります
+- 共有の Bedrock の枠（毎分のリクエスト数など）は、切り替えた受講者全員で分け合います。混み合うと `ThrottlingException`（429）で 500 になることがあります。少し時間をおいてから、もう一度質問してください
+- 共有のロールが消えたあとは、自分のアカウントで Bedrock を使えない場合、質問すると 500 になります。この仕組みを前提にしたアプリを作らないでください
+
 ### うまくいかないとき
 
 解決しないときは、チャットで、症状と表示されたメッセージを知らせてください。アカウント ID・トークン・パスワードは伏せます。
@@ -357,7 +379,8 @@ terraform plan
 | `Error acquiring the state lock` と出る | 別の terraform コマンドが実行中です。終わるのを待ってから、もう一度実行します |
 | 招待メールが届かない、仮パスワードの期限（7 日）が切れた | 迷惑メールのフォルダを確かめます。送り直すときは、`simplechat/terraform` で `aws cognito-idp admin-create-user --user-pool-id "$(terraform output -raw user_pool_id)" --username <メールアドレス> --message-action RESEND` を実行します |
 | 画面で `Incorrect username or password.` と出る | パスワードのほかに、`allowed_emails` に書いたアドレスと、入力したアドレスが同じかも確かめます（登録されていないアドレスでも、同じメッセージが出ます）。`allowed_emails` を変えたときは、plan と apply をやり直します |
-| URL を開くと画面は出るが、質問すると 500 になる | 画面には詳しい理由を返さないので、STEP 5 の手順 7 で Lambda のログ（`Error:` の行）を見ます。`AccessDeniedException` なら、Bedrock の権限かモデル ID を確かめます |
+| URL を開くと画面は出るが、質問すると 500 になる | 画面には詳しい理由を返さないので、STEP 5 の手順 7 で Lambda のログ（`Error:` の行）を見ます。`AccessDeniedException` なら、Bedrock の権限かモデル ID を確かめます（[共有の Bedrock](#共有の-bedrock-について) に切り替えている場合は、Amazon Nova のモデルだけが使えます） |
+| ときどき質問が 500 になり、ログに `ThrottlingException` がある | [共有の Bedrock](#共有の-bedrock-について) に切り替えている場合、受講者全員で枠を分け合っているため、混み合うと起きます。少し時間をおいてから、もう一度質問します |
 | plan に想定外の削除（destroy）や置き換え（replace）がある | 適用せずに止めます。何を変えたか（`git diff`）と、どのリソースが影響を受けるかを確かめます |
 
 API Gateway・Lambda を単体でテストする方法は、[simplechat/README.md](../../simplechat/README.md) の「トラブルシューティング」を見てください。
@@ -414,10 +437,11 @@ terraform apply day7.tfplan
 - 画面を変えると、ファイル名（`assets/index-<ハッシュ>.js`）がビルドごとに変わるので、S3 上の古い画面ファイルの削除（destroy）が plan に出ます。これは意図した変更です。`aws_s3_bucket` や `aws_cloudfront_distribution` の削除や置き換えが出たときは、適用せずに止めます
 - モデルを変えるときは、利用の権限・API の形式・料金も確かめます。Nova 以外のモデルでは、`index.py` のリクエストの形式を変える必要がある場合があります
 - 戻し方も記録します。変更を元に戻して、もう一度 plan と apply をします（`git diff` で変更点を確かめ、`git restore <ファイル>` で戻せます）
+- `answer.md` に貼る plan の差分は、STEP 3 の手順 5 のコマンド（`terraform show -no-color day7.tfplan | sed ...`）の結果から取ります。apply のあとの `terraform plan` の画面の表示には、冒頭の読み込みの行にアカウント ID とメールアドレスが出ます
 
 ### 発展1の進め方：LLM の接続先を変える
 
-`simplechat/lambda/index.py` の `bedrock_client.invoke_model(...)` が、LLM を呼び出している部分です。ここを書き換えて、接続先を変えます。
+`simplechat/lambda/index.py` の `invoke_bedrock(...)`（中で `bedrock_client.invoke_model(...)` を呼びます）が、LLM を呼び出している部分です。ここを書き換えて、接続先を変えます。Bedrock を呼ばなくなるので、[共有の Bedrock](#共有の-bedrock-について) への切り替えも使われなくなります。
 
 | 接続先 | 例 | 確かめること |
 |---|---|---|
@@ -458,7 +482,7 @@ curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flas
 
 | 項目 | Bedrock（Nova、今のコード） | Gemini API |
 |---|---|---|
-| 呼び出し先 | `bedrock_client.invoke_model(modelId=...)` | `POST https://generativelanguage.googleapis.com/v1beta/models/<モデル>:generateContent` |
+| 呼び出し先 | `invoke_bedrock(modelId=...)`（`bedrock_client.invoke_model`） | `POST https://generativelanguage.googleapis.com/v1beta/models/<モデル>:generateContent` |
 | 認証 | Lambda の実行ロール（IAM） | ヘッダー `x-goog-api-key` |
 | 会話の履歴 | `messages`。役割は `user`・`assistant` | `contents`。役割は `user`・`model` |
 | 発言の本文 | `"content": [{"text": ...}]` | `"parts": [{"text": ...}]` |
@@ -520,6 +544,8 @@ API Gateway が関数ではなくエイリアス `live` を呼ぶようにする
 ```
 
 発展2 は、2 段階で進めます。**2-1 を自分で終えてから**、2-2 で同じ作業を AI に行わせます。
+
+各段階の plan は、実装と同じく `terraform plan -out=day7.tfplan` で保存してから `terraform apply day7.tfplan` で適用します。`answer.md` に貼る plan は、STEP 3 の手順 5 のコマンド（`terraform show -no-color day7.tfplan | sed ...`）の結果から取ります。
 
 #### 2-1：自分で切り替え・切り戻しをする
 
