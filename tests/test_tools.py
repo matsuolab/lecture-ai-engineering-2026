@@ -34,6 +34,26 @@ def test_search_reports_not_found():
     assert "見つかりませんでした" in tools.search_glossary("存在しない用語xyz")
 
 
+def test_make_quiz_selects_a_term_from_the_requested_lecture(monkeypatch):
+    terms = [
+        {"lecture": 2, "term": "選択用語", "definition": "選択用語の定義"},
+    ]
+    monkeypatch.setattr(tools, "load_glossary", lambda: terms)
+    monkeypatch.setattr(tools.random, "choice", lambda entries: entries[0])
+
+    quiz = json.loads(tools.make_quiz(2))
+
+    assert quiz == {"question": "「選択用語」の意味は？", "answer": "選択用語の定義"}
+
+
+def test_make_quiz_reports_when_lecture_has_no_terms(monkeypatch):
+    monkeypatch.setattr(tools, "load_glossary", lambda: [])
+
+    assert json.loads(tools.make_quiz(99)) == {
+        "error": "第99回の用語は用語集にありません。"
+    }
+
+
 def test_lecture_summary():
     assert "エージェント" in tools.get_lecture_summary(3)
     assert "まだありません" in tools.get_lecture_summary(99)
