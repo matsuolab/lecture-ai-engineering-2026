@@ -34,9 +34,72 @@ def test_search_reports_not_found():
     assert "見つかりませんでした" in tools.search_glossary("存在しない用語xyz")
 
 
+def test_make_quiz_selects_a_term_from_the_requested_lecture(monkeypatch):
+    terms = [
+        {"lecture": 2, "term": "選択用語", "definition": "選択用語の定義"},
+    ]
+    monkeypatch.setattr(tools, "load_glossary", lambda: terms)
+    monkeypatch.setattr(tools.random, "choice", lambda entries: entries[0])
+
+    quiz = json.loads(tools.make_quiz(2))
+
+    assert quiz == {"question": "「選択用語」の意味は？", "answer": "選択用語の定義"}
+
+
+def test_make_quiz_reports_when_lecture_has_no_terms(monkeypatch):
+    monkeypatch.setattr(tools, "load_glossary", lambda: [])
+
+    assert json.loads(tools.make_quiz(99)) == {
+        "error": "第99回の用語は用語集にありません。"
+    }
+
+
 def test_lecture_summary():
     assert "エージェント" in tools.get_lecture_summary(3)
     assert "まだありません" in tools.get_lecture_summary(99)
+
+
+def test_make_quize_selects_a_term_from_requested_lecture(monkeypatch):
+    def choose_lecture_term(terms):
+        assert terms
+        assert all(term["lecture"] == 2 for term in terms)
+        return terms[0]
+
+    monkeypatch.setattr(tools.random, "choice", choose_lecture_term)
+    selected = next(term for term in tools.load_glossary() if term["lecture"] == 2)
+
+    quiz = json.loads(tools.make_quize(2))
+
+    assert set(quiz) == {"question", "answer"}
+    assert selected["definition"] in quiz["question"]
+    assert quiz["answer"] == selected["term"]
+
+
+def test_make_quize_reports_when_lecture_has_no_terms():
+    assert "第99回の用語は用語集にありません" in tools.make_quize(99)
+
+
+def test_save_learning_log_creates_directory_and_writes_content(tmp_path, monkeypatch):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+
+    result = tools.save_learning_log("今日の学び\n- 型ヒント")
+
+    logs = list(log_dir.glob("*.md"))
+    assert len(logs) == 1
+    assert logs[0].read_text(encoding="utf-8") == "今日の学び\n- 型ヒント\n"
+    assert "learning_log/" in result
+    assert logs[0].name in result
+
+
+def test_save_learning_log_rejects_empty_content(tmp_path, monkeypatch):
+    log_dir = tmp_path / "learning_log"
+    monkeypatch.setattr(tools, "LEARNING_LOG_DIR", log_dir)
+
+    result = tools.save_learning_log(" \n ")
+
+    assert "空です" in result
+    assert not log_dir.exists()
 
 
 def test_default_question_of_lecture1_is_answerable_from_glossary():

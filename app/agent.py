@@ -21,7 +21,7 @@ from pathlib import Path
 from contextlib import nullcontext
 from time import perf_counter
 
-from pydantic_ai import Agent
+from pydantic_ai import Agent, DeferredToolRequests, DeferredToolResults
 from pydantic_ai.exceptions import ModelHTTPError
 from fastmcp import Client
 from pydantic_ai.mcp import MCPToolset, StdioTransport
@@ -81,7 +81,7 @@ FULL_CONTEXT_PROMPT = "<資料>\n{materials}\n</資料>\n\n質問: {question}"
 agent = Agent(instructions=INSTRUCTIONS)
 agent.tool_plain(tools.search_materials)
 
-# TODO(第3回 演習): tools.py に make_quiz を作り、ここで登録しよう
+agent.tool_plain(tools.make_quiz)
 
 # 第5回: 使う MCP サーバーの設定ファイル。Claude Desktop や Cursor と同じ "mcpServers" 形式
 MCP_CONFIG = Path(__file__).resolve().parent / "mcp_servers.json"
@@ -171,6 +171,30 @@ def print_trace(result, elapsed_seconds: float | None = None) -> None:
     print(f"[usage] 入力 {usage.input_tokens:,} tokens / 出力 {usage.output_tokens:,} tokens / モデル応答 {usage.requests} 回")
     cost = f"${usage.cost:.6f} USD" if usage.cost is not None else "算定不可"
     print(f"[cost] 生成APIの推定コスト: {cost}（埋め込み・索引構築分は含まない）")
+
+
+def request_tool_approvals(requests: DeferredToolRequests) -> DeferredToolResults:
+    """承認待ちのツール呼び出しを表示し、CLIで承認・拒否を受け取る。"""
+    if requests.calls:
+        raise RuntimeError("人間の承認以外の deferred tool calls には対応していません。")
+    if not requests.approvals:
+        raise RuntimeError("承認対象のツール呼び出しがありません。")
+
+    approvals: dict[str, bool] = {}
+    for call in requests.approvals:
+        print(f"\nツール: {call.tool_name}")
+        print(f"引数: {call.args}")
+        while True:
+            answer = input("このツールを実行しますか？ [y/N]: ").strip().casefold()
+            if answer in {"y", "yes"}:
+                approvals[call.tool_call_id] = True
+                break
+            if answer in {"", "n", "no"}:
+                approvals[call.tool_call_id] = False
+                break
+            print("y または n を入力してください。")
+
+    return requests.build_results(approvals=approvals)
 
 
 def main() -> None:

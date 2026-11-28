@@ -11,9 +11,9 @@ from pydantic_ai import DeferredToolRequests
 from pydantic_ai.messages import ToolCallPart, ToolReturnPart
 from pydantic_ai.models.test import TestModel
 
-from app.agent import agent
+from app.agent import agent, request_tool_approvals
 
-BASE_TOOLS = {"search_materials"}
+BASE_TOOLS = {"search_materials", "make_quiz"}
 
 
 def _parts(result, kind):

@@ -5,12 +5,14 @@
 """
 
 import json
+import random
 from functools import cache
 from pathlib import Path
 
 from app.config import api_error_message
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+LEARNING_LOG_DIR = Path(__file__).resolve().parent.parent / "learning_log"
 MAX_RESULTS = 3
 
 
@@ -29,12 +31,28 @@ def _names(entry: dict) -> list[str]:
         _normalize(a) for a in entry["aliases"]
     ]
 
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語集から1つを選び、確認問題と答えをかえす。
+    
+    「第2回の確認問題を出して」のように復習の問題を求められたときに使う。"""
+    terms = [entry for entry in load_glossary() if entry["lecture"] == lecture]
+    if not terms:
+        return json.dumps(
+            {"error": f"第{lecture}回の用語は用語集にありません。"},
+            ensure_ascii=False,
+        )
+    term = random.choice(terms)
+    return json.dumps(
+        {"question": f"「{term['term']}」の意味は？", "answer": term["definition"]},
+        ensure_ascii=False,
+    )
+
 
 def search_glossary(query: str) -> str:
     """講座の用語集から用語を検索し、定義と、どの回で扱うかを返す。
 
     AIエンジニアリングの用語や、この講座（AIE2026）に固有の言葉について
-    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）。
+    答える前に使うこと。query には調べたい用語を1つだけ入れる（例: "LoRA"）
     """
     q = _normalize(query)
     if not q:
