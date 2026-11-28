@@ -17,7 +17,7 @@ import sqlite_vec
 from app.config import (
     EMBEDDING_DIMENSIONS, EMBEDDING_MAX_TOKENS, EMBEDDING_MODEL,
     RAG_DB, RAG_DOCUMENT_IDS, RAG_SOURCE, RAG_TOP_K, RAG_TREE, get_api_key,
-    RAG_GRAPH, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
+    RAG_GRAPH, TREE_SNIPPET, GRAPH_START_K, GRAPH_HOPS, GRAPH_MAX_RESULTS,
 )
 
 
@@ -49,19 +49,64 @@ def load_pages(source: Path = RAG_SOURCE) -> list[dict]:
     return pages
 
 
+def first_sentence(text: str) -> str:
+    """最初の文。句点がなければ先頭行。"""
+    return re.split(r"(?<=[。！？])|\n", text.strip(), maxsplit=1)[0]
+
+
+def _norm(text: str) -> str:
+    return re.sub(r"\s+", "", text)
+
+
+def find_headers(pages: list[dict], min_pages: int = 3) -> set[str]:
+    """同じ資料で min_pages 枚以上の先頭行になっている行を、章のヘッダーとみなす。"""
+    counts = defaultdict(int)
+    for page in pages:
+        lines = page["content"].strip().splitlines()
+        if lines:
+            counts[(page["document_id"], _norm(lines[0]))] += 1
+    return {key for key, n in counts.items() if n >= min_pages}
+
+
+LEAD_MAX_CHARS = 100
+
+
+def lead_sentence(page: dict, headers: set[str]) -> str:
+    """第5回 宿題（発展）: 章ヘッダー・タイトル・出典を飛ばし、ページの要点（リード文）を返す。
+
+    リード文の行全体（最大LEAD_MAX_CHARS文字）を使う。見つからなければ元の先頭文に戻す。
+    """
+    title = _norm(page["title"])
+    for line in page["content"].strip().splitlines():
+        key = _norm(line)
+        if not key or key == title or (page["document_id"], key) in headers:
+            continue
+        if line.lstrip().startswith(("出典", "©")):
+            continue
+        # 「Claude の例。」のように最初の文が短すぎる場合があるため、文で切らず行全体を使う
+        line = line.strip()
+        return line if len(line) <= LEAD_MAX_CHARS else line[:LEAD_MAX_CHARS] + "…"
+    return first_sentence(page["content"])
+
+
 def browse_tree(node_id: str | None = None) -> dict:
-    """直下のページは先頭文、指定したページ自身は全文を返す。"""
+    """直下のページは候補文、指定したページ自身は全文を返す。"""
     tree = json.loads(RAG_TREE.read_text(encoding="utf-8"))
     tree["children"] = [node for node in tree["children"] if node["id"] in RAG_DOCUMENT_IDS]
     node_id = node_id or tree["id"]
-    pages = {page["page_id"]: page for page in load_pages(RAG_SOURCE)}
+    page_list = load_pages(RAG_SOURCE)
+    pages = {page["page_id"]: page for page in page_list}
+    headers = find_headers(page_list)
 
     def describe(node, full=False):
         info = {key: node[key] for key in ("id", "kind", "title")}
         if node["kind"] == "page":
             info.update({key: value for key, value in pages[node["id"]].items() if key != "page_id"})
             if not full:
-                info["content"] = re.split(r"(?<=[。！？])|\n", info["content"].strip(), maxsplit=1)[0]
+                if TREE_SNIPPET == "lead":
+                    info["content"] = lead_sentence(pages[node["id"]], headers)
+                else:
+                    info["content"] = first_sentence(info["content"])
         return info
 
     remaining = [tree]
