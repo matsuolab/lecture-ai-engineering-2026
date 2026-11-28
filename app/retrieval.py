@@ -125,7 +125,48 @@ def open_index(path: Path):
 
 
 def search(query: str) -> list[dict]:
-    """質問を埋め込み、近いページを最大RAG_TOP_K件返す。"""
+    """検索ヒットと、同じ資料内の前後1ページを返す。"""
+    hits = _search_vector_hits(query)   # hitsをload_pages()の情報で前後ページまで拡張する
+    if not hits:
+        return hits
+
+    pages_by_document = defaultdict(list)
+    for page in load_pages(RAG_SOURCE):
+        pages_by_document[page["document_id"]].append(page)
+
+    positions = {}
+    for document_pages in pages_by_document.values():
+        document_pages.sort(key=lambda page: page["page"])
+        for index, page in enumerate(document_pages):
+            positions[page["page_id"]] = (document_pages, index)
+
+    results = list(hits)
+    seen = {hit["page_id"] for hit in hits}
+
+    for hit in hits:
+        position = positions.get(hit["page_id"])
+        if position is None:
+            continue
+        document_pages, index = position
+
+        for neighbor_index in (index - 1, index + 1):
+            if not 0 <= neighbor_index < len(document_pages):
+                continue
+            neighbor = document_pages[neighbor_index]
+            if neighbor["page_id"] in seen:
+                continue
+
+            results.append({
+                **neighbor,
+                "distance": None,
+                "retrieval_type": "adjacent",
+            })
+            seen.add(neighbor["page_id"])
+
+    return results
+
+def _search_vector_hits(query: str) -> list[dict]:
+    """ベクトル検索だけを行う。"""
     if not isinstance(query, str) or not query.strip():
         raise ValueError("検索語が空です。")
     with open_index(RAG_DB) as db:
@@ -136,7 +177,6 @@ def search(query: str) -> list[dict]:
             FROM chunks ORDER BY distance, page_id LIMIT ?
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
         return [dict(row) for row in rows]
-
 
 def search_graph(query: str) -> dict:
     """ベクトル検索を入口に、前後ページと共通用語で候補を広げる。"""
@@ -151,7 +191,7 @@ def search_graph(query: str) -> dict:
             adjacent[a].add(b)
             adjacent[b].add(a)
 
-    seeds = [hit for hit in search(query) if hit["page_id"] in pages][:min(GRAPH_START_K, GRAPH_MAX_RESULTS)]
+    seeds = [hit for hit in _search_vector_hits(query) if hit["page_id"] in pages][:min(GRAPH_START_K, GRAPH_MAX_RESULTS)]
     seed_ids = {seed["page_id"] for seed in seeds}
     results, candidates = [], {}
     for rank, seed in enumerate(seeds):
