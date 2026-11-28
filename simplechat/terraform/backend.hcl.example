@@ -1,0 +1,8 @@
+# Terraform の state を保存する S3 バケットの設定（例）
+# 通常は ../scripts/setup-state-bucket.sh が backend.hcl を自動で作成する。
+# 手で作る場合は、このファイルを backend.hcl にコピーして値を変更する。
+bucket       = "simplechat-tfstate-123456789012-us-east-1"
+key          = "simplechat/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+use_lockfile = true
