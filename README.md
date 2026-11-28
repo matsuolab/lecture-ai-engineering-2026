@@ -14,6 +14,7 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 | GitHub Copilot（Free でよい） | コードの補完とチャット | Free は補完・チャットの回数に月の上限があります |
 | Gemini API（Google AI Studio の無料枠） | LLM の呼び出し。**個人**の Google アカウントでキーを発行し、Codespaces secret `GEMINI_API_KEY` で渡します | 無料枠には 1 分あたり・1 日あたりの上限があります（下の「前提と制約」） |
 | Google Colab（T4 GPU、無料枠） | 第2回の LoRA 学習だけに使います | GPU の利用時間に上限があります。終わったらランタイムを削除してください |
+| AWS アカウント（運営が配布） | 第7回のデプロイに使います。`aws sso login` でログインします | 作ったリソースには料金がかかります。**演習・宿題が終わったら片付けてください**（Codespaces を止めても AWS の料金は止まりません） |
 
 自分の PC で動かす場合は、Python 3.12 と [uv](https://docs.astral.sh/uv/) を入れて `uv sync --frozen` を実行し、環境変数 `GEMINI_API_KEY` を設定してください。
 
@@ -54,10 +55,26 @@ uv run python -m scripts.build_rag_index
 
 同じ実験用DBを再作成する場合は、作成コマンドに `--rebuild` を付けます。同梱DBに戻すときは `unset AIE_RAG_DB` を実行します。Treeモード（`--tree`）と全文投入（`--full-context`）には検索DBは不要です。
 
+## 第7回：チャットアプリを AWS にデプロイする
+
+演習・宿題の手順は [lectures/07/problem.md](lectures/07/problem.md)、結果の記入先は [lectures/07/answer.md](lectures/07/answer.md) です。
+
+[simplechat/](simplechat/) の、Amazon Bedrock を使うチャットアプリを、Terraform で自分の AWS アカウントにデプロイします。Terraform と AWS CLI は Codespaces に入っています（第7回の更新を取り込んだあと、Codespace の Rebuild Container が必要です）。
+
+```bash
+aws sts get-caller-identity                 # 実行先の確認
+./simplechat/scripts/setup-state-bucket.sh  # state を保存する S3 バケットの作成
+cd simplechat/terraform
+terraform init -backend-config=backend.hcl
+terraform plan -out=day7.tfplan
+```
+
+アプリの構成とコマンドの一覧は [simplechat/README.md](simplechat/README.md) にあります。
+
 ## 構成
 
 ```
-.devcontainer/   Codespaces の環境定義（Python 3.12、uv、Node.js。起動時に uv sync --frozen）
+.devcontainer/   Codespaces の環境定義（Python 3.12、uv、Node.js、Terraform、AWS CLI。起動時に uv sync --frozen）
 .github/workflows/test.yml  PR ごとにテストを実行（fork では Actions タブで有効化が必要）
 app/
   config.py      モデル名とAPIキーの読み込み
@@ -84,6 +101,11 @@ notebooks/       第2回：Google Colab で動かす LoRA のノートブック�
 scripts/
   build_rag_index.py 第5回：教材を埋め込み、検索DBを作成する
   make_sft_dataset.py 第2回：学習データの準備
+simplechat/      第7回：AWS にデプロイするチャットアプリ
+  frontend/      画面（React）
+  lambda/        API の処理（Bedrock を呼び出す。Python）
+  terraform/     AWS のリソースの定義（Terraform）
+  scripts/       Terraform の state を保存する S3 バケットの作成・削除
 tests/           テスト（APIキー不要）
 pyproject.toml / uv.lock  依存パッケージとその固定版
 ```
