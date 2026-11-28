@@ -42,6 +42,23 @@ def test_built_index_can_be_searched(materials, monkeypatch):
     assert hits[0]["distance"] == pytest.approx(0)
 
 
+def test_search_result_includes_unique_neighbor_pages_from_same_document():
+    pages = [
+        {"page_id": "lec01-p001", "document_id": "lec01-main", "content": "本文1"},
+        {"page_id": "lec01-p002", "document_id": "lec01-main", "content": "本文2"},
+        {"page_id": "lec01-p003", "document_id": "lec01-main", "content": "本文3"},
+        {"page_id": "lec02-p001", "document_id": "lec02-main", "content": "別資料"},
+    ]
+    hit = {"page_id": "lec01-p002", "document_id": "lec01-main", "content": "本文2"}
+
+    expanded = retrieval.add_neighbor_context(hit, pages)
+
+    assert expanded["content"] == "本文1\n\n本文2\n\n本文3"
+    assert [page["page_id"] for page in expanded["context"]] == [
+        "lec01-p001", "lec01-p002", "lec01-p003",
+    ]
+
+
 def test_existing_index_survives_failed_rebuild(materials):
     source, database = materials
     build_index(source, database, embedder=lambda *_: [1, 0])
