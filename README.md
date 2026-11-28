@@ -11,9 +11,10 @@ AIエンジニアリング実践講座（AIE2026）の演習と宿題で使う�
 |---|---|---|
 | GitHub の **個人** アカウント | このリポジトリを fork し、作業ブランチと PR で提出する | 会社や学校が管理するアカウントでは Codespaces・Copilot が制限されることがあります |
 | GitHub Codespaces | 第1・3・5回などの開発環境。`.devcontainer/` の設定で Python 3.12・uv・Node.js が入ったコンテナが自動で用意されます | 個人アカウントの無料枠は月 120 コア時間（2 コアで約 60 時間）。**使い終わったら停止**してください |
-| GitHub Copilot（Free でよい） | コードの補完とチャット。第6回の発展課題では MCP クライアントとしても使います | Free は補完・チャットの回数に月の上限があります |
+| GitHub Copilot（Free でよい） | コードの補完とチャット | Free は補完・チャットの回数に月の上限があります |
 | Gemini API（Google AI Studio の無料枠） | LLM の呼び出し。**個人**の Google アカウントでキーを発行し、Codespaces secret `GEMINI_API_KEY` で渡します | 無料枠には 1 分あたり・1 日あたりの上限があります（下の「前提と制約」） |
 | Google Colab（T4 GPU、無料枠） | 第2回の LoRA 学習だけに使います | GPU の利用時間に上限があります。終わったらランタイムを削除してください |
+| AWS アカウント（運営が配布） | 第7回のデプロイに使います。`aws sso login` でログインします | 作ったリソースには料金がかかります。**演習・宿題が終わったら片付けてください**（Codespaces を止めても AWS の料金は止まりません） |
 
 自分の PC で動かす場合は、Python 3.12 と [uv](https://docs.astral.sh/uv/) を入れて `uv sync --frozen` を実行し、環境変数 `GEMINI_API_KEY` を設定してください。
 
@@ -54,19 +55,36 @@ uv run python -m scripts.build_rag_index
 
 同じ実験用DBを再作成する場合は、作成コマンドに `--rebuild` を付けます。同梱DBに戻すときは `unset AIE_RAG_DB` を実行します。Treeモード（`--tree`）と全文投入（`--full-context`）には検索DBは不要です。
 
+## 第7回：チャットアプリを AWS にデプロイする
+
+演習・宿題の手順は [lectures/07/problem.md](lectures/07/problem.md)、結果の記入先は [lectures/07/answer.md](lectures/07/answer.md) です。
+
+[simplechat/](simplechat/) の、Amazon Bedrock を使うチャットアプリを、Terraform で自分の AWS アカウントにデプロイします。Terraform と AWS CLI は Codespaces に入っています（第7回の更新を取り込んだあと、Codespace の Rebuild Container が必要です）。
+
+```bash
+aws sts get-caller-identity                 # 実行先の確認
+./simplechat/scripts/setup-state-bucket.sh  # state を保存する S3 バケットの作成
+cd simplechat/terraform
+terraform init -backend-config=backend.hcl
+terraform plan -out=day7.tfplan
+```
+
+アプリの構成とコマンドの一覧は [simplechat/README.md](simplechat/README.md) にあります。
+
 ## 構成
 
 ```
-.devcontainer/   Codespaces の環境定義（Python 3.12、uv、Node.js。起動時に uv sync --frozen）
+.devcontainer/   Codespaces の環境定義（Python 3.12、uv、Node.js、Terraform、AWS CLI。起動時に uv sync --frozen）
 .github/workflows/test.yml  PR ごとにテストを実行（fork では Actions タブで有効化が必要）
 app/
   config.py      モデル名とAPIキーの読み込み
   ask.py         第1回：LLMに質問する
   tools.py       第3回：エージェントのツール（用語集の検索など）
-  agent.py       第3回：Pydantic AI の学習支援エージェント（第6回：--mcp で MCP 経由）
+  agent.py       第3回：Pydantic AI の学習支援エージェント（第5回：講義資料の検索を使う）
   judge.py       第4回：評価セットを LLM に採点させ、人のラベルとの一致率を出す
   retrieval.py   第5回：講義資料の検索・Tree探索・Graph探索・全文投入
   mcp_server.py  第6回：用語集を公開する MCP サーバー
+  mcp_agent.py   第6回：MCP サーバーのツールを使うエージェント（MCP クライアント）
   mcp_servers.json 第6回：使う MCP サーバーの設定（mcpServers 形式）
 data/
   glossary.json  講座の用語集
@@ -83,6 +101,11 @@ notebooks/       第2回：Google Colab で動かす LoRA のノートブック�
 scripts/
   build_rag_index.py 第5回：教材を埋め込み、検索DBを作成する
   make_sft_dataset.py 第2回：学習データの準備
+simplechat/      第7回：AWS にデプロイするチャットアプリ
+  frontend/      画面（React）
+  lambda/        API の処理（Bedrock を呼び出す。Python）
+  terraform/     AWS のリソースの定義（Terraform）
+  scripts/       Terraform の state を保存する S3 バケットの作成・削除
 tests/           テスト（APIキー不要）
 pyproject.toml / uv.lock  依存パッケージとその固定版
 ```
@@ -101,7 +124,7 @@ pyproject.toml / uv.lock  依存パッケージとその固定版
 - **既定のモデルは `gemini-3.5-flash-lite`** です。環境変数 `AIE_MODEL` で切り替えられます（下の「モデルの切り替え」）。ほかのモデルや自前契約の API を使ってもかまいません
 - **Gemini API の無料枠にはレート制限**があります。エージェント（第3回以降）は 1 つの質問で LLM を複数回呼ぶので、第1回より早く上限に達します。`レート制限に達しました` と出たら 1 分ほど待ってください。`モデルが混み合っています（503）` が続くときは `AIE_MODEL=gemini-3.1-flash-lite` を試してください
 - **API キーは環境変数 `GEMINI_API_KEY` だけ**で渡します。コード・コミット・チャットに貼らないでください。漏れたら AI Studio で削除して作り直します
-- Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第6回の MCP サーバーは Codespaces の中で動かします
+- Codespaces からインターネットへは出られますが、外から Codespaces の中へは接続できません（ポート転送は既定で非公開）。第6回で自分が起動する MCP サーバーは、Codespaces の中で動きます
 - テスト（`uv run pytest -q`）は API キーなしで動きます（LLM を呼ばない TestModel を使用）
 
 ## 守ってほしいこと
