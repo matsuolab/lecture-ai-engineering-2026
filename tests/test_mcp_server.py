@@ -89,3 +89,77 @@ def test_config_mistakes_are_reported_in_words(tmp_path, text, expected):
     path.write_text(text, encoding="utf-8")
     with pytest.raises(ConfigError, match=expected):
         read_config(path)
+
+QUIZ_TOOL = "glossary_make_quiz"
+
+
+def test_quiz_server_exposes_tool(tmp_path):
+    model = TestModel(call_tools=[])
+    build_mcp_agent(
+        _glossary_only_config(tmp_path)
+    ).run_sync("ツール一覧", model=model)
+
+    offered = {
+        t.name
+        for t in model.last_model_request_parameters.function_tools
+    }
+    assert QUIZ_TOOL in offered
+
+from pydantic_ai.models.function import FunctionModel
+from pydantic_ai.messages import ModelResponse, TextPart
+
+
+def _quiz_test_model(lecture):
+    def respond(messages, info):
+        if any(
+            isinstance(p, ToolReturnPart)
+            for m in messages
+            for p in m.parts
+        ):
+            return ModelResponse(
+                parts=[TextPart("クイズの確認が完了しました。")]
+            )
+
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    QUIZ_TOOL,
+                    {"lecture": lecture},
+                )
+            ]
+        )
+
+    return FunctionModel(respond)
+
+
+def test_quiz_result_comes_back_through_mcp(tmp_path):
+    model = _quiz_test_model(1)
+    result = build_mcp_agent(
+        _glossary_only_config(tmp_path)
+    ).run_sync("第1回のクイズを作って", model=model)
+
+    returns = _parts(result, ToolReturnPart)
+    assert returns
+    assert returns[0].tool_name == QUIZ_TOOL
+
+    quizzes = json.loads(returns[0].content)
+    assert len(quizzes) == 3
+    assert all(
+        "question" in q and "answer" in q
+        for q in quizzes
+    )
+
+
+def test_quiz_invalid_lecture(tmp_path):
+    model = _quiz_test_model(99)
+    result = build_mcp_agent(
+        _glossary_only_config(tmp_path)
+    ).run_sync("第99回のクイズを作って", model=model)
+
+    returns = _parts(result, ToolReturnPart)
+    assert returns
+    assert returns[0].tool_name == QUIZ_TOOL
+
+    content = str(returns[0].content)
+    assert "第99回のクイズは作成できません" in content
+    assert "利用可能な講義回" in content

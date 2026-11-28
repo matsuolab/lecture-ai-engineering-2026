@@ -126,3 +126,35 @@ def search_graph(query: str) -> str:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
     except APIError as e:
         return json.dumps({"error": api_error_message(e.code)}, ensure_ascii=False)
+
+
+
+def make_quiz(lecture: int) -> str:
+    """指定した講義回の復習クイズを最大3問作成する。
+
+    クイズや復習問題を求められたときに使う。
+    lectureには講義回を整数で指定する（例: 1）。
+    """
+    glossary = load_glossary()
+
+    entries = [
+        e for e in glossary
+        if e["lecture"] == lecture
+    ]
+
+    if not entries:
+        available = sorted({e["lecture"] for e in glossary})
+        return (
+            f"第{lecture}回のクイズは作成できません。"
+            f"利用可能な講義回: {available}"
+        )
+
+    quizzes = [
+        {
+            "question": f"{e['term']}とは何ですか？",
+            "answer": e["definition"],
+        }
+        for e in entries[:MAX_RESULTS]
+    ]
+
+    return json.dumps(quizzes, ensure_ascii=False)
