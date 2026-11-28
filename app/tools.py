@@ -84,32 +84,31 @@ def get_lecture_summary(lecture: int) -> str:
     return path.read_text(encoding="utf-8")
 
 def make_quiz(lecture: int) -> str:
-    """指定した回の用語から1つを選び、確認問題と答えを返す。
+    """講座の用語集から、指定した回（1始まりの整数）の確認問題を1問作り、問題と答えを返す。
 
-    「第2回の確認問題を出して」のように、復習用の問題を求められたときに使う。
-    lecture には回の番号を整数で入れる（例: 2）。
+    「第2回の確認問題を出して」「第3回のクイズを作って」のように、回を指定して
+    確認問題やクイズを求められたときに使う。lecture には回の番号だけを入れる（例: 2）。
+    返り値に error があるときは、問題は作れていない。その内容をユーザーに伝え、
+    available_lectures の中から回を選び直すよう案内する。
     """
-    # 1. load_glossary() から lecture が一致する用語を集める
-    candidates = [e for e in load_glossary() if e.get("lecture") == lecture]
-
-    # 用語が無い回（pytest の lecture=0 など）でも落ちないようにする
-    if not candidates:
+    terms = load_glossary()
+    available = sorted({e["lecture"] for e in terms})
+    if lecture not in available:
+        if lecture < 1:
+            reason = f"第{lecture}回という回はありません。回は1から始まる整数で指定してください。"
+        elif lecture > max(available):
+            reason = f"第{lecture}回は、用語集にある範囲（第{min(available)}〜{max(available)}回）を超えています。"
+        else:
+            reason = f"第{lecture}回の用語は、用語集にまだ登録されていません。"
         return json.dumps(
-            {"error": f"第{lecture}回の用語は用語集にありません"},
-            ensure_ascii=False,
-        )
-
-    # 2. 1つ選ぶ
-    entry = random.choice(candidates)
-
-    # 3. 問題と答えを文字列で返す
+            {"error": reason, "available_lectures": available,
+             "hint": "available_lectures のどれかの回を指定して、もう一度呼んでください。"},
+            ensure_ascii=False)
+    entry = random.choice([e for e in terms if e["lecture"] == lecture])
     return json.dumps(
-        {
-            "question": f"「{entry['term']}」の意味は？",
-            "answer": entry["definition"],
-        },
-        ensure_ascii=False,
-    )
+        {"lecture": lecture, "question": f"「{entry['term']}」の意味は？", "answer": entry["definition"]},
+        ensure_ascii=False)
+
 
 def save_learning_log(content: str) -> str:
     """学習の記録を learning_log/ フォルダにMarkdownファイルとして保存する。
