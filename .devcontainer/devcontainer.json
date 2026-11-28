@@ -2,12 +2,22 @@
   "name": "AIE2026",
   "image": "mcr.microsoft.com/devcontainers/python:3.12",
   "features": {
-    // 第3回の Pi デモ・発展課題用
-    "ghcr.io/devcontainers/features/node:1": { "version": "lts" }
+    // 第3回の Pi デモ・発展課題用（第7回は simplechat の画面のビルドにも使う）
+    "ghcr.io/devcontainers/features/node:1": { "version": "lts" },
+    // 第7回: AWS へのデプロイ（Terraform と AWS CLI）
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "1.17.2",
+      "tflint": "none",
+      "terragrunt": "none"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": { "version": "latest" }
   },
   "containerEnv": {
     "PYDANTIC_AI_NO_BANNER": "1",
-    "UV_LINK_MODE": "copy"
+    "UV_LINK_MODE": "copy",
+    // 第7回: Terraform の更新確認を止める・AWS の既定リージョン
+    "CHECKPOINT_DISABLE": "1",
+    "AWS_REGION": "us-east-1"
   },
   // Codespaces 作成時に登録を促すシークレット
   "secrets": {
@@ -19,7 +29,7 @@
   "postCreateCommand": "pipx install uv && uv sync --frozen",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "GitHub.copilot-chat"],
+      "extensions": ["ms-python.python", "GitHub.copilot-chat", "hashicorp.terraform"],
       "settings": {
         "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python"
       }
